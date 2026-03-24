@@ -109,18 +109,18 @@
         const CAPACITE_MAX = 70; // La limite par DAP
 
         const recettes = {
-            "4 Fromages": {"Disque tomaté (g)": 320, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (pincée)": 1},
-            "Burger": {"Disque tomaté (g)": 320, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110, "Origan (pincée)": 1},
-            "Camembert Rôti": {"Disque crémé (g)": 320, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60, "Herbes de Provence (pincée)": 1},
-            "Cannibale": {"Disque tomaté (g)": 320, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110, "Origan (pincée)": 1},
-            "Chèvre Miel": {"Disque crémé (g)": 320, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "4 Fromages Rouge": {"Disque tomaté (g)": 320, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
+            "Burger": {"Disque tomaté (g)": 320, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
+            "Camembert Rôti": {"Disque crémé (g)": 320, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
+            "Cannibale": {"Disque tomaté (g)": 320, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
+            "Chèvre Miel": {"Disque crémé (g)": 320, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
             "Croq'": {"Disque crémé (g)": 320, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
             "Extrême Nutella": {"Disque crémé (g)": 320, "Nutella (g)": 90, "M&M's (unités)": 8},
-            "Franc Comtoise": {"Disque crémé (g)": 320, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3, "Origan (pincée)": 1},
-            "Indiana": {"Disque crémé (g)": 320, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3, "Origan (pincée)": 1},
-            "Margarita": {"Disque tomaté (g)": 320, "Emmental râpé (g)": 20, "Scalarella (g)": 70, "Origan (pincée)": 1},
-            "Maxi Kebab": {"Disque crémé (g)": 320, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3, "Origan (pincée)": 1},
-            "Reine": {"Disque tomaté (g)": 320, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "Franc Comtoise": {"Disque crémé (g)": 320, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
+            "Indiana": {"Disque crémé (g)": 320, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
+            "Margarita": {"Disque tomaté (g)": 320, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
+            "Maxi Kebab": {"Disque crémé (g)": 320, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
+            "Reine": {"Disque tomaté (g)": 320, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
             "Ultimatum": {"Disque crémé (g)": 320, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
 
