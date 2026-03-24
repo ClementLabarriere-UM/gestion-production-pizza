@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <link rel="icon" href="logo.png">
+    <meta charset="UTF-8">
+    <title>Production Distributeurs - Gang Of Pizza</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 900px; margin: auto; background-color: #EE5541; color: #333; }
+        h1 { text-align: center; color: #ffffff; margin-bottom: 20px; }
+        h2 { color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px; margin-top: 0; }
+        .distributeur-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        
+        /* Tableaux et boutons + / - */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
+        th { background-color: #f8f8f8; }
+        .input-group { display: flex; align-items: center; gap: 5px; }
+        .btn-qty { background-color: #eee; border: 1px solid #ccc; width: 30px; height: 30px; font-size: 18px; font-weight: bold; border-radius: 4px; cursor: pointer; color: #333; }
+        .btn-qty:hover { background-color: #ddd; }
+        input[type="number"] { width: 50px; height: 26px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; font-weight: bold; }
+        
+        button.btn-calculer { display: block; width: 100%; padding: 15px; background-color: #ffffff; color: #EE5541; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        button.btn-calculer:active { transform: scale(0.98); }
+        
+        .resultats-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 30px; display: none; }
+        .flex-row { display: flex; gap: 20px; margin-top: 15px; }
+        .flex-col { flex: 1; }
+        
+        /* Liste et Checklist */
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px 0; border-bottom: 1px dotted #ccc; }
+        .highlight { font-weight: bold; color: #d32f2f; }
+        .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; }
+        .checklist-item input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
+        .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
+        .checklist-item input:checked + span .highlight { color: #999; }
+        
+        /* Alerte de capacité */
+        #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; border: 1px solid #ff9999; font-weight: bold; display: none; margin-bottom: 15px; }
+
+        /* --- Style ultra-compressé pour l'impression (PDF 1 page) --- */
+        @media print {
+            @page { margin: 1cm; }
+            body { background-color: white; padding: 0; font-size: 11pt; line-height: 1.2; color: black; }
+            h1, .distributeur-card, button, .btn-qty { display: none !important; }
+            .resultats-container { box-shadow: none; padding: 0; margin-top: 0; display: block !important; border: none; }
+            h2 { font-size: 14pt; border-bottom: 1px solid black; padding-bottom: 2px; margin: 10px 0 5px 0; }
+            h3 { font-size: 12pt; margin: 5px 0; text-decoration: underline; }
+            img { max-width: 60px !important; margin: 0 auto 5px auto !important; display: block; }
+            .flex-row { gap: 15px; } 
+            ul { margin: 0; padding: 0 0 0 5px; list-style-type: none; }
+            li { padding: 2px 0; border-bottom: none; }
+            .highlight { font-weight: bold; color: black; }
+            #liste-repartition { gap: 10px; display: flex; flex-wrap: wrap; }
+            #liste-repartition > div { padding: 5px !important; border: 1px solid #ccc !important; flex: 1; min-width: 140px; page-break-inside: avoid; }
+            #zone-alertes { display: none !important; } /* On cache l'alerte sur le PDF */
+        }
+    </style>
+</head>
+<body>
+
+    <img src="logo.png" alt="Logo Gang Of Pizza" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
+    <h1>Logiciel de production 🍕</h1>
+
+    <div id="formulaire-distributeurs"></div>
+
+    <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
+
+    <div class="resultats-container" id="zone-resultats">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f; margin-bottom: 10px; padding-bottom: 5px;">
+            <h2 style="border-bottom: none; margin: 0; padding-bottom: 0;">📊 Bilan de Production</h2>
+            <button id="btn-impression" onclick="imprimerPDF()" style="background-color: #333; color: white; width: auto; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                🖨️ Imprimer / PDF
+            </button>
+        </div>
+
+        <p id="date-production" style="text-align: center; font-size: 14pt; margin: 10px 0; font-weight: bold;"></p>
+        
+        <div id="zone-alertes"></div>
+
+        <div class="flex-row">
+            <div class="flex-col">
+                <h3>🍕 Pizzas à fabriquer</h3>
+                <ul id="liste-pizzas-totales"></ul>
+            </div>
+            <div class="flex-col">
+                <h3>🛒 Ingrédients à préparer</h3>
+                <ul id="liste-ingredients"></ul>
+            </div>
+        </div>
+        
+        <h3 style="margin-top: 20px;">🚚 Détail du chargement par machine</h3>
+        <div id="liste-repartition"></div>
+    </div>
+
+    <script>
+        // --- 1. Bases de données ---
+        const distributeurs = ["Bourg-Saint-Andéol", "Le Teil", "Orano Tricastin"];
+        const CAPACITE_MAX = 70; // La limite par DAP
+
+        const recettes = {
+            "4 Fromages": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110, "Origan (pincée)": 1},
+            "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110, "Origan (pincée)": 1},
+            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "Croq'": {"Disque crémé": 1, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
+            "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8},
+            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70, "Origan (pincée)": 1},
+            "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3, "Origan (pincée)": 1},
+            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3, "Origan (pincée)": 1}
+        };
+
+        const listePizzas = Object.keys(recettes);
+
+        // --- 2. Fonction pour les boutons + et - ---
+        function modifierQte(id, delta) {
+            let input = document.getElementById(id);
+            let valeur = parseInt(input.value) || 0;
+            valeur += delta;
+            if (valeur < 0) valeur = 0; // On empêche d'aller en négatif
+            input.value = valeur;
+        }
+
+        // --- 3. Construction automatique de l'interface ---
+        window.onload = function() {
+            const conteneur = document.getElementById("formulaire-distributeurs");
+            
+            distributeurs.forEach((distributeur, indexMachine) => {
+                let html = `
+                <div class="distributeur-card">
+                    <h2>📍 ${distributeur}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Recette</th>
+                                <th>Stock Actuel</th>
+                                <th>Objectif</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                listePizzas.forEach((pizza, indexPizza) => {
+                    let idStock = `stock_${indexMachine}_${indexPizza}`;
+                    let idObj = `obj_${indexMachine}_${indexPizza}`;
+                    
+                    // Récupération de l'objectif sauvegardé (s'il existe)
+                    let savedObj = localStorage.getItem(idObj) || 0;
+                    
+                    html += `
+                        <tr>
+                            <td><strong>${pizza}</strong></td>
+                            <td>
+                                <div class="input-group">
+                                    <button class="btn-qty" onclick="modifierQte('${idStock}', -1)">-</button>
+                                    <input type="number" id="${idStock}" value="0" min="0">
+                                    <button class="btn-qty" onclick="modifierQte('${idStock}', 1)">+</button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <button class="btn-qty" onclick="modifierQte('${idObj}', -1)">-</button>
+                                    <input type="number" id="${idObj}" value="${savedObj}" min="0">
+                                    <button class="btn-qty" onclick="modifierQte('${idObj}', 1)">+</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table></div>`;
+                conteneur.innerHTML += html;
+            });
+        };
+
+        // --- 4. Le Moteur de Calcul ---
+        function calculerProductionGlobale() {
+            let pizzasTotalesAProduire = {};
+            let ingredientsTotaux = {};
+            let repartitionParMachine = {};
+            let alertesCapacite = []; // Pour stocker les alertes si on dépasse 70
+
+            distributeurs.forEach(d => repartitionParMachine[d] = {});
+
+            distributeurs.forEach((distributeur, indexMachine) => {
+                let totalObjectifMachine = 0;
+
+                listePizzas.forEach((pizza, indexPizza) => {
+                    let valStock = document.getElementById(`stock_${indexMachine}_${indexPizza}`).value;
+                    let valObj = document.getElementById(`obj_${indexMachine}_${indexPizza}`).value;
+                    
+                    let stock = valStock === "" ? 0 : parseInt(valStock, 10);
+                    let objectif = valObj === "" ? 0 : parseInt(valObj, 10);
+                    
+                    // Sauvegarde automatique de l'objectif tapé
+                    localStorage.setItem(`obj_${indexMachine}_${indexPizza}`, objectif);
+
+                    totalObjectifMachine += objectif; // On additionne pour vérifier la limite des 70
+                    
+                    let aProduire = Math.max(0, objectif - stock);
+                    
+                    if (aProduire > 0) {
+                        repartitionParMachine[distributeur][pizza] = aProduire;
+                        
+                        if (!pizzasTotalesAProduire[pizza]) pizzasTotalesAProduire[pizza] = 0;
+                        pizzasTotalesAProduire[pizza] += aProduire;
+                        
+                        let recette = recettes[pizza];
+                        for (let [ingredient, grammage] of Object.entries(recette)) {
+                            if (!ingredientsTotaux[ingredient]) ingredientsTotaux[ingredient] = 0;
+                            ingredientsTotaux[ingredient] += (grammage * aProduire);
+                        }
+                    }
+                });
+
+                // Vérification de la capacité physique
+                if (totalObjectifMachine > CAPACITE_MAX) {
+                    alertesCapacite.push(`⚠️ Surcharge prévue à <b>${distributeur}</b> : ${totalObjectifMachine} pizzas programmées (Maximum autorisé : ${CAPACITE_MAX}).`);
+                }
+            });
+
+            afficherResultats(pizzasTotalesAProduire, ingredientsTotaux, repartitionParMachine, alertesCapacite);
+            afficherDateDuJour();
+        }
+
+        // --- 5. Affichage des résultats ---
+        function afficherResultats(pizzas, ingredients, repartition, alertes) {
+            document.getElementById("zone-resultats").style.display = "block";
+            
+            // Gestion des alertes
+            let divAlertes = document.getElementById("zone-alertes");
+            if (alertes.length > 0) {
+                divAlertes.innerHTML = alertes.join("<br>");
+                divAlertes.style.display = "block";
+            } else {
+                divAlertes.style.display = "none";
+            }
+
+            // Affichage Pizzas globales
+            let ulPizzas = document.getElementById("liste-pizzas-totales");
+            ulPizzas.innerHTML = "";
+            let totalPizzas = 0;
+            for (let [pizza, qte] of Object.entries(pizzas)) {
+                ulPizzas.innerHTML += `<li>${pizza} : <span class="highlight">${qte}</span></li>`;
+                totalPizzas += qte;
+            }
+            if (totalPizzas === 0) ulPizzas.innerHTML = "<li>Rien à produire !</li>";
+
+            // Affichage Ingrédients (Checklist)
+            let ulIngredients = document.getElementById("liste-ingredients");
+            ulIngredients.innerHTML = "";
+            for (let [ing, qte] of Object.entries(ingredients)) {
+                let texteQte = qte;
+                if (ing.includes("(g)") && qte >= 1000) {
+                    texteQte = (qte / 1000).toFixed(2) + " Kg";
+                }
+                // Ajout de la case à cocher
+                ulIngredients.innerHTML += `
+                    <li class="checklist-item">
+                        <label>
+                            <input type="checkbox"> 
+                            <span>${ing} : <span class="highlight">${texteQte}</span></span>
+                        </label>
+                    </li>`;
+            }
+
+            // Affichage Répartition par machine
+            let divRepartition = document.getElementById("liste-repartition");
+            divRepartition.innerHTML = "";
+            for (let [machine, liste] of Object.entries(repartition)) {
+                // On force la boîte de la machine à prendre toute la largeur, et on met la liste (ul) en mode grille (colonnes)
+                let htmlMachine = `<div style="background:#f9f9f9; padding:15px; border-radius:4px; border:1px solid #ddd; width: 100%; box-sizing: border-box;">
+                                    <h4 style="margin-top:0; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${machine}</h4>
+                                    <ul style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); column-gap: 20px; row-gap: 5px; margin: 10px 0 0 0;">`;
+                let count = 0;
+                for (let [p, q] of Object.entries(liste)) {
+                    // On enlève la bordure pointillée en bas pour que les colonnes soient plus propres
+                    htmlMachine += `<li style="border: none; padding: 2px 0;">${p} : <b>${q}</b></li>`;
+                    count++;
+                }
+                if (count === 0) htmlMachine += `<li style="border: none; padding: 2px 0;"><i>Distributeur plein</i></li>`;
+                htmlMachine += `</ul></div>`;
+                divRepartition.innerHTML += htmlMachine;
+            }
+        }
+
+        // --- 6. Affichage Date ---
+        function afficherDateDuJour() {
+            const aujourdhui = new Date();
+            const dateFormatee = aujourdhui.toLocaleDateString('fr-FR');
+            document.getElementById("date-production").innerHTML = "Production du " + dateFormatee;
+        }
+
+        // --- 7. Impression dynamique ---
+        function imprimerPDF() {
+            const aujourdhui = new Date();
+            const dateFichier = aujourdhui.toLocaleDateString('fr-FR').replace(/\//g, '-'); 
+            const titreOriginal = document.title; 
+            document.title = "Fiche de production du " + dateFichier;
+            window.print();
+            document.title = titreOriginal; 
+        }
+    </script>
+</body>
+</html>
