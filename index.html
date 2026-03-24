@@ -269,20 +269,21 @@
             let catAutres = [];
 
             // Mots-clés pour le tri intelligent
-            const motsExclus = ["sauce", "origan", "miel"];
+            const motsExclus = ["sauce", "origan", "miel", "Épices"];
             const motsViandes = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
             const motsFromages = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
+            const motsDisques = ["Disque crémé", "Disque tomaté"];
 
             for (let [ing, qte] of Object.entries(ingredients)) {
                 let ingLower = ing.toLowerCase();
 
-                // 1. Exclusion des sauces, origan et miel
+                // 1. Exclusion des sauces, origan, miel, épices
                 if (motsExclus.some(mot => ingLower.includes(mot))) continue;
 
                 // 2. Formatage de la quantité
                 let texteQte = qte;
                 if (ing.includes("(g)") && qte >= 1000) {
-                    texteQte = (qte / 1000).toFixed(2) + " Kg";
+                    texteQte = (qte / 1000).toFixed(2) + "KG";
                 }
 
                 // 3. Création de la case à cocher
@@ -299,10 +300,12 @@
                     catViandes.push(htmlLi);
                 } else if (motsFromages.some(mot => ingLower.includes(mot))) {
                     catFromages.push(htmlLi);
+                } else if (motsDisques.some(mot => ingLower.includes(mot))) {
+                    catDisques.push(htmlLi);
                 } else {
                     catAutres.push(htmlLi);
                 }
-            }
+            }d
 
             // 5. Injection sur la page
             if (catViandes.length > 0) {
@@ -310,6 +313,9 @@
             }
             if (catFromages.length > 0) {
                 divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🧀 Fromages</h4><ul>${catFromages.join("")}</ul>`;
+            }
+            if (catDisques.length > 0) {
+                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🍕 Disques</h4><ul>${catDisques.join("")}</ul>`;
             }
             if (catAutres.length > 0) {
                 divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">📦 Autre</h4><ul>${catAutres.join("")}</ul>`;
