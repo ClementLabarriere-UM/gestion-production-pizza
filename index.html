@@ -95,6 +95,15 @@
     </div>
 
     <script>
+        // --- 0. SÉCURITÉ : Demande de mot de passe ---
+        let motDePasse = prompt("🔒 Accès restreint. Veuillez entrer le mot de passe :");
+        
+        if (motDePasse !== "123456") {
+            // Si le mot de passe est faux, on efface tout l'écran et on bloque le script
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px; color:white;'>Accès refusé. Rechargez la page pour réessayer.</h1>";
+            throw new Error("Mot de passe incorrect, arrêt du logiciel.");
+        }
+
         // --- 1. Bases de données ---
         const distributeurs = ["Bourg-Saint-Andéol", "Le Teil", "Orano Tricastin"];
         const CAPACITE_MAX = 70; // La limite par DAP
