@@ -266,13 +266,14 @@
 
             let catViandes = [];
             let catFromages = [];
+            let catDisques = []; // <-- 1. Ajout de la variable manquante
             let catAutres = [];
 
-            // Mots-clés pour le tri intelligent
-            const motsExclus = ["sauce", "origan", "miel", "Épices"];
+            // Mots-clés pour le tri intelligent (TOUT EN MINUSCULES !)
+            const motsExclus = ["sauce", "origan", "miel", "épice"]; // <-- 2. Minuscule
             const motsViandes = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
             const motsFromages = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
-            const motsDisques = ["Disque crémé", "Disque tomaté"];
+            const motsDisques = ["disque"]; // <-- 2. Minuscule (le mot "disque" suffit pour attraper les deux !)
 
             for (let [ing, qte] of Object.entries(ingredients)) {
                 let ingLower = ing.toLowerCase();
@@ -283,7 +284,7 @@
                 // 2. Formatage de la quantité
                 let texteQte = qte;
                 if (ing.includes("(g)") && qte >= 1000) {
-                    texteQte = (qte / 1000).toFixed(2) + "KG";
+                    texteQte = (qte / 1000).toFixed(2) + " Kg";
                 }
 
                 // 3. Création de la case à cocher
@@ -305,7 +306,7 @@
                 } else {
                     catAutres.push(htmlLi);
                 }
-            }d
+            } 
 
             // 5. Injection sur la page
             if (catViandes.length > 0) {
