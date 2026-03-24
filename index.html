@@ -86,7 +86,7 @@
             </div>
             <div class="flex-col">
                 <h3>🛒 Ingrédients à préparer</h3>
-                <ul id="liste-ingredients"></ul>
+                <div id="liste-ingredients"></div>
             </div>
         </div>
         
@@ -260,22 +260,59 @@
             }
             if (totalPizzas === 0) ulPizzas.innerHTML = "<li>Rien à produire !</li>";
 
-            // Affichage Ingrédients (Checklist)
-            let ulIngredients = document.getElementById("liste-ingredients");
-            ulIngredients.innerHTML = "";
+            // Affichage Ingrédients (Catégorisé et filtré)
+            let divIngredients = document.getElementById("liste-ingredients");
+            divIngredients.innerHTML = "";
+
+            let catViandes = [];
+            let catFromages = [];
+            let catAutres = [];
+
+            // Mots-clés pour le tri intelligent
+            const motsExclus = ["sauce", "origan", "miel"];
+            const motsViandes = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
+            const motsFromages = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
+
             for (let [ing, qte] of Object.entries(ingredients)) {
+                let ingLower = ing.toLowerCase();
+
+                // 1. Exclusion des sauces, origan et miel
+                if (motsExclus.some(mot => ingLower.includes(mot))) continue;
+
+                // 2. Formatage de la quantité
                 let texteQte = qte;
                 if (ing.includes("(g)") && qte >= 1000) {
                     texteQte = (qte / 1000).toFixed(2) + " Kg";
                 }
-                // Ajout de la case à cocher
-                ulIngredients.innerHTML += `
+
+                // 3. Création de la case à cocher
+                let htmlLi = `
                     <li class="checklist-item">
                         <label>
                             <input type="checkbox"> 
                             <span>${ing} : <span class="highlight">${texteQte}</span></span>
                         </label>
                     </li>`;
+
+                // 4. Répartition dans les listes
+                if (motsViandes.some(mot => ingLower.includes(mot))) {
+                    catViandes.push(htmlLi);
+                } else if (motsFromages.some(mot => ingLower.includes(mot))) {
+                    catFromages.push(htmlLi);
+                } else {
+                    catAutres.push(htmlLi);
+                }
+            }
+
+            // 5. Injection sur la page
+            if (catViandes.length > 0) {
+                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🥩 Viandes</h4><ul>${catViandes.join("")}</ul>`;
+            }
+            if (catFromages.length > 0) {
+                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🧀 Fromages</h4><ul>${catFromages.join("")}</ul>`;
+            }
+            if (catAutres.length > 0) {
+                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">📦 Autre</h4><ul>${catAutres.join("")}</ul>`;
             }
 
             // Affichage Répartition par machine
