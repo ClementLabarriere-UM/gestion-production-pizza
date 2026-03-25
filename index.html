@@ -102,14 +102,14 @@
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
 
             try {
-                // On appelle simplement ton serveur relais, il s'occupe du reste !
-                const [rS, rA, rP] = await Promise.all([
-                    fetch(`${proxyUrl}/groups/${groupId}/stocks`),
-                    fetch(`${proxyUrl}/groups/${groupId}/apds`),
-                    fetch(`${proxyUrl}/groups/${groupId}/pizzas`)
-                ]);
+                const rS = await fetch(`${proxyUrl}/groups/${groupId}/stocks`);
+                if (!rS.ok) throw new Error("Stocks (Code " + rS.status + ")");
                 
-                if (!rS.ok) throw new Error("API_ERROR");
+                const rA = await fetch(`${proxyUrl}/groups/${groupId}/apds`);
+                if (!rA.ok) throw new Error("Machines (Code " + rA.status + ")");
+                
+                const rP = await fetch(`${proxyUrl}/groups/${groupId}/pizzas`);
+                if (!rP.ok) throw new Error("Pizzas (Code " + rP.status + ")");
 
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 
@@ -140,7 +140,7 @@
                 alert("✅ Synchronisation réussie en un éclair !");
             } catch(e) { 
                 console.error(e);
-                alert("❌ Le serveur d'Adial a bloqué la requête.");
+                alert("❌ Refusé par Adial : " + e.message + "\nAssure-toi d'avoir vidé ton cache.");
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
