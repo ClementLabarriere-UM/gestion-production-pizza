@@ -88,7 +88,12 @@
         window.onload = function() {
             const cont = document.getElementById("formulaire-distributeurs");
             distributeurs.forEach((d, mIdx) => {
-                let h = `<div class="distributeur-card"><h2>📍 ${d}</h2><table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
+                let h = `<div class="distributeur-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>📍 ${d}</h2>
+                        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 10px; font-size: 12px; cursor: pointer;" onclick="copierObjectifs(${mIdx})">📋 Copier pour tous</button>
+                    </div>
+                    <table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
                 listePizzas.forEach((p, pIdx) => {
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
                     h += `<tr><td><strong>${p}</strong></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td></tr>`;
@@ -96,6 +101,23 @@
                 cont.innerHTML += h + `</table></div>`;
             });
         };
+
+        function copierObjectifs(sourceIdx) {
+            if(!confirm(`Copier les objectifs de ${distributeurs[sourceIdx]} vers TOUS les autres distributeurs ?`)) return;
+            
+            listePizzas.forEach((p, pIdx) => {
+                // On lit la valeur de la machine source
+                let valeurACopier = document.getElementById(`obj_${sourceIdx}_${pIdx}`).value;
+                
+                distributeurs.forEach((d, targetIdx) => {
+                    // Si ce n'est pas la machine source, on colle la valeur et on la sauvegarde
+                    if(targetIdx !== sourceIdx) {
+                        document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
+                        localStorage.setItem(`obj_${targetIdx}_${pIdx}`, valeurACopier);
+                    }
+                });
+            });
+        }
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
