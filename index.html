@@ -36,7 +36,7 @@
         @media print {
             body { background-color: white; font-size: 11pt; color: black; }
             h1, .distributeur-card, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
-            .resultats-container { display: block !important; box-shadow: none; }
+            .resultats-container { display: block !important; box-shadow: none; border: none; }
             #liste-repartition > div { border: 1px solid #ccc !important; page-break-inside: avoid; }
         }
     </style>
@@ -48,10 +48,10 @@
 
     <div id="formulaire-distributeurs"></div>
 
-    <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser avec Adial</button>
+    <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser les stocks Adial</button>
     <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
     <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
-    <button id="btn-history" class="btn-secondary" onclick="toggleHistorique()">📅 Voir l'historique (30j)</button>
+    <button id="btn-history" class="btn-secondary" onclick="toggleHistorique()">📅 Historique (30j)</button>
 
     <div class="resultats-container" id="zone-historique" style="display: none;">
         <h2>📅 Historique des fabrications</h2>
@@ -60,26 +60,28 @@
 
     <div class="resultats-container" id="zone-resultats">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
-            <h2 style="border:none;">📊 Bilan</h2>
-            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer;">🖨️ Imprimer</button>
+            <h2 style="border:none;">📊 Bilan de Production</h2>
+            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer / PDF</button>
         </div>
         <p id="date-production" style="text-align:center; font-weight:bold;"></p>
         <div id="zone-alertes"></div>
         <div class="flex-row">
-            <div class="flex-col"><h3>🍕 Pizzas</h3><ul id="liste-pizzas-totales"></ul></div>
-            <div class="flex-col"><h3>🛒 Ingrédients</h3><div id="liste-ingredients"></div></div>
+            <div class="flex-col"><h3>🍕 Pizzas à fabriquer</h3><ul id="liste-pizzas-totales"></ul></div>
+            <div class="flex-col"><h3>🛒 Ingrédients à préparer</h3><div id="liste-ingredients"></div></div>
         </div>
-        <h3>🚚 Chargement</h3>
+        <h3>🚚 Détail par machine</h3>
         <div id="liste-repartition"></div>
     </div>
 
     <script>
+        // SÉCURITÉ
         const motDePasse = prompt("🔒 Accès restreint :");
         if (motDePasse !== "123456") {
             document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>Accès refusé.</h1>";
             throw new Error("Wrong password");
         }
 
+        // BASES DE DONNÉES
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
         const CAPACITE_MAX = 70;
 
@@ -109,7 +111,7 @@
         window.onload = function() {
             const conteneur = document.getElementById("formulaire-distributeurs");
             distributeurs.forEach((dist, mIdx) => {
-                let html = `<div class="distributeur-card"><h2>📍 ${dist}</h2><table><tr><th>Recette</th><th>Stock</th><th>Objectif</th></tr>`;
+                let html = `<div class="distributeur-card"><h2>📍 ${dist}</h2><table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
                 listePizzas.forEach((piz, pIdx) => {
                     let savedObj = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
                     html += `<tr><td><strong>${piz}</strong></td>
@@ -128,26 +130,19 @@
             btn.disabled = true;
 
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
-            // Récupère le dernier token valide ou celui par défaut
-            let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
-
-            const callApi = async (url) => {
-                const response = await fetch(url, {
-                    headers: { "Authorization": "Bearer " + token }
-                });
-                if (response.status === 401 || response.status === 403) {
-                    throw new Error("TOKEN_EXPIRED");
-                }
-                return await response.json();
-            };
+            const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+            const h = {"Authorization": "Bearer " + token};
 
             try {
-                // Tentative de connexion directe
-                const dS = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`);
-                const dA = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`);
-                const dP = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`);
+                const [rS, rA, rP] = await Promise.all([
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`, {headers:h}),
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`, {headers:h}),
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
+                ]);
+                
+                if (rS.status === 401 || rS.status === 403) throw new Error("TOKEN_EXPIRED");
 
-                // --- Traitement des données (Identique au code précédent) ---
+                const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
@@ -164,7 +159,6 @@
                 });
 
                 const norm = s => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
-                
                 distributeurs.forEach((d, mIdx) => {
                     listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0);
                     for(let [mApi, pzs] of Object.entries(counts)) {
@@ -176,18 +170,13 @@
                         }
                     }
                 });
-                alert("✅ Synchronisation réussie !");
-
-            } catch (error) {
-                if (error.message === "TOKEN_EXPIRED") {
-                    alert("❌ Ta clé Adial a expiré.\n\n1. Connecte-toi sur Adial Pro.\n2. Fais F12 > Network.\n3. Copie la nouvelle valeur de 'Authorization' (Bearer...).\n4. Mets-la à jour dans ton code GitHub.");
-                } else {
-                    alert("❌ Erreur de connexion.\nAssure-toi que l'extension 'Allow CORS' est bien ACTIVÉE dans ton navigateur.");
-                }
-            } finally {
-                btn.innerHTML = "🔄 Synchroniser avec Adial";
-                btn.disabled = false;
+                alert("✅ Synchronisation Adial réussie !");
+            } catch(e) { 
+                if(e.message === "TOKEN_EXPIRED") alert("❌ Ta clé Adial a expiré. Reconnecte-toi et récupère une nouvelle clé Authorization.");
+                else alert("❌ Erreur de connexion. Vérifie que l'extension 'Allow CORS' est ACTIVÉE.");
             }
+            btn.innerHTML = "🔄 Synchroniser les stocks Adial";
+            btn.disabled = false;
         }
 
         function calculerProductionGlobale() {
@@ -218,18 +207,18 @@
             let divAl = document.getElementById("zone-alertes");
             divAl.innerHTML = al.join("<br>"); divAl.style.display = al.length ? "block" : "none";
             
-            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien !</li>";
+            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire aujourd'hui !</li>";
             
             let divIng = document.getElementById("liste-ingredients"); divIng.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
             const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
-            const mF = ["roquefort", "emmental", "scalarella", "chevre", "cheddar", "camembert", "comte"];
+            const mF = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
 
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 if(mEx.some(m => nl.includes(m))) continue;
-                let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+"kg" : q;
+                let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
                 let li = `<li class="checklist-item"><label><input type="checkbox"><span>${n}: <span class="highlight">${tq}</span></span></label></li>`;
                 if(mV.some(m => nl.includes(m))) cV.push(li);
                 else if(mF.some(m => nl.includes(m))) cF.push(li);
@@ -242,8 +231,8 @@
             if(cA.length) divIng.innerHTML += `<h4>📦 Autre</h4><ul>${cA.join("")}</ul>`;
 
             document.getElementById("liste-repartition").innerHTML = Object.entries(rep).map(([m,l]) => 
-                `<div style="background:#f9f9f9;padding:10px;border:1px solid #ddd;margin-bottom:10px;"><b>${m}</b>
-                <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">${Object.entries(l).map(([pn,pq])=>`<li>${pn}: ${pq}</li>`).join("") || "<li>Plein</li>"}</ul></div>`).join("");
+                `<div style="background:#f9f9f9;padding:15px;border:1px solid #ddd;margin-bottom:10px;border-radius:4px;"><b>${m}</b>
+                <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="border:none;padding:0;">${pn}: <b>${pq}</b></li>`).join("") || "<li>Distributeur plein</li>"}</ul></div>`).join("");
             document.getElementById("date-production").innerText = "Production du " + new Date().toLocaleDateString();
         }
 
@@ -263,12 +252,12 @@
             if(z.style.display === "block") {
                 document.getElementById("zone-resultats").style.display = "none";
                 let h = JSON.parse(localStorage.getItem("historique_prod")) || [];
-                document.getElementById("liste-historique").innerHTML = h.reverse().map(x => `<li>${x.date} : <b>${x.total} pizzas</b></li>`).join("") || "Vide.";
+                document.getElementById("liste-historique").innerHTML = [...h].reverse().map(x => `<li style="display:flex;justify-content:space-between;"><span>${x.date}</span><b>${x.total} pizzas</b></li>`).join("") || "Aucun historique.";
             }
         }
 
         function reinitialiserStocks() {
-            if(confirm("Remettre les stocks à zéro ?")) {
+            if(confirm("Remettre tous les stocks à zéro ?")) {
                 distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0));
                 document.getElementById("zone-resultats").style.display = "none";
             }
