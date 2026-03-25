@@ -124,18 +124,35 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Connexion...";
+            btn.innerHTML = "⏳ Connexion à Adial...";
+            btn.disabled = true;
+
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
-            const h = {"Authorization": "Bearer " + token};
+            
+            const h = {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json"
+            };
+
+            // Utilisation d'un proxy pour contourner la sécurité CORS d'Adial
+            const proxy = "https://corsproxy.io/?";
 
             try {
                 const [rS, rA, rP] = await Promise.all([
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`, {headers:h}),
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`, {headers:h}),
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
+                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`), {headers:h}),
+                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`), {headers:h}),
+                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`), {headers:h})
                 ]);
+
+                // Vérification si le Token est toujours bon
+                if (rS.status === 401) {
+                    alert("❌ Ta clé (Token) a expiré. Connecte-toi sur Adial Pro et récupère une nouvelle clé Authorization dans l'inspecteur.");
+                    return;
+                }
+
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
+                
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
@@ -151,21 +168,27 @@
                     }
                 });
 
-                const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                const norm = s => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+                
                 distributeurs.forEach((d, mIdx) => {
                     listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0);
                     for(let [mApi, pzs] of Object.entries(counts)) {
-                        if(norm(mApi).includes(norm(d))) {
+                        if(norm(mApi).includes(norm(d)) || norm(d).includes(norm(mApi))) {
                             for(let [pApi, q] of Object.entries(pzs)) {
-                                let pIdx = listePizzas.findIndex(p => norm(pApi).includes(norm(p)));
+                                let pIdx = listePizzas.findIndex(p => norm(pApi).includes(norm(p)) || norm(p).includes(norm(pApi)));
                                 if(pIdx !== -1) document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
                             }
                         }
                     }
                 });
-                alert("✅ Synchronisé !");
-            } catch(e) { alert("❌ Erreur API"); }
-            btn.innerHTML = "🔄 Synchroniser avec Adial";
+                alert("✅ Stocks Adial importés avec succès !");
+            } catch(e) { 
+                console.error(e);
+                alert("❌ Erreur de connexion au serveur. Vérifie ton internet ou l'extension CORS."); 
+            } finally {
+                btn.innerHTML = "🔄 Synchroniser avec Adial";
+                btn.disabled = false;
+            }
         }
 
         function calculerProductionGlobale() {
