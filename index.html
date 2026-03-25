@@ -85,7 +85,7 @@
         window.onload = function() {
             const cont = document.getElementById("formulaire-distributeurs");
             distributeurs.forEach((d, mIdx) => {
-                let h = `<div class="distributeur-card"><h2>📍 ${d}</h2><table><tr><th>Recette</th><th>Stock</th><th>Objectif</th></tr>`;
+                let h = `<div class="distributeur-card"><h2>📍 ${d}</h2><table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
                 listePizzas.forEach((p, pIdx) => {
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
                     h += `<tr><td><strong>${p}</strong></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td></tr>`;
@@ -96,28 +96,27 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Connexion à Adial..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Connexion via Cloudflare..."; btn.disabled = true;
+            
+            // Tes identifiants et ton relais Cloudflare
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
+            const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
             
-            // Ta clé longue durée
-            let raw = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
-            const token = raw.replace("Bearer ", "").trim();
-            
-            // On imite parfaitement le navigateur
-            const h = {
-                "Authorization": "Bearer " + token,
-                "Accept": "application/json, text/plain, */*"
-            };
+            let rawToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+            const token = rawToken.replace("Bearer ", "").trim();
+            const h = {"Authorization": "Bearer " + token};
 
             try {
+                // On interroge Adial en passant par ton Worker Cloudflare
                 const [rS, rA, rP] = await Promise.all([
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`, {headers:h}),
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`, {headers:h}),
-                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
+                    fetch(`${proxyUrl}/groups/${groupId}/stocks`, {headers:h}),
+                    fetch(`${proxyUrl}/groups/${groupId}/apds`, {headers:h}),
+                    fetch(`${proxyUrl}/groups/${groupId}/pizzas`, {headers:h})
                 ]);
                 
-                if (rS.status === 401 || rS.status === 403) throw new Error("BLOCKED_BY_ADIAL");
-                
+                if (rS.status === 401 || rS.status === 403) throw new Error("TOKEN_EXPIRED");
+                if (!rS.ok) throw new Error("API_ERROR");
+
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
@@ -141,13 +140,11 @@
                         }
                     }
                 });
-                alert("✅ Stocks Adial importés avec succès !");
+                alert("✅ Synchronisation réussie via Cloudflare !");
             } catch(e) { 
-                if(e.message === "BLOCKED_BY_ADIAL") {
-                    alert("❌ Adial a bloqué la connexion (Erreur 403).\n\nPour réussir, tu dois masquer ton origine :\n1. Utilise l'extension 'ModHeader'\n2. Ajoute 'Origin' : 'https://prod.mypizzadoor-pro.com'");
-                } else {
-                    alert("❌ Erreur. Vérifie ton extension CORS.");
-                }
+                console.error(e);
+                if(e.message === "TOKEN_EXPIRED") alert("❌ La clé Adial a expiré. Connecte-toi sur Adial Pro pour récupérer une nouvelle clé.");
+                else alert("❌ Erreur de réseau avec le relais Cloudflare.");
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
@@ -163,7 +160,7 @@
                     let diff = Math.max(0, o - s);
                     if(diff > 0) { r[d][p] = diff; pT[p] = (pT[p] || 0) + diff; for(let [ing, g] of Object.entries(recettes[p])) iT[ing] = (iT[ing] || 0) + (g * diff); }
                 });
-                if(sum > 70) al.push(`⚠️ Surcharge à ${d} (${sum}/70)`);
+                if(sum > 70) al.push(`⚠️ Surcharge prévue à ${d} : ${sum} pizzas (Maximum 70).`);
             });
             afficherResultats(pT, iT, r, al);
             sauvegarderHistorique(pT);
@@ -173,7 +170,7 @@
             document.getElementById("zone-resultats").style.display = "block";
             document.getElementById("zone-historique").style.display = "none";
             let dAl = document.getElementById("zone-alertes"); dAl.innerHTML = al.join("<br>"); dAl.style.display = al.length ? "block" : "none";
-            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien !</li>";
+            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire aujourd'hui !</li>";
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
@@ -189,13 +186,13 @@
             if(cF.length) dI.innerHTML += `<h4>🧀 Fromages</h4><ul>${cF.join("")}</ul>`;
             if(cD.length) dI.innerHTML += `<h4>🍕 Disques</h4><ul>${cD.join("")}</ul>`;
             if(cA.length) dI.innerHTML += `<h4>📦 Autre</h4><ul>${cA.join("")}</ul>`;
-            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="background:#f9f9f9;padding:15px;border:1px solid #ddd;margin-bottom:10px;border-radius:4px;"><b>${m}</b><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="border:none;padding:0;">${pn}: <b>${pq}</b></li>`).join("") || "<li>Plein</li>"}</ul></div>`).join("");
+            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="background:#f9f9f9;padding:15px;border:1px solid #ddd;margin-bottom:10px;border-radius:4px;"><b>${m}</b><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="border:none;padding:0;">${pn}: <b>${pq}</b></li>`).join("") || "<li>Distributeur plein</li>"}</ul></div>`).join("");
             document.getElementById("date-production").innerText = "Production du " + new Date().toLocaleDateString();
         }
 
         function sauvegarderHistorique(p) { let t = Object.values(p).reduce((a,b)=>a+b, 0); if(!t) return; let h = JSON.parse(localStorage.getItem("historique_prod")) || []; let d = new Date().toLocaleDateString(); let idx = h.findIndex(x => x.date === d); if(idx !== -1) h[idx].total = t; else h.push({date:d, total:t}); if(h.length > 30) h.shift(); localStorage.setItem("historique_prod", JSON.stringify(h)); }
-        function toggleHistorique() { let z = document.getElementById("zone-historique"); z.style.display = z.style.display === "none" ? "block" : "none"; if(z.style.display === "block") { document.getElementById("zone-resultats").style.display = "none"; let h = JSON.parse(localStorage.getItem("historique_prod")) || []; document.getElementById("liste-historique").innerHTML = [...h].reverse().map(x => `<li style="display:flex;justify-content:space-between;"><span>${x.date}</span><b>${x.total} pizzas</b></li>`).join("") || "Vide."; } }
-        function reinitialiserStocks() { if(confirm("Remettre à zéro ?")) { distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); document.getElementById("zone-resultats").style.display = "none"; } }
+        function toggleHistorique() { let z = document.getElementById("zone-historique"); z.style.display = z.style.display === "none" ? "block" : "none"; if(z.style.display === "block") { document.getElementById("zone-resultats").style.display = "none"; let h = JSON.parse(localStorage.getItem("historique_prod")) || []; document.getElementById("liste-historique").innerHTML = [...h].reverse().map(x => `<li style="display:flex;justify-content:space-between;"><span>${x.date}</span><b>${x.total} pizzas</b></li>`).join("") || "Aucun historique."; } }
+        function reinitialiserStocks() { if(confirm("Remettre tous les stocks à zéro ?")) { distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); document.getElementById("zone-resultats").style.display = "none"; } }
         function imprimerPDF() { window.print(); }
     </script>
 </body>
