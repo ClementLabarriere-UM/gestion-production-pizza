@@ -96,31 +96,27 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Connexion via Cloudflare..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Connexion au serveur relais..."; btn.disabled = true;
             
-            // Tes identifiants et ton relais Cloudflare
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
-            
-            let rawToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
-            const token = rawToken.replace("Bearer ", "").trim();
-            const h = {"Authorization": "Bearer " + token};
 
             try {
-                // On interroge Adial en passant par ton Worker Cloudflare
+                // On appelle simplement ton serveur relais, il s'occupe du reste !
                 const [rS, rA, rP] = await Promise.all([
-                    fetch(`${proxyUrl}/groups/${groupId}/stocks`, {headers:h}),
-                    fetch(`${proxyUrl}/groups/${groupId}/apds`, {headers:h}),
-                    fetch(`${proxyUrl}/groups/${groupId}/pizzas`, {headers:h})
+                    fetch(`${proxyUrl}/groups/${groupId}/stocks`),
+                    fetch(`${proxyUrl}/groups/${groupId}/apds`),
+                    fetch(`${proxyUrl}/groups/${groupId}/pizzas`)
                 ]);
                 
-                if (rS.status === 401 || rS.status === 403) throw new Error("TOKEN_EXPIRED");
                 if (!rS.ok) throw new Error("API_ERROR");
 
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
+                
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
+                
                 let counts = {};
                 (dS.stocks || []).forEach(it => {
                     if(it.pizzaId && it.locationUsed === true) {
@@ -128,6 +124,7 @@
                         if(m && p) { if(!counts[m]) counts[m] = {}; counts[m][p] = (counts[m][p] || 0) + 1; }
                     }
                 });
+                
                 const norm = s => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
                 distributeurs.forEach((d, mIdx) => {
                     listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0);
@@ -140,11 +137,10 @@
                         }
                     }
                 });
-                alert("✅ Synchronisation réussie via Cloudflare !");
+                alert("✅ Synchronisation réussie en un éclair !");
             } catch(e) { 
                 console.error(e);
-                if(e.message === "TOKEN_EXPIRED") alert("❌ La clé Adial a expiré. Connecte-toi sur Adial Pro pour récupérer une nouvelle clé.");
-                else alert("❌ Erreur de réseau avec le relais Cloudflare.");
+                alert("❌ Le serveur d'Adial a bloqué la requête.");
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
