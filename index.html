@@ -96,21 +96,26 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Connexion au serveur relais..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Téléchargement des données..."; btn.disabled = true;
             
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
 
             try {
+                // 1. On récupère les stocks (On sait que ce lien marche parfaitement)
                 const rS = await fetch(`${proxyUrl}/groups/${groupId}/stocks`);
                 if (!rS.ok) throw new Error("Stocks (Code " + rS.status + ")");
                 
-                const rA = await fetch(`${proxyUrl}/groups/${groupId}/apds`);
+                // 2. On récupère les machines (Adresse globale)
+                const rA = await fetch(`${proxyUrl}/apds/`);
                 if (!rA.ok) throw new Error("Machines (Code " + rA.status + ")");
                 
-                const rP = await fetch(`${proxyUrl}/groups/${groupId}/pizzas`);
+                // 3. On récupère le dictionnaire des Pizzas (Adresses globales possibles)
+                let rP = await fetch(`${proxyUrl}/pizzas/`);
+                if (!rP.ok) rP = await fetch(`${proxyUrl}/pizzas`); // Au cas où ils l'écrivent sans slash
                 if (!rP.ok) throw new Error("Pizzas (Code " + rP.status + ")");
 
+                // On transforme tout en JSON
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 
                 let dictA = {}, dictP = {};
@@ -137,10 +142,10 @@
                         }
                     }
                 });
-                alert("✅ Synchronisation réussie en un éclair !");
+                alert("✅ Synchronisation réussie !");
             } catch(e) { 
                 console.error(e);
-                alert("❌ Refusé par Adial : " + e.message + "\nAssure-toi d'avoir vidé ton cache.");
+                alert("❌ Erreur sur l'adresse : " + e.message);
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
