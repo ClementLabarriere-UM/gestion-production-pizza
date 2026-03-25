@@ -29,14 +29,14 @@
         .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
         #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
         
-        /* Nouveaux styles pour la page de connexion */
+        /* Écran de verrouillage */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #EE5541;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 9999;
         }
-        #app-content { display: none; } /* Cache l'application au départ */
+        #app-content { display: none; }
 
         @media print {
             body { background-color: white; font-size: 11pt; color: black; max-width: 100%; }
@@ -79,8 +79,18 @@
         </div>
     </div>
 
+    <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:20px; border-radius:8px; width:300px; max-width:90%; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
+            <h3 style="margin-top:0; color:#d32f2f;">Copier vers :</h3>
+            <div id="copy-options"></div>
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button onclick="fermerModalCopie()" style="padding:10px; background:#ccc; border:none; border-radius:4px; cursor:pointer;">Annuler</button>
+                <button id="btn-confirm-copy" style="padding:10px; background:#EE5541; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Le mot de passe a été retiré d'ici pour être géré par la nouvelle page
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
         const recettes = {
             "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
@@ -95,44 +105,44 @@
             "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
             "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
             "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
+            "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110, "Tomates confites (demi-tomates)": 3},
             "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
             "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
         const listePizzas = Object.keys(recettes);
 
-        // --- GESTION DE LA CONNEXION ---
+        // --- CONNEXION ---
         function verifierMotDePasse() {
             const input = document.getElementById('input-mdp').value;
             if (input === "123456") {
-                document.getElementById('login-screen').style.display = 'none'; // Cache l'écran de verrouillage
-                document.getElementById('app-content').style.display = 'block'; // Affiche le logiciel
-                initialiserApp(); // Charge les distributeurs
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                initialiserApp();
             } else {
-                document.getElementById('login-error').style.display = 'block'; // Affiche l'erreur
-                document.getElementById('input-mdp').value = ''; // Vide la case
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('input-mdp').value = '';
             }
         }
 
-        // Permet de valider avec la touche "Entrée"
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("input-mdp").addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
-                    event.preventDefault();
-                    verifierMotDePasse();
+                    event.preventDefault(); verifierMotDePasse();
                 }
             });
         });
-        // -------------------------------
 
+        // --- UTILITAIRES ---
         function modifierQte(id, delta) { let i = document.getElementById(id); i.value = Math.max(0, (parseInt(i.value) || 0) + delta); }
 
         function initialiserApp() {
             const cont = document.getElementById("formulaire-distributeurs");
+            cont.innerHTML = "";
             distributeurs.forEach((d, mIdx) => {
                 let h = `<div class="distributeur-card">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2>📍 ${d}</h2>
-                        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 10px; font-size: 12px; cursor: pointer;" onclick="copierObjectifs(${mIdx})">📋 Copier pour tous</button>
+                        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 10px; font-size: 12px; cursor: pointer;" onclick="ouvrirModalCopie(${mIdx})">📋 Copier vers...</button>
                     </div>
                     <table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
                 listePizzas.forEach((p, pIdx) => {
@@ -143,19 +153,52 @@
             });
         }
 
-        function copierObjectifs(sourceIdx) {
-            if(!confirm(`Copier les objectifs de ${distributeurs[sourceIdx]} vers TOUS les autres distributeurs ?`)) return;
-            listePizzas.forEach((p, pIdx) => {
-                let valeurACopier = document.getElementById(`obj_${sourceIdx}_${pIdx}`).value;
-                distributeurs.forEach((d, targetIdx) => {
-                    if(targetIdx !== sourceIdx) {
-                        document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
-                        localStorage.setItem(`obj_${targetIdx}_${pIdx}`, valeurACopier);
-                    }
-                });
+        // --- GESTION DU POPUP DE COPIE ---
+        let sourceCopyIdx = null;
+
+        function ouvrirModalCopie(sourceIdx) {
+            sourceCopyIdx = sourceIdx;
+            const optionsDiv = document.getElementById("copy-options");
+            optionsDiv.innerHTML = "";
+            
+            distributeurs.forEach((d, idx) => {
+                if (idx !== sourceIdx) {
+                    optionsDiv.innerHTML += `
+                        <label style="display:block; margin-bottom:10px; font-size:16px; cursor:pointer;">
+                            <input type="checkbox" class="copy-target-checkbox" value="${idx}" checked style="transform: scale(1.3); margin-right: 10px;"> 
+                            ${d}
+                        </label>
+                    `;
+                }
             });
+            
+            document.getElementById("btn-confirm-copy").onclick = validerCopie;
+            document.getElementById("copy-modal").style.display = "flex";
         }
 
+        function fermerModalCopie() {
+            document.getElementById("copy-modal").style.display = "none";
+            sourceCopyIdx = null;
+        }
+
+        function validerCopie() {
+            if (sourceCopyIdx === null) return;
+            const checkboxes = document.querySelectorAll('.copy-target-checkbox:checked');
+            const cibles = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (cibles.length === 0) { alert("Veuillez sélectionner au moins un distributeur."); return; }
+
+            listePizzas.forEach((p, pIdx) => {
+                let valeurACopier = document.getElementById(`obj_${sourceCopyIdx}_${pIdx}`).value;
+                cibles.forEach(targetIdx => {
+                    document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
+                    localStorage.setItem(`obj_${targetIdx}_${pIdx}`, valeurACopier);
+                });
+            });
+            fermerModalCopie();
+        }
+
+        // --- SYNCHRONISATION API ADIAL ---
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
             btn.innerHTML = "⏳ Téléchargement et filtrage..."; btn.disabled = true;
@@ -204,6 +247,7 @@
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
 
+        // --- CALCULS ET RÉSULTATS ---
         function calculerProductionGlobale() {
             let pT = {}, iT = {}, r = {}, al = [];
             distributeurs.forEach((d, mIdx) => {
@@ -227,7 +271,7 @@
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
-            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
+            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande", "saumon"];
             const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comté", "compte", "compté", "reblochon", "boursin"];
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
