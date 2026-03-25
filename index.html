@@ -272,7 +272,7 @@
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
             const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande", "saumon"];
-            const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comté", "compte", "compté", "reblochon", "boursin"];
+            const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comte", "comté", "compte", "compté", "reblochon", "boursin"];
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
                 let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
