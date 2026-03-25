@@ -27,26 +27,21 @@
         .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
         #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
-        @media print {
-            body { background-color: white; font-size: 11pt; color: black; }
-            h1, .distributeur-card, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
-            .resultats-container { display: block !important; box-shadow: none; border: none; }
-        }
+        #debug-zone { background: #222; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 12px; display: none; }
     </style>
 </head>
 <body>
+    <pre id="debug-zone"></pre>
     <img src="logo.png" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
     <h1>Logiciel de production 🍕</h1>
     <div id="formulaire-distributeurs"></div>
     <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser les stocks Adial</button>
     <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
     <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
-    <button id="btn-history" class="btn-secondary" onclick="toggleHistorique()">📅 Historique (30j)</button>
-    <div class="resultats-container" id="zone-historique" style="display: none;"><ul id="liste-historique"></ul></div>
+
     <div class="resultats-container" id="zone-resultats">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
             <h2 style="border:none;">📊 Bilan</h2>
-            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer</button>
         </div>
         <p id="date-production" style="text-align:center; font-weight:bold;"></p>
         <div id="zone-alertes"></div>
@@ -96,32 +91,32 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Téléchargement des données..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Analyse en cours..."; btn.disabled = true;
             
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
 
             try {
-                // 1. On récupère les stocks (On sait que ce lien marche parfaitement)
                 const rS = await fetch(`${proxyUrl}/groups/${groupId}/stocks`);
-                if (!rS.ok) throw new Error("Stocks (Code " + rS.status + ")");
-                
-                // 2. On récupère les machines (Adresse globale)
                 const rA = await fetch(`${proxyUrl}/apds/`);
-                if (!rA.ok) throw new Error("Machines (Code " + rA.status + ")");
-                
-                // 3. On récupère le dictionnaire des Pizzas (Adresses globales possibles)
                 let rP = await fetch(`${proxyUrl}/pizzas/`);
-                if (!rP.ok) rP = await fetch(`${proxyUrl}/pizzas`); // Au cas où ils l'écrivent sans slash
-                if (!rP.ok) throw new Error("Pizzas (Code " + rP.status + ")");
+                if (!rP.ok) rP = await fetch(`${proxyUrl}/pizzas`);
 
-                // On transforme tout en JSON
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
                 
+                // ---- ZONE DE DIAGNOSTIC ----
+                let pizzasTest = (dS.stocks || []).filter(it => it.locationUsed === true && dictP[it.pizzaId] && (dictP[it.pizzaId].includes("Ultimatum") || dictP[it.pizzaId].includes("hèvre")));
+                if (pizzasTest.length > 0) {
+                    let debug = document.getElementById("debug-zone");
+                    debug.style.display = "block";
+                    debug.innerText = "🕵️ DONNÉES BRUTES DES PIZZAS À PROBLÈME :\n\n" + JSON.stringify(pizzasTest, null, 2);
+                }
+                // ----------------------------
+
                 let counts = {};
                 (dS.stocks || []).forEach(it => {
                     if(it.pizzaId && it.locationUsed === true) {
@@ -144,8 +139,7 @@
                 });
                 alert("✅ Synchronisation réussie !");
             } catch(e) { 
-                console.error(e);
-                alert("❌ Erreur sur l'adresse : " + e.message);
+                console.error(e); alert("❌ Erreur : " + e.message);
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
@@ -164,12 +158,10 @@
                 if(sum > 70) al.push(`⚠️ Surcharge prévue à ${d} : ${sum} pizzas (Maximum 70).`);
             });
             afficherResultats(pT, iT, r, al);
-            sauvegarderHistorique(pT);
         }
 
         function afficherResultats(p, ing, r, al) {
             document.getElementById("zone-resultats").style.display = "block";
-            document.getElementById("zone-historique").style.display = "none";
             let dAl = document.getElementById("zone-alertes"); dAl.innerHTML = al.join("<br>"); dAl.style.display = al.length ? "block" : "none";
             document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire aujourd'hui !</li>";
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
@@ -191,10 +183,7 @@
             document.getElementById("date-production").innerText = "Production du " + new Date().toLocaleDateString();
         }
 
-        function sauvegarderHistorique(p) { let t = Object.values(p).reduce((a,b)=>a+b, 0); if(!t) return; let h = JSON.parse(localStorage.getItem("historique_prod")) || []; let d = new Date().toLocaleDateString(); let idx = h.findIndex(x => x.date === d); if(idx !== -1) h[idx].total = t; else h.push({date:d, total:t}); if(h.length > 30) h.shift(); localStorage.setItem("historique_prod", JSON.stringify(h)); }
-        function toggleHistorique() { let z = document.getElementById("zone-historique"); z.style.display = z.style.display === "none" ? "block" : "none"; if(z.style.display === "block") { document.getElementById("zone-resultats").style.display = "none"; let h = JSON.parse(localStorage.getItem("historique_prod")) || []; document.getElementById("liste-historique").innerHTML = [...h].reverse().map(x => `<li style="display:flex;justify-content:space-between;"><span>${x.date}</span><b>${x.total} pizzas</b></li>`).join("") || "Aucun historique."; } }
         function reinitialiserStocks() { if(confirm("Remettre tous les stocks à zéro ?")) { distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); document.getElementById("zone-resultats").style.display = "none"; } }
-        function imprimerPDF() { window.print(); }
     </script>
 </body>
 </html>
