@@ -169,7 +169,7 @@
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
-            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
+            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande", "saumon"];
             const mF = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
