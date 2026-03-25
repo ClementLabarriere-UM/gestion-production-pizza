@@ -130,7 +130,12 @@
             btn.disabled = true;
 
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
-            const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+            
+            // --- COLLE TA NOUVELLE CLÉ CI-DESSOUS ---
+            let rawToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+            
+            // Nettoyage automatique du token (on enlève le mot "Bearer" s'il est présent)
+            const token = rawToken.replace("Bearer ", "").trim();
             const h = {"Authorization": "Bearer " + token};
 
             try {
@@ -140,7 +145,10 @@
                     fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
                 ]);
                 
-                if (rS.status === 401 || rS.status === 403) throw new Error("TOKEN_EXPIRED");
+                if (rS.status === 401 || rS.status === 403) {
+                    console.error("Réponse Adial :", rS.status);
+                    throw new Error("TOKEN_EXPIRED");
+                }
 
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 let dictA = {}, dictP = {};
@@ -172,11 +180,15 @@
                 });
                 alert("✅ Synchronisation Adial réussie !");
             } catch(e) { 
-                if(e.message === "TOKEN_EXPIRED") alert("❌ Ta clé Adial a expiré. Reconnecte-toi et récupère une nouvelle clé Authorization.");
-                else alert("❌ Erreur de connexion. Vérifie que l'extension 'Allow CORS' est ACTIVÉE.");
+                if(e.message === "TOKEN_EXPIRED") {
+                    alert("❌ La clé a encore échoué (401/403).\n\nDéconnecte-toi et reconnecte-toi à Adial Pro pour obtenir une NOUVELLE clé.");
+                } else {
+                    alert("❌ Erreur de connexion.\nVérifie que ton extension 'Allow CORS' est bien sur 'ON' (Orange).");
+                }
+            } finally {
+                btn.innerHTML = "🔄 Synchroniser les stocks Adial";
+                btn.disabled = false;
             }
-            btn.innerHTML = "🔄 Synchroniser les stocks Adial";
-            btn.disabled = false;
         }
 
         function calculerProductionGlobale() {
