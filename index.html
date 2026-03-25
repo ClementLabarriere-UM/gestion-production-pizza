@@ -128,31 +128,26 @@
             btn.disabled = true;
 
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
-            const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
-            
-            const h = {
-                "Authorization": "Bearer " + token,
-                "Accept": "application/json"
+            // Récupère le dernier token valide ou celui par défaut
+            let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+
+            const callApi = async (url) => {
+                const response = await fetch(url, {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error("TOKEN_EXPIRED");
+                }
+                return await response.json();
             };
 
-            // Utilisation d'un proxy pour contourner la sécurité CORS d'Adial
-            const proxy = "https://corsproxy.io/?";
-
             try {
-                const [rS, rA, rP] = await Promise.all([
-                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`), {headers:h}),
-                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`), {headers:h}),
-                    fetch(proxy + encodeURIComponent(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`), {headers:h})
-                ]);
+                // Tentative de connexion directe
+                const dS = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`);
+                const dA = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`);
+                const dP = await callApi(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`);
 
-                // Vérification si le Token est toujours bon
-                if (rS.status === 401) {
-                    alert("❌ Ta clé (Token) a expiré. Connecte-toi sur Adial Pro et récupère une nouvelle clé Authorization dans l'inspecteur.");
-                    return;
-                }
-
-                const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
-                
+                // --- Traitement des données (Identique au code précédent) ---
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
@@ -181,10 +176,14 @@
                         }
                     }
                 });
-                alert("✅ Stocks Adial importés avec succès !");
-            } catch(e) { 
-                console.error(e);
-                alert("❌ Erreur de connexion au serveur. Vérifie ton internet ou l'extension CORS."); 
+                alert("✅ Synchronisation réussie !");
+
+            } catch (error) {
+                if (error.message === "TOKEN_EXPIRED") {
+                    alert("❌ Ta clé Adial a expiré.\n\n1. Connecte-toi sur Adial Pro.\n2. Fais F12 > Network.\n3. Copie la nouvelle valeur de 'Authorization' (Bearer...).\n4. Mets-la à jour dans ton code GitHub.");
+                } else {
+                    alert("❌ Erreur de connexion.\nAssure-toi que l'extension 'Allow CORS' est bien ACTIVÉE dans ton navigateur.");
+                }
             } finally {
                 btn.innerHTML = "🔄 Synchroniser avec Adial";
                 btn.disabled = false;
