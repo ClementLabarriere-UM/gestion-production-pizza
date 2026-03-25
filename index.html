@@ -96,12 +96,18 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Connexion..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Connexion à Adial..."; btn.disabled = true;
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
-            // Nettoyage automatique du token collé
+            
+            // Ta clé longue durée
             let raw = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
             const token = raw.replace("Bearer ", "").trim();
-            const h = {"Authorization": "Bearer " + token};
+            
+            // On imite parfaitement le navigateur
+            const h = {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json, text/plain, */*"
+            };
 
             try {
                 const [rS, rA, rP] = await Promise.all([
@@ -109,7 +115,9 @@
                     fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`, {headers:h}),
                     fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
                 ]);
-                if (rS.status === 401 || rS.status === 403) throw new Error("TOKEN_EXPIRED");
+                
+                if (rS.status === 401 || rS.status === 403) throw new Error("BLOCKED_BY_ADIAL");
+                
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
                 let dictA = {}, dictP = {};
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
@@ -133,10 +141,13 @@
                         }
                     }
                 });
-                alert("✅ Synchronisé !");
+                alert("✅ Stocks Adial importés avec succès !");
             } catch(e) { 
-                if(e.message === "TOKEN_EXPIRED") alert("❌ Clé expirée. Reconnecte-toi sur Adial Pro pour en avoir une nouvelle.");
-                else alert("❌ Erreur. Vérifie que l'extension 'Allow CORS' est ACTIVE.");
+                if(e.message === "BLOCKED_BY_ADIAL") {
+                    alert("❌ Adial a bloqué la connexion (Erreur 403).\n\nPour réussir, tu dois masquer ton origine :\n1. Utilise l'extension 'ModHeader'\n2. Ajoute 'Origin' : 'https://prod.mypizzadoor-pro.com'");
+                } else {
+                    alert("❌ Erreur. Vérifie ton extension CORS.");
+                }
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
