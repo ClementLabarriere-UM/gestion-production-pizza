@@ -27,11 +27,14 @@
         .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
         #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
-        #debug-zone { background: #222; color: #0f0; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 12px; display: none; }
+        @media print {
+            body { background-color: white; font-size: 11pt; color: black; }
+            h1, .distributeur-card, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
+            .resultats-container { display: block !important; box-shadow: none; border: none; }
+        }
     </style>
 </head>
 <body>
-    <pre id="debug-zone"></pre>
     <img src="logo.png" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
     <h1>Logiciel de production 🍕</h1>
     <div id="formulaire-distributeurs"></div>
@@ -42,6 +45,7 @@
     <div class="resultats-container" id="zone-resultats">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
             <h2 style="border:none;">📊 Bilan</h2>
+            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer</button>
         </div>
         <p id="date-production" style="text-align:center; font-weight:bold;"></p>
         <div id="zone-alertes"></div>
@@ -91,7 +95,7 @@
 
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Analyse en cours..."; btn.disabled = true;
+            btn.innerHTML = "⏳ Téléchargement et filtrage..."; btn.disabled = true;
             
             const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
@@ -108,18 +112,12 @@
                 (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
                 
-                // ---- ZONE DE DIAGNOSTIC ----
-                let pizzasTest = (dS.stocks || []).filter(it => it.locationUsed === true && dictP[it.pizzaId] && (dictP[it.pizzaId].includes("Ultimatum") || dictP[it.pizzaId].includes("hèvre")));
-                if (pizzasTest.length > 0) {
-                    let debug = document.getElementById("debug-zone");
-                    debug.style.display = "block";
-                    debug.innerText = "🕵️ DONNÉES BRUTES DES PIZZAS À PROBLÈME :\n\n" + JSON.stringify(pizzasTest, null, 2);
-                }
-                // ----------------------------
-
                 let counts = {};
+                const now = Date.now(); // On récupère l'heure qu'il est
+                
                 (dS.stocks || []).forEach(it => {
-                    if(it.pizzaId && it.locationUsed === true) {
+                    // On filtre : L'emplacement doit être utilisé ET la pizza ne doit pas être périmée
+                    if(it.pizzaId && it.locationUsed === true && it.expiryDate > now) {
                         let m = dictA[it.apdId], p = dictP[it.pizzaId];
                         if(m && p) { if(!counts[m]) counts[m] = {}; counts[m][p] = (counts[m][p] || 0) + 1; }
                     }
@@ -137,9 +135,9 @@
                         }
                     }
                 });
-                alert("✅ Synchronisation réussie !");
+                alert("✅ Synchronisation réussie ! Les pizzas périmées sont ignorées.");
             } catch(e) { 
-                console.error(e); alert("❌ Erreur : " + e.message);
+                console.error(e); alert("❌ Erreur de réseau.");
             }
             btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
         }
@@ -184,6 +182,7 @@
         }
 
         function reinitialiserStocks() { if(confirm("Remettre tous les stocks à zéro ?")) { distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); document.getElementById("zone-resultats").style.display = "none"; } }
+        function imprimerPDF() { window.print(); }
     </script>
 </body>
 </html>
