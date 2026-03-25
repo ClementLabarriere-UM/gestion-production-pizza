@@ -28,6 +28,16 @@
         .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
         #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
+        
+        /* Nouveaux styles pour la page de connexion */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #EE5541;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999;
+        }
+        #app-content { display: none; } /* Cache l'application au départ */
+
         @media print {
             body { background-color: white; font-size: 11pt; color: black; max-width: 100%; }
             h1, #formulaire-distributeurs, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
@@ -36,56 +46,87 @@
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
-    <h1>Logiciel de production - Gang Of Pizza</h1>
-    <div id="formulaire-distributeurs"></div>
-    <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser les stocks Adial</button>
-    <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
-    <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
 
-    <div class="resultats-container" id="zone-resultats">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
-            <h2 style="border:none;">📊 Bilan</h2>
-            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer</button>
+    <div id="login-screen">
+        <img src="logo.png" alt="Logo Gang Of Pizza" style="max-width: 250px; margin-bottom: 30px;">
+        <h1 style="color: white; margin-top: 0; font-size: 28px;">Espace Production</h1>
+        <input type="password" id="input-mdp" placeholder="Code d'accès..." style="padding: 15px; font-size: 20px; border-radius: 8px; border: none; text-align: center; width: 80%; max-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <button onclick="verifierMotDePasse()" style="padding: 15px 40px; font-size: 20px; font-weight: bold; background-color: #333; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Valider</button>
+        <p id="login-error" style="color: #fff; background-color: #b30000; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: none; margin-top: 20px;">❌ Code incorrect</p>
+    </div>
+
+    <div id="app-content">
+        <img src="logo.png" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
+        <h1>Logiciel de production 🍕</h1>
+        <div id="formulaire-distributeurs"></div>
+        <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser les stocks Adial</button>
+        <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
+        <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
+
+        <div class="resultats-container" id="zone-resultats">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
+                <h2 style="border:none;">📊 Bilan</h2>
+                <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer</button>
+            </div>
+            <p id="date-production" style="text-align:center; font-weight:bold;"></p>
+            <div id="zone-alertes"></div>
+            <div class="flex-row">
+                <div class="flex-col"><h3>🍕 Pizzas</h3><ul id="liste-pizzas-totales"></ul></div>
+                <div class="flex-col"><h3>🛒 Ingrédients</h3><div id="liste-ingredients"></div></div>
+            </div>
+            <h3>🚚 Détail par machine</h3>
+            <div id="liste-repartition"></div>
         </div>
-        <p id="date-production" style="text-align:center; font-weight:bold;"></p>
-        <div id="zone-alertes"></div>
-        <div class="flex-row">
-            <div class="flex-col"><h3>🍕 Pizzas</h3><ul id="liste-pizzas-totales"></ul></div>
-            <div class="flex-col"><h3>🛒 Ingrédients</h3><div id="liste-ingredients"></div></div>
-        </div>
-        <h3>🚚 Détail par machine</h3>
-        <div id="liste-repartition"></div>
     </div>
 
     <script>
-        const motDePasse = prompt("🔒 Accès restreint :");
-        if (motDePasse !== "123456") { document.body.innerHTML = "<h1>Accès refusé.</h1>"; throw new Error(); }
-
+        // Le mot de passe a été retiré d'ici pour être géré par la nouvelle page
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
         const recettes = {
-            "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90},
-            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
-            "Camembert Rôti": {"Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
-            "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
             "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
-            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
+            "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
+            "Camembert Rôti": {"Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
             "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
-            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
-            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
-            "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
-            "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
-            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
-            "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon Fumé (g)": 70, "Scalarella (g)": 110, "Tomates confites (demi-tomates)": 3},
+            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
             "Croq'": {"Disque crémé": 1, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
-            "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8}
-            
+            "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8},
+            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
+            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
+            "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
+            "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
+            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
+            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
+            "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
         const listePizzas = Object.keys(recettes);
 
+        // --- GESTION DE LA CONNEXION ---
+        function verifierMotDePasse() {
+            const input = document.getElementById('input-mdp').value;
+            if (input === "123456") {
+                document.getElementById('login-screen').style.display = 'none'; // Cache l'écran de verrouillage
+                document.getElementById('app-content').style.display = 'block'; // Affiche le logiciel
+                initialiserApp(); // Charge les distributeurs
+            } else {
+                document.getElementById('login-error').style.display = 'block'; // Affiche l'erreur
+                document.getElementById('input-mdp').value = ''; // Vide la case
+            }
+        }
+
+        // Permet de valider avec la touche "Entrée"
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("input-mdp").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    verifierMotDePasse();
+                }
+            });
+        });
+        // -------------------------------
+
         function modifierQte(id, delta) { let i = document.getElementById(id); i.value = Math.max(0, (parseInt(i.value) || 0) + delta); }
 
-        window.onload = function() {
+        function initialiserApp() {
             const cont = document.getElementById("formulaire-distributeurs");
             distributeurs.forEach((d, mIdx) => {
                 let h = `<div class="distributeur-card">
@@ -100,17 +141,13 @@
                 });
                 cont.innerHTML += h + `</table></div>`;
             });
-        };
+        }
 
         function copierObjectifs(sourceIdx) {
             if(!confirm(`Copier les objectifs de ${distributeurs[sourceIdx]} vers TOUS les autres distributeurs ?`)) return;
-            
             listePizzas.forEach((p, pIdx) => {
-                // On lit la valeur de la machine source
                 let valeurACopier = document.getElementById(`obj_${sourceIdx}_${pIdx}`).value;
-                
                 distributeurs.forEach((d, targetIdx) => {
-                    // Si ce n'est pas la machine source, on colle la valeur et on la sauvegarde
                     if(targetIdx !== sourceIdx) {
                         document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
                         localStorage.setItem(`obj_${targetIdx}_${pIdx}`, valeurACopier);
@@ -139,10 +176,9 @@
                 (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
                 
                 let counts = {};
-                const now = Date.now(); // On récupère l'heure qu'il est
+                const now = Date.now();
                 
                 (dS.stocks || []).forEach(it => {
-                    // On filtre : L'emplacement doit être utilisé ET la pizza ne doit pas être périmée
                     if(it.pizzaId && it.locationUsed === true && it.expiryDate > now) {
                         let m = dictA[it.apdId], p = dictP[it.pizzaId];
                         if(m && p) { if(!counts[m]) counts[m] = {}; counts[m][p] = (counts[m][p] || 0) + 1; }
@@ -191,7 +227,7 @@
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
-            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande", "saumon"];
+            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
             const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comté", "compte", "compté", "reblochon", "boursin"];
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
