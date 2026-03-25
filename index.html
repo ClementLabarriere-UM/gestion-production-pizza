@@ -10,50 +10,34 @@
         h2 { color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px; margin-top: 0; }
         .distributeur-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; }
         
-        /* Tableaux et boutons + / - */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
         th { background-color: #f8f8f8; }
         .input-group { display: flex; align-items: center; gap: 5px; }
         .btn-qty { background-color: #eee; border: 1px solid #ccc; width: 30px; height: 30px; font-size: 18px; font-weight: bold; border-radius: 4px; cursor: pointer; color: #333; }
-        .btn-qty:hover { background-color: #ddd; }
         input[type="number"] { width: 50px; height: 26px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; font-weight: bold; }
         
-        button.btn-calculer { display: block; width: 100%; padding: 15px; background-color: #ffffff; color: #EE5541; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.1s; }
-        button.btn-calculer:active { transform: scale(0.98); }
-        
+        button.btn-calculer { display: block; width: 100%; padding: 15px; background-color: #ffffff; color: #EE5541; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .btn-secondary { display: block; width: 100%; padding: 10px; background-color: #f8f8f8; color: #333; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-dark { background-color: #333 !important; color: white !important; }
+
         .resultats-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 30px; display: none; }
         .flex-row { display: flex; gap: 20px; margin-top: 15px; }
         .flex-col { flex: 1; }
         
-        /* Liste et Checklist */
         ul { list-style-type: none; padding: 0; }
         li { padding: 8px 0; border-bottom: 1px dotted #ccc; }
         .highlight { font-weight: bold; color: #d32f2f; }
-        .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; }
-        .checklist-item input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
+        .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
-        .checklist-item input:checked + span .highlight { color: #999; }
         
-        /* Alerte de capacité */
-        #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; border: 1px solid #ff9999; font-weight: bold; display: none; margin-bottom: 15px; }
+        #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
 
-        /* --- Style ultra-compressé pour l'impression (PDF 1 page) --- */
         @media print {
-            @page { margin: 1cm; }
-            body { background-color: white; padding: 0; font-size: 11pt; line-height: 1.2; color: black; }
-            h1, .distributeur-card, button, .btn-qty { display: none !important; }
-            .resultats-container { box-shadow: none; padding: 0; margin-top: 0; display: block !important; border: none; }
-            h2 { font-size: 14pt; border-bottom: 1px solid black; padding-bottom: 2px; margin: 10px 0 5px 0; }
-            h3 { font-size: 12pt; margin: 5px 0; text-decoration: underline; }
-            img { max-width: 60px !important; margin: 0 auto 5px auto !important; display: block; }
-            .flex-row { gap: 15px; } 
-            ul { margin: 0; padding: 0 0 0 5px; list-style-type: none; }
-            li { padding: 2px 0; border-bottom: none; }
-            .highlight { font-weight: bold; color: black; }
-            #liste-repartition { gap: 10px; display: flex; flex-wrap: wrap; }
-            #liste-repartition > div { padding: 5px !important; border: 1px solid #ccc !important; flex: 1; min-width: 140px; page-break-inside: avoid; }
-            #zone-alertes { display: none !important; } /* On cache l'alerte sur le PDF */
+            body { background-color: white; font-size: 11pt; color: black; }
+            h1, .distributeur-card, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
+            .resultats-container { display: block !important; box-shadow: none; }
+            #liste-repartition > div { border: 1px solid #ccc !important; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -64,49 +48,40 @@
 
     <div id="formulaire-distributeurs"></div>
 
+    <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser avec Adial</button>
     <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
+    <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
+    <button id="btn-history" class="btn-secondary" onclick="toggleHistorique()">📅 Voir l'historique (30j)</button>
+
+    <div class="resultats-container" id="zone-historique" style="display: none;">
+        <h2>📅 Historique des fabrications</h2>
+        <ul id="liste-historique"></ul>
+    </div>
 
     <div class="resultats-container" id="zone-resultats">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f; margin-bottom: 10px; padding-bottom: 5px;">
-            <h2 style="border-bottom: none; margin: 0; padding-bottom: 0;">📊 Bilan de Production</h2>
-            <button id="btn-impression" onclick="imprimerPDF()" style="background-color: #333; color: white; width: auto; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                🖨️ Imprimer / PDF
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
+            <h2 style="border:none;">📊 Bilan</h2>
+            <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer;">🖨️ Imprimer</button>
         </div>
-
-        <p id="date-production" style="text-align: center; font-size: 14pt; margin: 10px 0; font-weight: bold;"></p>
-        
+        <p id="date-production" style="text-align:center; font-weight:bold;"></p>
         <div id="zone-alertes"></div>
-
         <div class="flex-row">
-            <div class="flex-col">
-                <h3>🍕 Pizzas à fabriquer</h3>
-                <ul id="liste-pizzas-totales"></ul>
-            </div>
-            <div class="flex-col">
-                <h3>🛒 Ingrédients à préparer</h3>
-                <div id="liste-ingredients"></div>
-            </div>
+            <div class="flex-col"><h3>🍕 Pizzas</h3><ul id="liste-pizzas-totales"></ul></div>
+            <div class="flex-col"><h3>🛒 Ingrédients</h3><div id="liste-ingredients"></div></div>
         </div>
-        
-        <h3 style="margin-top: 20px;">🚚 Détail du chargement par machine</h3>
+        <h3>🚚 Chargement</h3>
         <div id="liste-repartition"></div>
     </div>
 
     <script>
-        // --- 0. SÉCURITÉ : Demande de mot de passe ---
-        let motDePasse = prompt("🔒 Accès restreint. Veuillez entrer le mot de passe :");
-        
+        const motDePasse = prompt("🔒 Accès restreint :");
         if (motDePasse !== "123456") {
-            // Si le mot de passe est faux, on efface tout l'écran et on bloque le script
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px; color:white;'>Accès refusé. Rechargez la page pour réessayer.</h1>";
-            throw new Error("Mot de passe incorrect, arrêt du logiciel.");
+            document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>Accès refusé.</h1>";
+            throw new Error("Wrong password");
         }
 
-        // --- 1. Bases de données ---
-        const distributeurs = ["Bourg-Saint-Andéol", "Le Teil", "Orano Tricastin"];
-        const CAPACITE_MAX = 70; // La limite par DAP
+        const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
+        const CAPACITE_MAX = 70;
 
         const recettes = {
             "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
@@ -126,238 +101,158 @@
 
         const listePizzas = Object.keys(recettes);
 
-        // --- 2. Fonction pour les boutons + et - ---
         function modifierQte(id, delta) {
             let input = document.getElementById(id);
-            let valeur = parseInt(input.value) || 0;
-            valeur += delta;
-            if (valeur < 0) valeur = 0; // On empêche d'aller en négatif
-            input.value = valeur;
+            input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
         }
 
-        // --- 3. Construction automatique de l'interface ---
         window.onload = function() {
             const conteneur = document.getElementById("formulaire-distributeurs");
-            
-            distributeurs.forEach((distributeur, indexMachine) => {
-                let html = `
-                <div class="distributeur-card">
-                    <h2>📍 ${distributeur}</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Recette</th>
-                                <th>Stock Actuel</th>
-                                <th>Objectif</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                listePizzas.forEach((pizza, indexPizza) => {
-                    let idStock = `stock_${indexMachine}_${indexPizza}`;
-                    let idObj = `obj_${indexMachine}_${indexPizza}`;
-                    
-                    // Récupération de l'objectif sauvegardé (s'il existe)
-                    let savedObj = localStorage.getItem(idObj) || 0;
-                    
-                    html += `
-                        <tr>
-                            <td><strong>${pizza}</strong></td>
-                            <td>
-                                <div class="input-group">
-                                    <button class="btn-qty" onclick="modifierQte('${idStock}', -1)">-</button>
-                                    <input type="number" id="${idStock}" value="0" min="0">
-                                    <button class="btn-qty" onclick="modifierQte('${idStock}', 1)">+</button>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-                                    <button class="btn-qty" onclick="modifierQte('${idObj}', -1)">-</button>
-                                    <input type="number" id="${idObj}" value="${savedObj}" min="0">
-                                    <button class="btn-qty" onclick="modifierQte('${idObj}', 1)">+</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+            distributeurs.forEach((dist, mIdx) => {
+                let html = `<div class="distributeur-card"><h2>📍 ${dist}</h2><table><tr><th>Recette</th><th>Stock</th><th>Objectif</th></tr>`;
+                listePizzas.forEach((piz, pIdx) => {
+                    let savedObj = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
+                    html += `<tr><td><strong>${piz}</strong></td>
+                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button>
+                        <input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td>
+                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button>
+                        <input type="number" id="obj_${mIdx}_${pIdx}" value="${savedObj}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td></tr>`;
                 });
-
-                html += `</tbody></table></div>`;
-                conteneur.innerHTML += html;
+                conteneur.innerHTML += html + `</table></div>`;
             });
         };
 
-        // --- 4. Le Moteur de Calcul ---
-        function calculerProductionGlobale() {
-            let pizzasTotalesAProduire = {};
-            let ingredientsTotaux = {};
-            let repartitionParMachine = {};
-            let alertesCapacite = []; // Pour stocker les alertes si on dépasse 70
+        async function synchroniserStocks() {
+            const btn = document.getElementById('btn-sync');
+            btn.innerHTML = "⏳ Connexion...";
+            const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
+            const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6WyJPcGVyYXRvciJdLCJpc3MiOiJBZGlhbFdlYlNlcnZlciIsIm5hbWUiOiJDw6lkcmljIEdVRVJJTiIsImlkIjoidWVtZktNUHozYlRHNDY4YXZFckFRT1V2UFF4ZFd5dXNiazBxbG52VDBTWSIsImVtYWlsIjoidmFsbG9uZGV0b3VybmVAZ2FuZ29mcGl6emEuZnIifQ.KjVlbEih_qazQqLsLMZX-Sz1YQYBxJTSSmDDKySk1ZI";
+            const h = {"Authorization": "Bearer " + token};
 
-            distributeurs.forEach(d => repartitionParMachine[d] = {});
+            try {
+                const [rS, rA, rP] = await Promise.all([
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/stocks`, {headers:h}),
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/apds`, {headers:h}),
+                    fetch(`https://gdp.api.prod.adial-services.com/api/groups/${groupId}/pizzas`, {headers:h})
+                ]);
+                const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
+                let dictA = {}, dictP = {};
+                (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
+                (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
 
-            distributeurs.forEach((distributeur, indexMachine) => {
-                let totalObjectifMachine = 0;
-
-                listePizzas.forEach((pizza, indexPizza) => {
-                    let valStock = document.getElementById(`stock_${indexMachine}_${indexPizza}`).value;
-                    let valObj = document.getElementById(`obj_${indexMachine}_${indexPizza}`).value;
-                    
-                    let stock = valStock === "" ? 0 : parseInt(valStock, 10);
-                    let objectif = valObj === "" ? 0 : parseInt(valObj, 10);
-                    
-                    // Sauvegarde automatique de l'objectif tapé
-                    localStorage.setItem(`obj_${indexMachine}_${indexPizza}`, objectif);
-
-                    totalObjectifMachine += objectif; // On additionne pour vérifier la limite des 70
-                    
-                    let aProduire = Math.max(0, objectif - stock);
-                    
-                    if (aProduire > 0) {
-                        repartitionParMachine[distributeur][pizza] = aProduire;
-                        
-                        if (!pizzasTotalesAProduire[pizza]) pizzasTotalesAProduire[pizza] = 0;
-                        pizzasTotalesAProduire[pizza] += aProduire;
-                        
-                        let recette = recettes[pizza];
-                        for (let [ingredient, grammage] of Object.entries(recette)) {
-                            if (!ingredientsTotaux[ingredient]) ingredientsTotaux[ingredient] = 0;
-                            ingredientsTotaux[ingredient] += (grammage * aProduire);
+                let counts = {};
+                (dS.stocks || []).forEach(it => {
+                    if(it.pizzaId && it.locationUsed === true) {
+                        let m = dictA[it.apdId], p = dictP[it.pizzaId];
+                        if(m && p) {
+                            if(!counts[m]) counts[m] = {};
+                            counts[m][p] = (counts[m][p] || 0) + 1;
                         }
                     }
                 });
 
-                // Vérification de la capacité physique
-                if (totalObjectifMachine > CAPACITE_MAX) {
-                    alertesCapacite.push(`⚠️ Surcharge prévue à <b>${distributeur}</b> : ${totalObjectifMachine} pizzas programmées (Maximum autorisé : ${CAPACITE_MAX}).`);
-                }
+                const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                distributeurs.forEach((d, mIdx) => {
+                    listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0);
+                    for(let [mApi, pzs] of Object.entries(counts)) {
+                        if(norm(mApi).includes(norm(d))) {
+                            for(let [pApi, q] of Object.entries(pzs)) {
+                                let pIdx = listePizzas.findIndex(p => norm(pApi).includes(norm(p)));
+                                if(pIdx !== -1) document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
+                            }
+                        }
+                    }
+                });
+                alert("✅ Synchronisé !");
+            } catch(e) { alert("❌ Erreur API"); }
+            btn.innerHTML = "🔄 Synchroniser avec Adial";
+        }
+
+        function calculerProductionGlobale() {
+            let pTot = {}, iTot = {}, rep = {}, alerts = [];
+            distributeurs.forEach((dist, mIdx) => {
+                rep[dist] = {}; let mSum = 0;
+                listePizzas.forEach((piz, pIdx) => {
+                    let s = parseInt(document.getElementById(`stock_${mIdx}_${pIdx}`).value) || 0;
+                    let o = parseInt(document.getElementById(`obj_${mIdx}_${pIdx}`).value) || 0;
+                    localStorage.setItem(`obj_${mIdx}_${pIdx}`, o);
+                    mSum += o;
+                    let diff = Math.max(0, o - s);
+                    if(diff > 0) {
+                        rep[dist][piz] = diff;
+                        pTot[piz] = (pTot[piz] || 0) + diff;
+                        for(let [ing, g] of Object.entries(recettes[piz])) iTot[ing] = (iTot[ing] || 0) + (g * diff);
+                    }
+                });
+                if(mSum > CAPACITE_MAX) alerts.push(`⚠️ Surcharge à ${dist} (${mSum}/${CAPACITE_MAX})`);
             });
-
-            afficherResultats(pizzasTotalesAProduire, ingredientsTotaux, repartitionParMachine, alertesCapacite);
-            afficherDateDuJour();
+            afficherResultats(pTot, iTot, rep, alerts);
+            sauvegarderHistorique(pTot);
         }
 
-        // --- 5. Affichage des résultats ---
-        function afficherResultats(pizzas, ingredients, repartition, alertes) {
+        function afficherResultats(p, ing, rep, al) {
             document.getElementById("zone-resultats").style.display = "block";
+            document.getElementById("zone-historique").style.display = "none";
+            let divAl = document.getElementById("zone-alertes");
+            divAl.innerHTML = al.join("<br>"); divAl.style.display = al.length ? "block" : "none";
             
-            // Gestion des alertes
-            let divAlertes = document.getElementById("zone-alertes");
-            if (alertes.length > 0) {
-                divAlertes.innerHTML = alertes.join("<br>");
-                divAlertes.style.display = "block";
-            } else {
-                divAlertes.style.display = "none";
+            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien !</li>";
+            
+            let divIng = document.getElementById("liste-ingredients"); divIng.innerHTML = "";
+            let cV = [], cF = [], cD = [], cA = [];
+            const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
+            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
+            const mF = ["roquefort", "emmental", "scalarella", "chevre", "cheddar", "camembert", "comte"];
+
+            for(let [n, q] of Object.entries(ing)) {
+                let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if(mEx.some(m => nl.includes(m))) continue;
+                let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+"kg" : q;
+                let li = `<li class="checklist-item"><label><input type="checkbox"><span>${n}: <span class="highlight">${tq}</span></span></label></li>`;
+                if(mV.some(m => nl.includes(m))) cV.push(li);
+                else if(mF.some(m => nl.includes(m))) cF.push(li);
+                else if(nl.includes("disque")) cD.push(li);
+                else cA.push(li);
             }
+            if(cV.length) divIng.innerHTML += `<h4>🥩 Viandes</h4><ul>${cV.join("")}</ul>`;
+            if(cF.length) divIng.innerHTML += `<h4>🧀 Fromages</h4><ul>${cF.join("")}</ul>`;
+            if(cD.length) divIng.innerHTML += `<h4>🍕 Disques</h4><ul>${cD.join("")}</ul>`;
+            if(cA.length) divIng.innerHTML += `<h4>📦 Autre</h4><ul>${cA.join("")}</ul>`;
 
-            // Affichage Pizzas globales
-            let ulPizzas = document.getElementById("liste-pizzas-totales");
-            ulPizzas.innerHTML = "";
-            let totalPizzas = 0;
-            for (let [pizza, qte] of Object.entries(pizzas)) {
-                ulPizzas.innerHTML += `<li>${pizza} : <span class="highlight">${qte}</span></li>`;
-                totalPizzas += qte;
-            }
-            if (totalPizzas === 0) ulPizzas.innerHTML = "<li>Rien à produire !</li>";
+            document.getElementById("liste-repartition").innerHTML = Object.entries(rep).map(([m,l]) => 
+                `<div style="background:#f9f9f9;padding:10px;border:1px solid #ddd;margin-bottom:10px;"><b>${m}</b>
+                <ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">${Object.entries(l).map(([pn,pq])=>`<li>${pn}: ${pq}</li>`).join("") || "<li>Plein</li>"}</ul></div>`).join("");
+            document.getElementById("date-production").innerText = "Production du " + new Date().toLocaleDateString();
+        }
 
-            // Affichage Ingrédients (Catégorisé et filtré)
-            let divIngredients = document.getElementById("liste-ingredients");
-            divIngredients.innerHTML = "";
+        function sauvegarderHistorique(p) {
+            let t = Object.values(p).reduce((a,b)=>a+b, 0); if(!t) return;
+            let h = JSON.parse(localStorage.getItem("historique_prod")) || [];
+            let d = new Date().toLocaleDateString();
+            let idx = h.findIndex(x => x.date === d);
+            if(idx !== -1) h[idx].total = t; else h.push({date:d, total:t});
+            if(h.length > 30) h.shift();
+            localStorage.setItem("historique_prod", JSON.stringify(h));
+        }
 
-            let catViandes = [];
-            let catFromages = [];
-            let catDisques = []; // <-- 1. Ajout de la variable manquante
-            let catAutres = [];
-
-            // Mots-clés pour le tri intelligent (TOUT EN MINUSCULES !)
-            const motsExclus = ["sauce", "origan", "miel", "epice", "herbe"];
-            const motsViandes = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
-            const motsFromages = ["roquefort", "emmental", "scalarella", "chèvre", "cheddar", "camembert", "comté"];
-            const motsDisques = ["disque"]; // <-- 2. Minuscule (le mot "disque" suffit pour attraper les deux !)
-
-            for (let [ing, qte] of Object.entries(ingredients)) {
-                let ingLower = ing.toLowerCase();
-
-                // 1. Exclusion des sauces, origan, miel, épices
-                if (motsExclus.some(mot => ingLower.includes(mot))) continue;
-
-                // 2. Formatage de la quantité
-                let texteQte = qte;
-                if (ing.includes("(g)") && qte >= 1000) {
-                    texteQte = (qte / 1000).toFixed(2) + " Kg";
-                }
-
-                // 3. Création de la case à cocher
-                let htmlLi = `
-                    <li class="checklist-item">
-                        <label>
-                            <input type="checkbox"> 
-                            <span>${ing} : <span class="highlight">${texteQte}</span></span>
-                        </label>
-                    </li>`;
-
-                // 4. Répartition dans les listes
-                if (motsViandes.some(mot => ingLower.includes(mot))) {
-                    catViandes.push(htmlLi);
-                } else if (motsFromages.some(mot => ingLower.includes(mot))) {
-                    catFromages.push(htmlLi);
-                } else if (motsDisques.some(mot => ingLower.includes(mot))) {
-                    catDisques.push(htmlLi);
-                } else {
-                    catAutres.push(htmlLi);
-                }
-            } 
-
-            // 5. Injection sur la page
-            if (catViandes.length > 0) {
-                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🥩 Viandes</h4><ul>${catViandes.join("")}</ul>`;
-            }
-            if (catFromages.length > 0) {
-                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🧀 Fromages</h4><ul>${catFromages.join("")}</ul>`;
-            }
-            if (catDisques.length > 0) {
-                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">🍕 Disques</h4><ul>${catDisques.join("")}</ul>`;
-            }
-            if (catAutres.length > 0) {
-                divIngredients.innerHTML += `<h4 style="margin: 15px 0 5px 0; border-bottom: 1px solid #ccc; padding-bottom: 3px;">📦 Autre</h4><ul>${catAutres.join("")}</ul>`;
-            }
-
-            // Affichage Répartition par machine
-            let divRepartition = document.getElementById("liste-repartition");
-            divRepartition.innerHTML = "";
-            for (let [machine, liste] of Object.entries(repartition)) {
-                // On force la boîte de la machine à prendre toute la largeur, et on met la liste (ul) en mode grille (colonnes)
-                let htmlMachine = `<div style="background:#f9f9f9; padding:15px; border-radius:4px; border:1px solid #ddd; width: 100%; box-sizing: border-box;">
-                                    <h4 style="margin-top:0; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${machine}</h4>
-                                    <ul style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); column-gap: 20px; row-gap: 5px; margin: 10px 0 0 0;">`;
-                let count = 0;
-                for (let [p, q] of Object.entries(liste)) {
-                    // On enlève la bordure pointillée en bas pour que les colonnes soient plus propres
-                    htmlMachine += `<li style="border: none; padding: 2px 0;">${p} : <b>${q}</b></li>`;
-                    count++;
-                }
-                if (count === 0) htmlMachine += `<li style="border: none; padding: 2px 0;"><i>Distributeur plein</i></li>`;
-                htmlMachine += `</ul></div>`;
-                divRepartition.innerHTML += htmlMachine;
+        function toggleHistorique() {
+            let z = document.getElementById("zone-historique");
+            z.style.display = z.style.display === "none" ? "block" : "none";
+            if(z.style.display === "block") {
+                document.getElementById("zone-resultats").style.display = "none";
+                let h = JSON.parse(localStorage.getItem("historique_prod")) || [];
+                document.getElementById("liste-historique").innerHTML = h.reverse().map(x => `<li>${x.date} : <b>${x.total} pizzas</b></li>`).join("") || "Vide.";
             }
         }
 
-        // --- 6. Affichage Date ---
-        function afficherDateDuJour() {
-            const aujourdhui = new Date();
-            const dateFormatee = aujourdhui.toLocaleDateString('fr-FR');
-            document.getElementById("date-production").innerHTML = "Production du " + dateFormatee;
+        function reinitialiserStocks() {
+            if(confirm("Remettre les stocks à zéro ?")) {
+                distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0));
+                document.getElementById("zone-resultats").style.display = "none";
+            }
         }
 
-        // --- 7. Impression dynamique ---
-        function imprimerPDF() {
-            const aujourdhui = new Date();
-            const dateFichier = aujourdhui.toLocaleDateString('fr-FR').replace(/\//g, '-'); 
-            const titreOriginal = document.title; 
-            document.title = "Fiche de production du " + dateFichier;
-            window.print();
-            document.title = titreOriginal; 
-        }
+        function imprimerPDF() { window.print(); }
     </script>
 </body>
 </html>
