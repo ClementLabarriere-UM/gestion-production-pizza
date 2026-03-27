@@ -3,95 +3,258 @@
 <head>
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
-    <title>Logiciel production - Gang Of Pizza</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Production - Digiclem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: auto; background-color: #EE5541; color: #333; }
-        h1 { text-align: center; color: #ffffff; margin-bottom: 20px; }
-        h2 { color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px; margin-top: 0; font-size: 1.2em; }
-        #formulaire-distributeurs { display: flex; flex-wrap: wrap; gap: 15px; }
-        .distributeur-card { flex: 1; min-width: 280px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
-        th, td { padding: 8px 5px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
-        th { background-color: #f8f8f8; }
-        .input-group { display: flex; align-items: center; gap: 3px; justify-content: center; }
-        .btn-qty { background-color: #eee; border: 1px solid #ccc; width: 28px; height: 28px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; color: #333; }
-        input[type="number"] { width: 45px; height: 24px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-weight: bold; }
-        button.btn-calculer { display: block; width: 100%; padding: 15px; background-color: #ffffff; color: #EE5541; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .btn-secondary { display: block; width: 100%; padding: 10px; background-color: #f8f8f8; color: #333; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .btn-dark { background-color: #333 !important; color: white !important; }
-        .resultats-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 30px; display: none; }
-        .flex-row { display: flex; gap: 20px; margin-top: 15px; }
-        .flex-col { flex: 1; }
-        ul { list-style-type: none; padding: 0; }
-        li { padding: 8px 0; border-bottom: 1px dotted #ccc; }
-        .highlight { font-weight: bold; color: #d32f2f; }
-        .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .checklist-item input:checked + span { text-decoration: line-through; color: #999; }
-        .footer-credit { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.3); color: white; font-size: 14px; opacity: 0.8; }
-        .footer-credit a { color: white; text-decoration: none; font-weight: bold; }
-        .footer-credit a:hover { text-decoration: underline; }
-        #zone-alertes { background-color: #ffcccc; color: #b30000; padding: 15px; border-radius: 6px; display: none; margin-bottom: 15px; font-weight: bold; }
-        
-        /* Écran de verrouillage */
+        /* VARIABLES DE COULEURS */
+        :root {
+            --primary: #EE5541; /* Rouge Gang Of Pizza */
+            --primary-hover: #d32f2f;
+            --dark: #1e293b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            padding-bottom: 40px;
+        }
+
+        /* --- ÉCRAN DE VERROUILLAGE --- */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #EE5541;
+            background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 9999;
         }
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%; max-width: 350px;
+        }
+        .login-box img { max-width: 180px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .login-box h1 { color: white; font-size: 24px; margin-bottom: 30px; font-weight: 600; }
+        .login-box input {
+            width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: none; 
+            text-align: center; margin-bottom: 20px; box-sizing: border-box; outline: none;
+            background: rgba(255,255,255,0.9); color: var(--dark); font-weight: 600;
+        }
+        .login-box button {
+            width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background-color: var(--primary); 
+            color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s;
+        }
+        .login-box button:hover { background-color: var(--primary-hover); }
+
         #app-content { display: none; }
 
+        /* --- BARRE DE NAVIGATION (HEADER) --- */
+        .topbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand img { height: 40px; }
+        .brand h1 { margin: 0; font-size: 20px; color: var(--dark); font-weight: 700; letter-spacing: -0.5px; }
+        
+        .header-actions { display: flex; gap: 10px; }
+        .btn-top {
+            padding: 10px 16px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; border: 1px solid transparent; transition: all 0.2s;
+        }
+        .btn-sync { background-color: var(--dark); color: white; }
+        .btn-sync:hover { background-color: #334155; }
+        .btn-calc { background-color: var(--primary); color: white; }
+        .btn-calc:hover { background-color: var(--primary-hover); box-shadow: 0 4px 12px rgba(238, 85, 65, 0.3); }
+        .btn-outline { background-color: transparent; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background-color: #f1f5f9; }
+
+        /* --- CONTENU PRINCIPAL --- */
+        .main-container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+
+        /* Cartes Distributeurs */
+        #formulaire-distributeurs { display: flex; flex-wrap: wrap; gap: 20px; }
+        .distributeur-card { 
+            flex: 1; min-width: 320px; background: var(--card-bg); padding: 0; 
+            border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border: 1px solid var(--border); overflow: hidden;
+        }
+        .card-header {
+            background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .card-header h2 { margin: 0; font-size: 16px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        .btn-copy {
+            background: transparent; border: 1px solid var(--border); padding: 4px 10px; 
+            font-size: 12px; border-radius: 4px; color: var(--text-light); cursor: pointer; font-weight: 600;
+        }
+        .btn-copy:hover { background: #e2e8f0; color: var(--dark); }
+
+        /* Tableaux */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background-color: transparent; color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tr:last-child td { border-bottom: none; }
+        td strong { color: var(--dark); font-weight: 600; }
+
+        /* Inputs de quantité */
+        .input-group { display: flex; align-items: center; gap: 0; background: #f1f5f9; border-radius: 6px; padding: 2px; width: fit-content; }
+        .btn-qty { 
+            background: transparent; border: none; width: 28px; height: 28px; 
+            font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-light);
+            border-radius: 4px; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-qty:hover { background: #e2e8f0; color: var(--dark); }
+        input[type="number"] { 
+            width: 40px; height: 28px; text-align: center; border: none; background: transparent;
+            font-size: 14px; font-weight: 700; color: var(--dark); outline: none; -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* --- ZONE DE RÉSULTATS (BILAN) --- */
+        .resultats-container { 
+            background: var(--card-bg); padding: 30px; border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid var(--border);
+            margin-top: 30px; display: none;
+        }
+        .result-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
+        .result-header h2 { margin: 0; font-size: 22px; color: var(--dark); }
+        
+        .flex-row { display: flex; gap: 30px; margin-top: 15px; flex-wrap: wrap; }
+        .flex-col { flex: 1; min-width: 300px; }
+        .flex-col h3, .resultats-container h3 { font-size: 16px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 15px; }
+        .highlight { font-weight: 700; color: var(--primary); background: #fef2f2; padding: 2px 8px; border-radius: 4px; }
+        
+        /* Checklist Ingrédients */
+        .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; justify-content: space-between; }
+        .checklist-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .checklist-item input:checked + span { text-decoration: line-through; color: #94a3b8; }
+        .checklist-item input:checked + span .highlight { background: transparent; color: #94a3b8; }
+        
+        /* Badges Ingrédients */
+        .ing-category { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .ing-category h4 { margin: 0 0 10px 0; color: var(--dark); font-size: 14px; }
+
+        /* Alertes */
+        #zone-alertes { background-color: #fef2f2; border-left: 4px solid var(--danger); color: #b91c1c; padding: 15px; border-radius: 0 8px 8px 0; display: none; margin-bottom: 20px; font-weight: 500; font-size: 14px; }
+
+        /* Modal Copie */
+        #copy-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
+        .modal-content { background:white; padding:25px; border-radius:12px; width:320px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal-content h3 { margin-top:0; color:var(--dark); font-size: 18px; margin-bottom: 20px; }
+        .modal-actions { display:flex; justify-content:space-between; margin-top:25px; gap: 10px; }
+        .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-cancel { background: #f1f5f9; color: var(--text-main); }
+        .btn-confirm { background: var(--primary); color: white; }
+
+        .footer-credit { text-align: center; margin-top: 50px; color: var(--text-light); font-size: 13px; }
+        .footer-credit a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
         @media print {
-            body { background-color: white; font-size: 11pt; color: black; max-width: 100%; }
-            h1, #formulaire-distributeurs, button, #btn-sync, #btn-history, #btn-reset { display: none !important; }
-            .resultats-container { display: block !important; box-shadow: none; border: none; }
+            body { background-color: white; padding: 0; }
+            .topbar, #formulaire-distributeurs, .footer-credit, #btn-sync, .btn-calc { display: none !important; }
+            .resultats-container { display: block !important; box-shadow: none; border: none; padding: 0; margin: 0; }
         }
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <img src="logo.png" alt="Logo Gang Of Pizza" style="max-width: 250px; margin-bottom: 30px;">
-        <h1 style="color: white; margin-top: 0; font-size: 28px;">Espace Production</h1>
-        <input type="password" id="input-mdp" placeholder="Code d'accès..." style="padding: 15px; font-size: 20px; border-radius: 8px; border: none; text-align: center; width: 80%; max-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <button onclick="verifierMotDePasse()" style="padding: 15px 40px; font-size: 20px; font-weight: bold; background-color: #333; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Valider</button>
-        <p id="login-error" style="color: #fff; background-color: #b30000; padding: 10px 20px; border-radius: 6px; font-weight: bold; display: none; margin-top: 20px;">❌ Code incorrect</p>
+        <div class="login-box">
+            <img src="logo.png" alt="Logo Gang Of Pizza">
+            <h1>Espace Production</h1>
+            <input type="password" id="input-mdp" placeholder="Code d'accès secret">
+            <button onclick="verifierMotDePasse()">Déverrouiller</button>
+            <p id="login-error" style="color: #ffcccc; margin-top: 15px; font-weight: bold; display: none; font-size: 14px;">❌ Code incorrect</p>
+        </div>
     </div>
 
     <div id="app-content">
-        <img src="logo.png" alt="Logo" style="max-width: 200px; display: block; margin: 0 auto 10px auto;">
-        <h1>Gang Of Pizza - Logiciel de production</h1>
-        <div id="formulaire-distributeurs"></div>
-        <button id="btn-sync" class="btn-calculer btn-dark" onclick="synchroniserStocks()">🔄 Synchroniser les stocks Adial</button>
-        <button class="btn-calculer" onclick="calculerProductionGlobale()">Calculer la production totale</button>
-        <button id="btn-reset" class="btn-secondary" onclick="reinitialiserStocks()">♻️ Remise à zéro des stocks</button>
-
-        <div class="resultats-container" id="zone-resultats">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d32f2f;">
-                <h2 style="border:none;">📊 Bilan</h2>
-                <button onclick="imprimerPDF()" style="padding:8px; cursor:pointer; font-weight:bold;">🖨️ Imprimer</button>
+        
+        <div class="topbar">
+            <div class="brand">
+                <img src="logo.png" alt="Logo">
+                <h1>Digiclem <span style="color:var(--text-light); font-weight:400;">| Production</span></h1>
             </div>
-            <p id="date-production" style="text-align:center; font-weight:bold;"></p>
-            <div id="zone-alertes"></div>
-            <div class="flex-row">
-                <div class="flex-col"><h3>🍕 Pizzas</h3><ul id="liste-pizzas-totales"></ul></div>
-                <div class="flex-col"><h3>🛒 Ingrédients</h3><div id="liste-ingredients"></div></div>
+            <div class="header-actions">
+                <button id="btn-sync" class="btn-top btn-sync" onclick="synchroniserStocks()">
+                    🔄 Sync. Adial
+                </button>
+                <button class="btn-top btn-outline" onclick="reinitialiserStocks()">
+                    ♻️ Reset
+                </button>
+                <button class="btn-top btn-calc" onclick="calculerProductionGlobale()">
+                    📊 Calculer Production
+                </button>
             </div>
-            <h3>🚚 Détail par machine</h3>
-            <div id="liste-repartition"></div>
         </div>
-        <div class="footer-credit">
-            Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)
+
+        <div class="main-container">
+            <div id="formulaire-distributeurs"></div>
+
+            <div class="resultats-container" id="zone-resultats">
+                <div class="result-header">
+                    <h2>📋 Bilan de Production</h2>
+                    <button class="btn-top btn-outline" onclick="imprimerPDF()">🖨️ Imprimer la fiche</button>
+                </div>
+                <p id="date-production" style="color:var(--text-light); font-size:14px; margin-top:-10px; margin-bottom:20px;"></p>
+                
+                <div id="zone-alertes"></div>
+                
+                <div class="flex-row">
+                    <div class="flex-col">
+                        <h3>🍕 Pizzas à fabriquer</h3>
+                        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:15px;">
+                            <ul id="liste-pizzas-totales"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-col">
+                        <h3>🛒 Liste des ingrédients</h3>
+                        <div id="liste-ingredients"></div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:40px;">🚚 Répartition par distributeur</h3>
+                <div id="liste-repartition" style="display:flex; gap:15px; flex-wrap:wrap;"></div>
+            </div>
+
+            <div class="footer-credit">
+                Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)
+            </div>
         </div>
     </div>
 
-    <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
-        <div style="background:white; padding:20px; border-radius:8px; width:300px; max-width:90%; box-shadow:0 4px 6px rgba(0,0,0,0.3);">
-            <h3 style="margin-top:0; color:#d32f2f;">Copier vers :</h3>
+    <div id="copy-modal">
+        <div class="modal-content">
+            <h3>📋 Copier les objectifs vers :</h3>
             <div id="copy-options"></div>
-            <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                <button onclick="fermerModalCopie()" style="padding:10px; background:#ccc; border:none; border-radius:4px; cursor:pointer;">Annuler</button>
-                <button id="btn-confirm-copy" style="padding:10px; background:#EE5541; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Confirmer</button>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="fermerModalCopie()">Annuler</button>
+                <button class="btn-confirm" id="btn-confirm-copy">Confirmer</button>
             </div>
         </div>
     </div>
@@ -111,7 +274,6 @@
             "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
             "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
             "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
-            "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110, "Tomates confites (demi-tomates)": 3},
             "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
             "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
@@ -120,7 +282,7 @@
         // --- CONNEXION ---
         function verifierMotDePasse() {
             const input = document.getElementById('input-mdp').value;
-            if (input === "20061978") {
+            if (input === "123456") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
                 initialiserApp();
@@ -129,12 +291,9 @@
                 document.getElementById('input-mdp').value = '';
             }
         }
-
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("input-mdp").addEventListener("keypress", function(event) {
-                if (event.key === "Enter") {
-                    event.preventDefault(); verifierMotDePasse();
-                }
+                if (event.key === "Enter") { event.preventDefault(); verifierMotDePasse(); }
             });
         });
 
@@ -146,14 +305,18 @@
             cont.innerHTML = "";
             distributeurs.forEach((d, mIdx) => {
                 let h = `<div class="distributeur-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="card-header">
                         <h2>📍 ${d}</h2>
-                        <button class="btn-secondary" style="width: auto; margin: 0; padding: 5px 10px; font-size: 12px; cursor: pointer;" onclick="ouvrirModalCopie(${mIdx})">📋 Copier vers...</button>
+                        <button class="btn-copy" onclick="ouvrirModalCopie(${mIdx})">Copier vers...</button>
                     </div>
-                    <table><tr><th>Recette</th><th>Stock Actuel</th><th>Objectif</th></tr>`;
+                    <table><tr><th>Recette</th><th>Stock Act.</th><th>Objectif</th></tr>`;
                 listePizzas.forEach((p, pIdx) => {
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
-                    h += `<tr><td><strong>${p}</strong></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td></tr>`;
+                    h += `<tr>
+                        <td><strong>${p}</strong></td>
+                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td>
+                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td>
+                    </tr>`;
                 });
                 cont.innerHTML += h + `</table></div>`;
             });
@@ -161,39 +324,26 @@
 
         // --- GESTION DU POPUP DE COPIE ---
         let sourceCopyIdx = null;
-
         function ouvrirModalCopie(sourceIdx) {
             sourceCopyIdx = sourceIdx;
             const optionsDiv = document.getElementById("copy-options");
             optionsDiv.innerHTML = "";
-            
             distributeurs.forEach((d, idx) => {
                 if (idx !== sourceIdx) {
-                    optionsDiv.innerHTML += `
-                        <label style="display:block; margin-bottom:10px; font-size:16px; cursor:pointer;">
-                            <input type="checkbox" class="copy-target-checkbox" value="${idx}" checked style="transform: scale(1.3); margin-right: 10px;"> 
-                            ${d}
-                        </label>
-                    `;
+                    optionsDiv.innerHTML += `<label style="display:flex; align-items:center; margin-bottom:12px; font-size:15px; cursor:pointer; font-weight:500;">
+                        <input type="checkbox" class="copy-target-checkbox" value="${idx}" checked style="width:18px; height:18px; accent-color:var(--primary); margin-right: 12px;"> ${d}
+                    </label>`;
                 }
             });
-            
             document.getElementById("btn-confirm-copy").onclick = validerCopie;
             document.getElementById("copy-modal").style.display = "flex";
         }
-
-        function fermerModalCopie() {
-            document.getElementById("copy-modal").style.display = "none";
-            sourceCopyIdx = null;
-        }
-
+        function fermerModalCopie() { document.getElementById("copy-modal").style.display = "none"; sourceCopyIdx = null; }
         function validerCopie() {
             if (sourceCopyIdx === null) return;
             const checkboxes = document.querySelectorAll('.copy-target-checkbox:checked');
             const cibles = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            
             if (cibles.length === 0) { alert("Veuillez sélectionner au moins un distributeur."); return; }
-
             listePizzas.forEach((p, pIdx) => {
                 let valeurACopier = document.getElementById(`obj_${sourceCopyIdx}_${pIdx}`).value;
                 cibles.forEach(targetIdx => {
@@ -204,7 +354,7 @@
             fermerModalCopie();
         }
 
-        // --- SYNCHRONISATION API ADIAL ---
+        // --- VRAIE SYNCHRONISATION ADIAL API ---
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
             btn.innerHTML = "⏳ Téléchargement et filtrage..."; btn.disabled = true;
@@ -250,7 +400,7 @@
             } catch(e) { 
                 console.error(e); alert("❌ Erreur de réseau.");
             }
-            btn.innerHTML = "🔄 Synchroniser les stocks Adial"; btn.disabled = false;
+            btn.innerHTML = "🔄 Sync. Adial"; btn.disabled = false;
         }
 
         // --- CALCULS ET RÉSULTATS ---
@@ -273,27 +423,43 @@
         function afficherResultats(p, ing, r, al) {
             document.getElementById("zone-resultats").style.display = "block";
             let dAl = document.getElementById("zone-alertes"); dAl.innerHTML = al.join("<br>"); dAl.style.display = al.length ? "block" : "none";
-            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li>${n} : <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire aujourd'hui !</li>";
+            
+            let listPizzasHTML = Object.entries(p).map(([n,q]) => `<li><span>${n}</span> <span class="highlight">${q}</span></li>`).join("");
+            document.getElementById("liste-pizzas-totales").innerHTML = listPizzasHTML || "<li><span>Aucune production requise</span> <span>-</span></li>";
+            
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
             let cV = [], cF = [], cD = [], cA = [];
             const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
-            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande", "saumon"];
+            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
             const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comte", "comté", "compte", "compté", "reblochon", "boursin"];
+            
             for(let [n, q] of Object.entries(ing)) {
                 let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
                 let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
-                let li = `<li class="checklist-item"><label><input type="checkbox"><span>${n}: <span class="highlight">${tq}</span></span></label></li>`;
+                let li = `<li class="checklist-item"><label><input type="checkbox"><span>${n} <span class="highlight">${tq}</span></span></label></li>`;
                 if(mV.some(m => nl.includes(m))) cV.push(li); else if(mF.some(m => nl.includes(m))) cF.push(li); else if(nl.includes("disque")) cD.push(li); else cA.push(li);
             }
-            if(cV.length) dI.innerHTML += `<h4>🥩 Viandes</h4><ul>${cV.join("")}</ul>`;
-            if(cF.length) dI.innerHTML += `<h4>🧀 Fromages</h4><ul>${cF.join("")}</ul>`;
-            if(cD.length) dI.innerHTML += `<h4>🍕 Disques</h4><ul>${cD.join("")}</ul>`;
-            if(cA.length) dI.innerHTML += `<h4>📦 Autre</h4><ul>${cA.join("")}</ul>`;
-            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="background:#f9f9f9;padding:15px;border:1px solid #ddd;margin-bottom:10px;border-radius:4px;"><b>${m}</b><ul style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="border:none;padding:0;">${pn}: <b>${pq}</b></li>`).join("") || "<li>Distributeur plein</li>"}</ul></div>`).join("");
-            document.getElementById("date-production").innerText = "Production du " + new Date().toLocaleDateString();
+            if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
+            if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages</h4><ul>${cF.join("")}</ul></div>`;
+            if(cD.length) dI.innerHTML += `<div class="ing-category"><h4>🍕 Disques</h4><ul>${cD.join("")}</ul></div>`;
+            if(cA.length) dI.innerHTML += `<div class="ing-category"><h4>📦 Autres (Hors sauces/épices)</h4><ul>${cA.join("")}</ul></div>`;
+            
+            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `
+                <div style="flex:1; min-width:250px; background:#f8fafc; padding:15px; border:1px solid var(--border); border-radius:8px;">
+                    <b style="color:var(--dark); display:block; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">📍 ${m}</b>
+                    <ul style="font-size:14px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("") || "<li>Distributeur à jour</li>"}</ul>
+                </div>`).join("");
+            
+            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById("date-production").innerText = "Pour le " + new Date().toLocaleDateString('fr-FR', optionsDate);
         }
 
-        function reinitialiserStocks() { if(confirm("Remettre tous les stocks à zéro ?")) { distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); document.getElementById("zone-resultats").style.display = "none"; } }
+        function reinitialiserStocks() { 
+            if(confirm("Remettre tous les stocks à zéro ?")) { 
+                distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); 
+                document.getElementById("zone-resultats").style.display = "none"; 
+            } 
+        }
         function imprimerPDF() { window.print(); }
     </script>
 </body>
