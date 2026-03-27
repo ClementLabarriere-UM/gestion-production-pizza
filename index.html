@@ -4,7 +4,7 @@
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Production - Gang Of Pizza</title>
+    <title>Espace Production - Digiclem</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -25,7 +25,7 @@
         body { 
             font-family: 'Inter', sans-serif; 
             margin: 0; 
-            background-color: var(--primary);
+            background-color: var(--primary); /* Fond Rouge */
             color: var(--text-main); 
             padding-bottom: 40px;
         }
@@ -38,14 +38,9 @@
             z-index: 9999;
         }
         .login-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            width: 90%; max-width: 350px;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px;
+            border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 350px;
         }
         .login-box img { max-width: 180px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
         .login-box h1 { color: white; font-size: 24px; margin-bottom: 30px; font-weight: 600; }
@@ -64,14 +59,9 @@
 
         /* --- BARRE DE NAVIGATION (HEADER) --- */
         .topbar {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background-color: var(--card-bg); border-bottom: 1px solid var(--border);
+            padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 40px; }
@@ -96,8 +86,8 @@
         #formulaire-distributeurs { display: flex; flex-wrap: wrap; gap: 20px; }
         .distributeur-card { 
             flex: 1; min-width: 320px; background: var(--card-bg); padding: 0; 
-            border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-            border: 1px solid var(--border); overflow: hidden;
+            border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
+            border: none; overflow: hidden;
         }
         .card-header {
             background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--border);
@@ -113,7 +103,7 @@
         /* Tableaux */
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        th { background-color: transparent; color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        th { color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
         tr:last-child td { border-bottom: none; }
         td strong { color: var(--dark); font-weight: 600; }
 
@@ -134,8 +124,7 @@
         /* --- ZONE DE RÉSULTATS (BILAN) --- */
         .resultats-container { 
             background: var(--card-bg); padding: 30px; border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid var(--border);
-            margin-top: 30px; display: none;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border: none; margin-top: 30px; display: none;
         }
         .result-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
         .result-header h2 { margin: 0; font-size: 22px; color: var(--dark); }
@@ -161,15 +150,16 @@
         /* Alertes */
         #zone-alertes { background-color: #fef2f2; border-left: 4px solid var(--danger); color: #b91c1c; padding: 15px; border-radius: 0 8px 8px 0; display: none; margin-bottom: 20px; font-weight: 500; font-size: 14px; }
 
-        /* Modal Copie */
-        #copy-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
-        .modal-content { background:white; padding:25px; border-radius:12px; width:320px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
+        /* Modals (Boîtes de dialogue) */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
+        .modal-content { background:white; padding:25px; border-radius:12px; width:360px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
         .modal-content h3 { margin-top:0; color:var(--dark); font-size: 18px; margin-bottom: 20px; }
         .modal-actions { display:flex; justify-content:space-between; margin-top:25px; gap: 10px; }
         .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
         .btn-cancel { background: #f1f5f9; color: var(--text-main); }
         .btn-confirm { background: var(--primary); color: white; }
 
+        /* Pied de page */
         .footer-credit { text-align: center; margin-top: 50px; color: white; font-size: 13px; opacity: 0.9; }
         .footer-credit a { color: white; text-decoration: none; font-weight: 600; }
         .footer-credit a:hover { text-decoration: underline; }
@@ -198,9 +188,12 @@
         <div class="topbar">
             <div class="brand">
                 <img src="logo.png" alt="Logo">
-                <h1>Gang Of Pizza - Vallon de Tourne <span style="color:var(--text-light); font-weight:400;">| Espace Production</span></h1>
+                <h1>Digiclem <span style="color:var(--text-light); font-weight:400;">| Production</span></h1>
             </div>
             <div class="header-actions">
+                <button class="btn-top btn-outline" onclick="ouvrirModalParametres()" style="background: #f8fafc; margin-right: 10px;">
+                    ⚙️ Menu
+                </button>
                 <button id="btn-sync" class="btn-top btn-sync" onclick="synchroniserStocks()">
                     🔄 Sync. Adial
                 </button>
@@ -208,7 +201,7 @@
                     ♻️ Reset
                 </button>
                 <button class="btn-top btn-calc" onclick="calculerProductionGlobale()">
-                    📊 Calculer Production
+                    📊 Calculer
                 </button>
             </div>
         </div>
@@ -249,7 +242,7 @@
         </div>
     </div>
 
-    <div id="copy-modal">
+    <div id="copy-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>📋 Copier les objectifs vers :</h3>
             <div id="copy-options"></div>
@@ -260,8 +253,22 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto; width: 400px;">
+            <h3>⚙️ Pizzas à afficher</h3>
+            <p style="font-size: 13px; color: var(--text-light); margin-top: -10px; margin-bottom: 20px;">Décochez les pizzas que vous ne produisez pas actuellement.</p>
+            <div id="settings-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+            <div class="modal-actions" style="margin-top: 25px;">
+                <button class="btn-cancel" onclick="fermerModalParametres()">Annuler</button>
+                <button class="btn-confirm" onclick="sauvegarderParametres()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
+        
+        // ICI TU PEUX METTRE TOUTE LA CARTE DU GANG
         const recettes = {
             "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
             "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
@@ -278,12 +285,18 @@
             "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
             "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
-        const listePizzas = Object.keys(recettes);
+        const listePizzasTotale = Object.keys(recettes);
+        
+        // Système de mémorisation des pizzas actives
+        let pizzasActives = JSON.parse(localStorage.getItem('pizzasActives'));
+        if (!pizzasActives || pizzasActives.length === 0) {
+            pizzasActives = listePizzasTotale; // Par défaut, tout est coché
+        }
 
         // --- CONNEXION ---
         function verifierMotDePasse() {
             const input = document.getElementById('input-mdp').value;
-            if (input === "20061978") {
+            if (input === "123456") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
                 initialiserApp();
@@ -311,7 +324,10 @@
                         <button class="btn-copy" onclick="ouvrirModalCopie(${mIdx})">Copier vers...</button>
                     </div>
                     <table><tr><th>Recette</th><th>Stock Act.</th><th>Objectif</th></tr>`;
-                listePizzas.forEach((p, pIdx) => {
+                
+                // ON BOUCLE UNIQUEMENT SUR LES PIZZAS ACTIVES
+                pizzasActives.forEach((p) => {
+                    let pIdx = listePizzasTotale.indexOf(p); // On garde l'ID global pour pas casser les sauvegardes
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
                     h += `<tr>
                         <td><strong>${p}</strong></td>
@@ -321,6 +337,32 @@
                 });
                 cont.innerHTML += h + `</table></div>`;
             });
+        }
+
+        // --- GESTION DU POPUP MENU DES PIZZAS ---
+        function ouvrirModalParametres() {
+            const optionsDiv = document.getElementById("settings-options");
+            optionsDiv.innerHTML = "";
+            listePizzasTotale.forEach(p => {
+                const isChecked = pizzasActives.includes(p) ? "checked" : "";
+                optionsDiv.innerHTML += `
+                    <label style="display:flex; align-items:center; font-size:14px; cursor:pointer; font-weight:500;">
+                        <input type="checkbox" class="pizza-setting-checkbox" value="${p}" ${isChecked} style="width:16px; height:16px; accent-color:var(--primary); margin-right: 8px;"> 
+                        ${p}
+                    </label>
+                `;
+            });
+            document.getElementById("settings-modal").style.display = "flex";
+        }
+        function fermerModalParametres() { document.getElementById("settings-modal").style.display = "none"; }
+        function sauvegarderParametres() {
+            const checkboxes = document.querySelectorAll('.pizza-setting-checkbox:checked');
+            pizzasActives = Array.from(checkboxes).map(cb => cb.value);
+            if (pizzasActives.length === 0) { alert("Veuillez sélectionner au moins une pizza."); return; }
+            localStorage.setItem('pizzasActives', JSON.stringify(pizzasActives));
+            fermerModalParametres();
+            initialiserApp(); // On rafraîchit l'affichage !
+            document.getElementById("zone-resultats").style.display = "none";
         }
 
         // --- GESTION DU POPUP DE COPIE ---
@@ -345,7 +387,8 @@
             const checkboxes = document.querySelectorAll('.copy-target-checkbox:checked');
             const cibles = Array.from(checkboxes).map(cb => parseInt(cb.value));
             if (cibles.length === 0) { alert("Veuillez sélectionner au moins un distributeur."); return; }
-            listePizzas.forEach((p, pIdx) => {
+            pizzasActives.forEach((p) => {
+                let pIdx = listePizzasTotale.indexOf(p);
                 let valeurACopier = document.getElementById(`obj_${sourceCopyIdx}_${pIdx}`).value;
                 cibles.forEach(targetIdx => {
                     document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
@@ -387,12 +430,19 @@
                 
                 const norm = s => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
                 distributeurs.forEach((d, mIdx) => {
-                    listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0);
+                    pizzasActives.forEach((p) => {
+                        let pIdx = listePizzasTotale.indexOf(p);
+                        document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0;
+                    });
+                    
                     for(let [mApi, pzs] of Object.entries(counts)) {
                         if(norm(mApi).includes(norm(d)) || norm(d).includes(norm(mApi))) {
                             for(let [pApi, q] of Object.entries(pzs)) {
-                                let pIdx = listePizzas.findIndex(p => norm(pApi).includes(norm(p)) || norm(p).includes(norm(pApi)));
-                                if(pIdx !== -1) document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
+                                let pIdx = listePizzasTotale.findIndex(p => norm(pApi).includes(norm(p)) || norm(p).includes(norm(pApi)));
+                                // On ne remplit la case que si la pizza est cochée dans les paramètres
+                                if(pIdx !== -1 && pizzasActives.includes(listePizzasTotale[pIdx])) { 
+                                    document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
+                                }
                             }
                         }
                     }
@@ -409,7 +459,8 @@
             let pT = {}, iT = {}, r = {}, al = [];
             distributeurs.forEach((d, mIdx) => {
                 r[d] = {}; let sum = 0;
-                listePizzas.forEach((p, pIdx) => {
+                pizzasActives.forEach((p) => {
+                    let pIdx = listePizzasTotale.indexOf(p);
                     let s = parseInt(document.getElementById(`stock_${mIdx}_${pIdx}`).value) || 0;
                     let o = parseInt(document.getElementById(`obj_${mIdx}_${pIdx}`).value) || 0;
                     localStorage.setItem(`obj_${mIdx}_${pIdx}`, o); sum += o;
@@ -457,7 +508,10 @@
 
         function reinitialiserStocks() { 
             if(confirm("Remettre tous les stocks à zéro ?")) { 
-                distributeurs.forEach((d, mIdx) => listePizzas.forEach((p, pIdx) => document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0)); 
+                distributeurs.forEach((d, mIdx) => pizzasActives.forEach((p) => {
+                    let pIdx = listePizzasTotale.indexOf(p);
+                    document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0;
+                })); 
                 document.getElementById("zone-resultats").style.display = "none"; 
             } 
         }
