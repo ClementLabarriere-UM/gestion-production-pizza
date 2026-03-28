@@ -212,7 +212,7 @@
     <div id="frigo-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>❄️ Inventaire & Seuils</h3>
-            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Définissez votre stock réel et le seuil d'alerte. (Kg pour les viandes/fromages, Unités pour le reste).</p>
+            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Définissez votre stock réel et le seuil d'alerte. (Kg pour viandes/fromages, Unités pour le reste).</p>
             <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; font-weight:bold; font-size:12px; color:var(--text-light); margin-bottom:10px;">
                 <span>Ingrédient</span><span style="text-align:center;">Stock Actuel</span><span style="text-align:center;">Seuil Alerte</span>
             </div>
@@ -298,42 +298,38 @@
                     alertes.push(`⚠️ ${k.replace(' (g)','')} (Reste : ${valDisplay})`);
                 }
             }
-            if(alertes.length > 0) alert("🚨 ALERTES STOCK FRIGO :\n\n" + alertes.join("\n") + "\n\nPensez à vérifier vos livraisons !");
+            if(alertes.length > 0) alert("🚨 ALERTES STOCK FRIGO :\n\n" + alertes.join("\n") + "\n\nPensez à vérifier vos livraisons ou à réajuster le menu !");
         }
 
         // --- DARK MODE ---
         function toggleDarkMode() { isDarkMode = !isDarkMode; localStorage.setItem('darkMode', isDarkMode); applyTheme(); }
         function applyTheme() { document.body.classList.toggle('dark-mode', isDarkMode); document.getElementById('btn-darkmode').innerText = isDarkMode ? "☀️" : "🌙"; }
 
-        // --- METEO & EVENEMENTS INTELLIGENTS ---
-        const joursFeries = { "01/01":"Nouvel An", "06/04":"Lundi de Pâques", "01/05":"Fête du Travail", "08/05":"Victoire 1945", "14/05":"Ascension", "14/07":"Fête Nationale", "15/08":"Assomption", "01/11":"Toussaint", "11/11":"Armistice", "25/12":"Noël" };
-        function getEventForToday() {
-            let today = new Date();
-            let ddMm = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2);
-            if(joursFeries[ddMm]) return `🎉 ${joursFeries[ddMm]} : Forte affluence prévue !`;
-            if(today.getDay() === 6) return `⚽ Samedi : Soirée Match & Pizzas !`;
-            return "";
-        }
-
+        // --- METEO (MOYENNE UNIQUEMENT) ---
         async function chargerMeteo() {
-            let evtMsg = getEventForToday();
-            let finalMsg = evtMsg ? ` | ${evtMsg}` : "";
-            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((pos) => {
-                    fetchMeteo(pos.coords.latitude, pos.coords.longitude, finalMsg, "locale");
-                }, () => fetchMeteo(44.40, 4.39, finalMsg, "Vallon"));
-            } else fetchMeteo(44.40, 4.39, finalMsg, "Vallon");
+                    fetchMeteo(pos.coords.latitude, pos.coords.longitude, "locale");
+                }, () => fetchMeteo(44.40, 4.39, "Vallon"));
+            } else fetchMeteo(44.40, 4.39, "Vallon");
         }
 
-        async function fetchMeteo(lat, lon, finalMsg, locName) {
+        async function fetchMeteo(lat, lon, locName) {
             try {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max&timezone=Europe%2FParis&forecast_days=1`);
+                // On récupère la température Max ET Min de la journée pour faire une vraie moyenne
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FParis&forecast_days=1`);
                 const data = await res.json();
-                let temp = data.daily.temperature_2m_max[0]; let code = data.daily.weathercode[0];
-                let icon = "☀️"; let msg = "Beau temps !";
+                
+                let tMax = data.daily.temperature_2m_max[0];
+                let tMin = data.daily.temperature_2m_min[0];
+                let tempMoyenne = Math.round((tMax + tMin) / 2); // Calcul de la moyenne
+                
+                let code = data.daily.weathercode[0];
+                let icon = "⛅"; let msg = "Temps moyen.";
+                if(code <= 3) { icon = "☀️"; msg = "Beau temps !"; }
                 if(code >= 61) { icon = "🌧️"; msg = "Pluie : Boost des ventes distributeur à prévoir !"; }
-                document.getElementById('meteo-widget').innerHTML = `${icon} <strong>Météo ${locName} :</strong> ${temp}°C - ${msg}${finalMsg}`;
+                
+                document.getElementById('meteo-widget').innerHTML = `${icon} <strong>Moyenne ${locName} :</strong> ${tempMoyenne}°C - ${msg}`;
             } catch(e) { document.getElementById('meteo-widget').innerHTML = "Météo indisponible."; }
         }
 
