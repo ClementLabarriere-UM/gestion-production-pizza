@@ -4,174 +4,145 @@
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Production - Gang Of Pizza</title>
+    <title>Espace Production V2 - Digiclem</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* VARIABLES DE COULEURS */
         :root {
-            --primary: #EE5541; /* Rouge Gang Of Pizza */
+            --primary: #EE5541; 
             --primary-hover: #d32f2f;
             --dark: #1e293b;
-            --bg-color: #f8fafc;
+            --bg-color: #EE5541; /* Rouge par défaut */
             --card-bg: #ffffff;
             --border: #e2e8f0;
             --text-main: #334155;
             --text-light: #64748b;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        /* DARK MODE VARIABLES */
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --primary: #dc2626;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            background-color: var(--primary); /* Fond Rouge */
-            color: var(--text-main); 
-            padding-bottom: 40px;
+            font-family: 'Inter', sans-serif; margin: 0; 
+            background-color: var(--bg-color); color: var(--text-main); 
+            padding-bottom: 40px; transition: background-color 0.3s;
         }
 
         /* --- ÉCRAN DE VERROUILLAGE --- */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--dark) 0%, #0f172a 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 9999;
-        }
-        .login-box {
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px;
-            border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 350px;
-        }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 350px; }
         .login-box img { max-width: 180px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
         .login-box h1 { color: white; font-size: 24px; margin-bottom: 30px; font-weight: 600; }
-        .login-box input {
-            width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: none; 
-            text-align: center; margin-bottom: 20px; box-sizing: border-box; outline: none;
-            background: rgba(255,255,255,0.9); color: var(--dark); font-weight: 600;
-        }
-        .login-box button {
-            width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background-color: var(--primary); 
-            color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s;
-        }
+        .login-box input { width: 100%; padding: 15px; font-size: 18px; border-radius: 8px; border: none; text-align: center; margin-bottom: 20px; box-sizing: border-box; outline: none; background: rgba(255,255,255,0.9); color: #1e293b; font-weight: 600; }
+        .login-box button { width: 100%; padding: 15px; font-size: 18px; font-weight: bold; background-color: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
         .login-box button:hover { background-color: var(--primary-hover); }
 
         #app-content { display: none; }
 
-        /* --- BARRE DE NAVIGATION (HEADER) --- */
-        .topbar {
-            background-color: var(--card-bg); border-bottom: 1px solid var(--border);
-            padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
+        /* --- WIDGET METEO --- */
+        #meteo-widget { background: rgba(255,255,255,0.1); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 500; }
+        body.dark-mode #meteo-widget { background: rgba(0,0,0,0.2); }
+
+        /* --- BARRE DE NAVIGATION --- */
+        .topbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: background-color 0.3s; }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 40px; }
-        .brand h1 { margin: 0; font-size: 20px; color: var(--dark); font-weight: 700; letter-spacing: -0.5px; }
+        .brand h1 { margin: 0; font-size: 20px; color: var(--text-main); font-weight: 700; letter-spacing: -0.5px; }
         
-        .header-actions { display: flex; gap: 10px; }
-        .btn-top {
-            padding: 10px 16px; font-size: 14px; font-weight: 600; border-radius: 6px; cursor: pointer;
-            display: flex; align-items: center; gap: 8px; border: 1px solid transparent; transition: all 0.2s;
-        }
-        .btn-sync { background-color: var(--dark); color: white; }
-        .btn-sync:hover { background-color: #334155; }
-        .btn-calc { background-color: var(--primary); color: white; }
-        .btn-calc:hover { background-color: var(--primary-hover); box-shadow: 0 4px 12px rgba(238, 85, 65, 0.3); }
-        .btn-outline { background-color: transparent; border-color: var(--border); color: var(--text-main); }
-        .btn-outline:hover { background-color: #f1f5f9; }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-top { padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; border: 1px solid transparent; transition: all 0.2s; background: var(--card-bg); color: var(--text-main); border-color: var(--border); }
+        .btn-top:hover { filter: brightness(0.95); }
+        .btn-sync { background-color: #1e293b; color: white; border:none; }
+        .btn-calc { background-color: var(--primary); color: white; border:none; }
 
         /* --- CONTENU PRINCIPAL --- */
-        .main-container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+        .main-container { max-width: 1300px; margin: 20px auto; padding: 0 20px; }
 
         /* Cartes Distributeurs */
         #formulaire-distributeurs { display: flex; flex-wrap: wrap; gap: 20px; }
-        .distributeur-card { 
-            flex: 1; min-width: 320px; background: var(--card-bg); padding: 0; 
-            border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); 
-            border: none; overflow: hidden;
-        }
-        .card-header {
-            background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .card-header h2 { margin: 0; font-size: 16px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
-        .btn-copy {
-            background: transparent; border: 1px solid var(--border); padding: 4px 10px; 
-            font-size: 12px; border-radius: 4px; color: var(--text-light); cursor: pointer; font-weight: 600;
-        }
-        .btn-copy:hover { background: #e2e8f0; color: var(--dark); }
+        .distributeur-card { flex: 1; min-width: 320px; background: var(--card-bg); padding: 0; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); overflow: hidden; transition: background-color 0.3s; border: 1px solid var(--border); }
+        .card-header { background-color: transparent; padding: 15px 20px; border-bottom: 1px solid var(--border); }
+        .card-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .card-header h2 { margin: 0; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        
+        /* Jauge */
+        .jauge-container { text-align: right; }
+        .jauge-text { font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block; }
+        .jauge-bg { width: 100px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .jauge-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s, background 0.3s; }
 
         /* Tableaux */
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        th { color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-        tr:last-child td { border-bottom: none; }
-        td strong { color: var(--dark); font-weight: 600; }
-
-        /* Inputs de quantité */
-        .input-group { display: flex; align-items: center; gap: 0; background: #f1f5f9; border-radius: 6px; padding: 2px; width: fit-content; }
-        .btn-qty { 
-            background: transparent; border: none; width: 28px; height: 28px; 
-            font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-light);
-            border-radius: 4px; display: flex; align-items: center; justify-content: center;
-        }
-        .btn-qty:hover { background: #e2e8f0; color: var(--dark); }
-        input[type="number"] { 
-            width: 40px; height: 28px; text-align: center; border: none; background: transparent;
-            font-size: 14px; font-weight: 700; color: var(--dark); outline: none; -moz-appearance: textfield;
-        }
+        th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; }
+        td strong { color: var(--text-main); font-weight: 600; }
+        .input-group { display: flex; align-items: center; gap: 0; background: var(--border); border-radius: 6px; padding: 2px; width: fit-content; }
+        .btn-qty { background: transparent; border: none; width: 28px; height: 28px; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; }
+        input[type="number"] { width: 35px; height: 28px; text-align: center; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-main); outline: none; -moz-appearance: textfield; }
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
         /* --- ZONE DE RÉSULTATS (BILAN) --- */
-        .resultats-container { 
-            background: var(--card-bg); padding: 30px; border-radius: 12px; 
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); border: none; margin-top: 30px; display: none;
-        }
+        .resultats-container { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-top: 30px; display: none; transition: background-color 0.3s; border: 1px solid var(--border); }
         .result-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
-        .result-header h2 { margin: 0; font-size: 22px; color: var(--dark); }
-        
+        .result-header h2 { margin: 0; font-size: 22px; color: var(--text-main); }
         .flex-row { display: flex; gap: 30px; margin-top: 15px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 300px; }
-        .flex-col h3, .resultats-container h3 { font-size: 16px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+        
+        /* Checklist interactive */
+        .progress-wrapper { background: var(--border); height: 8px; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
+        #checklist-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s; }
         
         ul { list-style: none; padding: 0; margin: 0; }
-        li { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; font-size: 15px; }
-        .highlight { font-weight: 700; color: var(--primary); background: #fef2f2; padding: 2px 8px; border-radius: 4px; }
+        li { padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; color: var(--text-main); }
+        .highlight { font-weight: 700; color: var(--primary); background: rgba(238, 85, 65, 0.1); padding: 2px 8px; border-radius: 4px; }
         
-        /* Checklist Ingrédients */
         .checklist-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; justify-content: space-between; }
         .checklist-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
-        .checklist-item input:checked + span { text-decoration: line-through; color: #94a3b8; }
-        .checklist-item input:checked + span .highlight { background: transparent; color: #94a3b8; }
+        .checklist-item input:checked + span { text-decoration: line-through; color: var(--text-light); opacity: 0.6; }
         
-        /* Badges Ingrédients */
-        .ing-category { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .ing-category h4 { margin: 0 0 10px 0; color: var(--dark); font-size: 14px; }
+        .ing-category { background: rgba(0,0,0,0.02); padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border); }
+        body.dark-mode .ing-category { background: rgba(255,255,255,0.02); }
+        .ing-category h4 { margin: 0 0 10px 0; color: var(--text-main); font-size: 14px; }
 
-        /* Alertes */
-        #zone-alertes { background-color: #fef2f2; border-left: 4px solid var(--danger); color: #b91c1c; padding: 15px; border-radius: 0 8px 8px 0; display: none; margin-bottom: 20px; font-weight: 500; font-size: 14px; }
+        #zone-alertes { background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); color: var(--danger); padding: 15px; border-radius: 0 8px 8px 0; display: none; margin-bottom: 20px; font-weight: 500; font-size: 14px; }
 
-        /* Modals (Boîtes de dialogue) */
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
-        .modal-content { background:white; padding:25px; border-radius:12px; width:360px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
-        .modal-content h3 { margin-top:0; color:var(--dark); font-size: 18px; margin-bottom: 20px; }
+        /* Modals */
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
+        .modal-content { background:var(--card-bg); color:var(--text-main); padding:25px; border-radius:12px; width:400px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; }
+        .modal-content h3 { margin-top:0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .modal-actions { display:flex; justify-content:space-between; margin-top:25px; gap: 10px; }
         .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
-        .btn-cancel { background: #f1f5f9; color: var(--text-main); }
+        .btn-cancel { background: var(--border); color: var(--text-main); }
         .btn-confirm { background: var(--primary); color: white; }
 
-        /* Pied de page */
-        .footer-credit { text-align: center; margin-top: 50px; color: white; font-size: 13px; opacity: 0.9; }
+        .footer-credit { text-align: center; margin-top: 50px; color: white; font-size: 13px; opacity: 0.8; }
         .footer-credit a { color: white; text-decoration: none; font-weight: 600; }
-        .footer-credit a:hover { text-decoration: underline; }
+        body.dark-mode .footer-credit { color: var(--text-light); }
+        body.dark-mode .footer-credit a { color: var(--primary); }
 
         @media print {
-            body { background-color: white; padding: 0; }
-            .topbar, #formulaire-distributeurs, .footer-credit, #btn-sync, .btn-calc { display: none !important; }
-            .resultats-container { display: block !important; box-shadow: none; border: none; padding: 0; margin: 0; }
+            body { background-color: white !important; padding: 0; }
+            .topbar, #meteo-widget, #formulaire-distributeurs, .footer-credit, .btn-top, #btn-archive { display: none !important; }
+            .resultats-container { display: block !important; box-shadow: none; border: none; padding: 0; margin: 0; background: white !important; color: black !important; }
+            * { color: black !important; border-color: #ccc !important; }
+            .highlight { background: none !important; color: black !important; border: 1px solid black; }
         }
     </style>
 </head>
 <body>
+
+    <div id="meteo-widget">⏳ Chargement de la météo Vallon de Tourne...</div>
 
     <div id="login-screen">
         <div class="login-box">
@@ -179,30 +150,23 @@
             <h1>Espace Production</h1>
             <input type="password" id="input-mdp" placeholder="Code d'accès secret">
             <button onclick="verifierMotDePasse()">Déverrouiller</button>
-            <p id="login-error" style="color: #ffcccc; margin-top: 15px; font-weight: bold; display: none; font-size: 14px;">❌ Code incorrect</p>
+            <p id="login-error" style="color: #ffcccc; margin-top: 15px; font-weight: bold; display: none;">❌ Code incorrect</p>
         </div>
     </div>
 
     <div id="app-content">
-        
         <div class="topbar">
             <div class="brand">
                 <img src="logo.png" alt="Logo">
-                <h1>Gang Of Pizza - Vallon de Tourne <span style="color:var(--text-light); font-weight:400;">| Espace Production</span></h1>
+                <h1>Digiclem</h1>
             </div>
             <div class="header-actions">
-                <button class="btn-top btn-outline" onclick="ouvrirModalParametres()" style="background: #f8fafc; margin-right: 10px;">
-                    ⚙️ Menu
-                </button>
-                <button id="btn-sync" class="btn-top btn-sync" onclick="synchroniserStocks()">
-                    🔄 Sync. Adial
-                </button>
-                <button class="btn-top btn-outline" onclick="reinitialiserStocks()">
-                    ♻️ Reset
-                </button>
-                <button class="btn-top btn-calc" onclick="calculerProductionGlobale()">
-                    📊 Calculer
-                </button>
+                <button class="btn-top" onclick="toggleDarkMode()" id="btn-darkmode">🌙</button>
+                <button class="btn-top" onclick="ouvrirModalFrigo()">❄️ Frigo</button>
+                <button class="btn-top" onclick="ouvrirModalHistorique()">📈 Historique</button>
+                <button class="btn-top" onclick="ouvrirModalParametres()">⚙️ Menu</button>
+                <button class="btn-top btn-sync" onclick="synchroniserStocks()" id="btn-sync">🔄 Adial</button>
+                <button class="btn-top btn-calc" onclick="calculerProductionGlobale()">📊 Calculer</button>
             </div>
         </div>
 
@@ -212,107 +176,140 @@
             <div class="resultats-container" id="zone-resultats">
                 <div class="result-header">
                     <h2>📋 Bilan de Production</h2>
-                    <button class="btn-top btn-outline" onclick="imprimerPDF()">🖨️ Imprimer la fiche</button>
+                    <div>
+                        <button class="btn-top" style="display:inline-block;" id="btn-archive" onclick="archiverProduction()">💾 Archiver</button>
+                        <button class="btn-top" style="display:inline-block; background:var(--border);" onclick="imprimerPDF()">🖨️ Imprimer</button>
+                    </div>
                 </div>
-                <p id="date-production" style="color:var(--text-light); font-size:14px; margin-top:-10px; margin-bottom:20px;"></p>
                 
                 <div id="zone-alertes"></div>
                 
                 <div class="flex-row">
                     <div class="flex-col">
                         <h3>🍕 Pizzas à fabriquer</h3>
-                        <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:15px;">
+                        <div style="background:var(--border); border-radius:8px; padding:15px; background:transparent; border:1px solid var(--border);">
                             <ul id="liste-pizzas-totales"></ul>
                         </div>
                     </div>
                     
                     <div class="flex-col">
-                        <h3>🛒 Liste des ingrédients</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <h3 style="margin:0;">🛒 Checklist Ingrédients</h3>
+                            <span id="checklist-pct" style="font-size:12px; font-weight:bold; color:var(--primary);">0%</span>
+                        </div>
+                        <div class="progress-wrapper"><div id="checklist-bar"></div></div>
                         <div id="liste-ingredients"></div>
                     </div>
                 </div>
 
-                <h3 style="margin-top:40px;">🚚 Répartition par distributeur</h3>
+                <h3 style="margin-top:40px;">🚚 Répartition Camion</h3>
                 <div id="liste-repartition" style="display:flex; gap:15px; flex-wrap:wrap;"></div>
             </div>
 
-            <div class="footer-credit">
-                Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)
-            </div>
-        </div>
-    </div>
-
-    <div id="copy-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>📋 Copier les objectifs vers :</h3>
-            <div id="copy-options"></div>
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="fermerModalCopie()">Annuler</button>
-                <button class="btn-confirm" id="btn-confirm-copy">Confirmer</button>
-            </div>
+            <div class="footer-credit">Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)</div>
         </div>
     </div>
 
     <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content" style="max-height: 80vh; overflow-y: auto; width: 400px;">
+        <div class="modal-content">
             <h3>⚙️ Pizzas à afficher</h3>
-            <p style="font-size: 13px; color: var(--text-light); margin-top: -10px; margin-bottom: 20px;">Décochez les pizzas que vous ne produisez pas actuellement.</p>
             <div id="settings-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-            <div class="modal-actions" style="margin-top: 25px;">
-                <button class="btn-cancel" onclick="fermerModalParametres()">Annuler</button>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="fermerModalParametres()">Fermer</button>
                 <button class="btn-confirm" onclick="sauvegarderParametres()">Enregistrer</button>
             </div>
         </div>
     </div>
 
+    <div id="frigo-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>❄️ Inventaire Frigo (Kilos)</h3>
+            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Indiquez le stock restant. Une alerte s'affichera si la production demande plus.</p>
+            <div id="frigo-inputs" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('frigo-modal').style.display='none'">Annuler</button>
+                <button class="btn-confirm" onclick="sauvegarderFrigo()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="historique-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>📈 Historique des productions</h3>
+            <ul id="historique-list" style="margin-top:10px;"></ul>
+            <div class="modal-actions">
+                <button class="btn-cancel" style="width:100%;" onclick="document.getElementById('historique-modal').style.display='none'">Fermer</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- DONNÉES MÉTIER ---
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
-        
-        // ICI TU PEUX METTRE TOUTE LA CARTE DU GANG
         const recettes = {
-            "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
-            "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
+            "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6},
+            "Burger": {"Disque tomaté": 1, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Scalarella + Cheddar (g)": 110},
             "Camembert Rôti": {"Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
-            "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
-            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
+            "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Scalarella (g)": 110},
+            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8},
             "Croq'": {"Disque crémé": 1, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
             "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8},
-            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
-            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
+            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Comté râpé (g)": 30, "Scalarella (g)": 90},
+            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Poivrons grillés (g)": 30, "Scalarella (g)": 110},
             "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
-            "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
-            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
-            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
+            "Maxi Kebab": {"Disque crémé": 1, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120},
+            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80},
+            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
             "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
         const listePizzasTotale = Object.keys(recettes);
+        const clesFrigo = ["Scalarella (g)", "Emmental râpé (g)", "Egrené au boeuf (g)", "Poulet rôti (g)", "Allumettes fumées (g)", "Jambon (g)"];
         
-        // Système de mémorisation des pizzas actives
-        let pizzasActives = JSON.parse(localStorage.getItem('pizzasActives'));
-        if (!pizzasActives || pizzasActives.length === 0) {
-            pizzasActives = listePizzasTotale; // Par défaut, tout est coché
-        }
+        let pizzasActives = JSON.parse(localStorage.getItem('pizzasActives')) || listePizzasTotale;
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
 
-        // --- CONNEXION ---
+        // --- INIT & CONNEXION ---
         function verifierMotDePasse() {
-            const input = document.getElementById('input-mdp').value;
-            if (input === "20061978") {
+            if (document.getElementById('input-mdp').value === "123456") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
-                initialiserApp();
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-                document.getElementById('input-mdp').value = '';
-            }
+                chargerMeteo(); initialiserApp(); applyTheme();
+            } else { document.getElementById('login-error').style.display = 'block'; }
         }
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById("input-mdp").addEventListener("keypress", function(event) {
-                if (event.key === "Enter") { event.preventDefault(); verifierMotDePasse(); }
-            });
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("input-mdp").addEventListener("keypress", (e) => { if(e.key === "Enter") verifierMotDePasse(); });
         });
 
-        // --- UTILITAIRES ---
-        function modifierQte(id, delta) { let i = document.getElementById(id); i.value = Math.max(0, (parseInt(i.value) || 0) + delta); }
+        // --- DARK MODE ---
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            applyTheme();
+        }
+        function applyTheme() {
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            document.getElementById('btn-darkmode').innerText = isDarkMode ? "☀️" : "🌙";
+        }
+
+        // --- METEO (Open-Meteo API Gratuite) ---
+        async function chargerMeteo() {
+            try {
+                // Vallon Pont d'Arc / Ardèche
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=44.40&longitude=4.39&daily=weathercode,temperature_2m_max&timezone=Europe%2FParis&forecast_days=1");
+                const data = await res.json();
+                const temp = data.daily.temperature_2m_max[0];
+                const code = data.daily.weathercode[0];
+                let icon = "☀️"; let msg = "Beau temps, préparez du stock pour les balades !";
+                if(code >= 61) { icon = "🌧️"; msg = "Pluie annoncée : Hausse des ventes au distributeur ce soir ! 🍕📈"; }
+                document.getElementById('meteo-widget').innerHTML = `${icon} <strong>Météo Vallon :</strong> ${temp}°C - ${msg}`;
+            } catch(e) { document.getElementById('meteo-widget').style.display = 'none'; }
+        }
+
+        // --- APP & JAUGES ---
+        function modifierQte(id, delta) { 
+            let i = document.getElementById(id); i.value = Math.max(0, (parseInt(i.value) || 0) + delta); 
+            majJauges(); 
+        }
 
         function initialiserApp() {
             const cont = document.getElementById("formulaire-distributeurs");
@@ -320,85 +317,107 @@
             distributeurs.forEach((d, mIdx) => {
                 let h = `<div class="distributeur-card">
                     <div class="card-header">
-                        <h2>📍 ${d}</h2>
-                        <button class="btn-copy" onclick="ouvrirModalCopie(${mIdx})">Copier vers...</button>
+                        <div class="card-header-top">
+                            <h2>📍 ${d}</h2>
+                            <div class="jauge-container">
+                                <span class="jauge-text" id="jauge-text-${mIdx}">0 / 70</span>
+                                <div class="jauge-bg"><div class="jauge-fill" id="jauge-bar-${mIdx}"></div></div>
+                            </div>
+                        </div>
+                        <button class="btn-top" style="font-size:11px; padding:4px 8px;" onclick="copierMachine(${mIdx})">📋 Copier</button>
                     </div>
-                    <table><tr><th>Recette</th><th>Stock Act.</th><th>Objectif</th></tr>`;
+                    <table><tr><th>Recette</th><th>Stock</th><th>Obj.</th></tr>`;
                 
-                // ON BOUCLE UNIQUEMENT SUR LES PIZZAS ACTIVES
                 pizzasActives.forEach((p) => {
-                    let pIdx = listePizzasTotale.indexOf(p); // On garde l'ID global pour pas casser les sauvegardes
+                    let pIdx = listePizzasTotale.indexOf(p);
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
                     h += `<tr>
                         <td><strong>${p}</strong></td>
-                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td>
+                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0" oninput="majJauges()"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td>
                         <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td>
                     </tr>`;
                 });
                 cont.innerHTML += h + `</table></div>`;
             });
+            majJauges();
         }
 
-        // --- GESTION DU POPUP MENU DES PIZZAS ---
+        function majJauges() {
+            distributeurs.forEach((d, mIdx) => {
+                let sum = 0;
+                pizzasActives.forEach(p => {
+                    let pIdx = listePizzasTotale.indexOf(p);
+                    let val = document.getElementById(`obj_${mIdx}_${pIdx}`);
+                    if(val) sum += parseInt(val.value) || 0;
+                });
+                let elText = document.getElementById(`jauge-text-${mIdx}`);
+                let elBar = document.getElementById(`jauge-bar-${mIdx}`);
+                if(elText && elBar) {
+                    elText.innerText = `${sum} / 70`;
+                    let pct = Math.min(100, (sum / 70) * 100);
+                    elBar.style.width = `${pct}%`;
+                    if(sum > 70) { elBar.style.background = 'var(--danger)'; elText.style.color = 'var(--danger)'; }
+                    else if(sum > 55) { elBar.style.background = 'var(--warning)'; elText.style.color = 'var(--warning)'; }
+                    else { elBar.style.background = 'var(--success)'; elText.style.color = 'var(--text-main)'; }
+                }
+            });
+        }
+
+        // --- MENU PIZZAS ---
         function ouvrirModalParametres() {
-            const optionsDiv = document.getElementById("settings-options");
-            optionsDiv.innerHTML = "";
+            const div = document.getElementById("settings-options"); div.innerHTML = "";
             listePizzasTotale.forEach(p => {
-                const isChecked = pizzasActives.includes(p) ? "checked" : "";
-                optionsDiv.innerHTML += `
-                    <label style="display:flex; align-items:center; font-size:14px; cursor:pointer; font-weight:500;">
-                        <input type="checkbox" class="pizza-setting-checkbox" value="${p}" ${isChecked} style="width:16px; height:16px; accent-color:var(--primary); margin-right: 8px;"> 
-                        ${p}
-                    </label>
-                `;
+                let check = pizzasActives.includes(p) ? "checked" : "";
+                div.innerHTML += `<label style="display:flex; align-items:center; font-size:14px;"><input type="checkbox" class="pizza-opt" value="${p}" ${check} style="margin-right:8px;"> ${p}</label>`;
             });
             document.getElementById("settings-modal").style.display = "flex";
         }
         function fermerModalParametres() { document.getElementById("settings-modal").style.display = "none"; }
         function sauvegarderParametres() {
-            const checkboxes = document.querySelectorAll('.pizza-setting-checkbox:checked');
-            pizzasActives = Array.from(checkboxes).map(cb => cb.value);
-            if (pizzasActives.length === 0) { alert("Veuillez sélectionner au moins une pizza."); return; }
+            pizzasActives = Array.from(document.querySelectorAll('.pizza-opt:checked')).map(cb => cb.value);
             localStorage.setItem('pizzasActives', JSON.stringify(pizzasActives));
-            fermerModalParametres();
-            initialiserApp(); // On rafraîchit l'affichage !
-            document.getElementById("zone-resultats").style.display = "none";
+            fermerModalParametres(); initialiserApp();
         }
 
-        // --- GESTION DU POPUP DE COPIE ---
-        let sourceCopyIdx = null;
-        function ouvrirModalCopie(sourceIdx) {
-            sourceCopyIdx = sourceIdx;
-            const optionsDiv = document.getElementById("copy-options");
-            optionsDiv.innerHTML = "";
-            distributeurs.forEach((d, idx) => {
-                if (idx !== sourceIdx) {
-                    optionsDiv.innerHTML += `<label style="display:flex; align-items:center; margin-bottom:12px; font-size:15px; cursor:pointer; font-weight:500;">
-                        <input type="checkbox" class="copy-target-checkbox" value="${idx}" checked style="width:18px; height:18px; accent-color:var(--primary); margin-right: 12px;"> ${d}
-                    </label>`;
-                }
+        // --- INVENTAIRE FRIGO ---
+        function ouvrirModalFrigo() {
+            let frigo = JSON.parse(localStorage.getItem('frigo')) || {};
+            let html = "";
+            clesFrigo.forEach(k => {
+                let val = frigo[k] ? (frigo[k]/1000) : 0; // Affichage en Kilo
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:5px 0;">
+                    <span style="font-size:14px; font-weight:600;">${k.replace(' (g)','')}</span>
+                    <div class="input-group" style="background:var(--card-bg); border:1px solid var(--border);">
+                        <input type="number" id="frigo_${k}" value="${val}" step="0.5" style="width:60px;"> <span style="font-size:12px; padding-right:8px;">Kg</span>
+                    </div>
+                </div>`;
             });
-            document.getElementById("btn-confirm-copy").onclick = validerCopie;
-            document.getElementById("copy-modal").style.display = "flex";
+            document.getElementById('frigo-inputs').innerHTML = html;
+            document.getElementById('frigo-modal').style.display = 'flex';
         }
-        function fermerModalCopie() { document.getElementById("copy-modal").style.display = "none"; sourceCopyIdx = null; }
-        function validerCopie() {
-            if (sourceCopyIdx === null) return;
-            const checkboxes = document.querySelectorAll('.copy-target-checkbox:checked');
-            const cibles = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            if (cibles.length === 0) { alert("Veuillez sélectionner au moins un distributeur."); return; }
-            pizzasActives.forEach((p) => {
+        function sauvegarderFrigo() {
+            let frigo = {};
+            clesFrigo.forEach(k => {
+                let val = parseFloat(document.getElementById(`frigo_${k}`).value) || 0;
+                frigo[k] = val * 1000; // Stockage en grammes
+            });
+            localStorage.setItem('frigo', JSON.stringify(frigo));
+            document.getElementById('frigo-modal').style.display = 'none';
+        }
+
+        // --- COPIE ---
+        function copierMachine(sourceIdx) {
+            let cible = confirm(`Copier les objectifs de ${distributeurs[sourceIdx]} vers les autres machines ?`);
+            if(!cible) return;
+            pizzasActives.forEach(p => {
                 let pIdx = listePizzasTotale.indexOf(p);
-                let valeurACopier = document.getElementById(`obj_${sourceCopyIdx}_${pIdx}`).value;
-                cibles.forEach(targetIdx => {
-                    document.getElementById(`obj_${targetIdx}_${pIdx}`).value = valeurACopier;
-                    localStorage.setItem(`obj_${targetIdx}_${pIdx}`, valeurACopier);
-                });
+                let val = document.getElementById(`obj_${sourceIdx}_${pIdx}`).value;
+                distributeurs.forEach((d, i) => { if(i !== sourceIdx) document.getElementById(`obj_${i}_${pIdx}`).value = val; });
             });
-            fermerModalCopie();
+            majJauges();
         }
 
-        // --- VRAIE SYNCHRONISATION ADIAL API ---
+        // --- API ADIAL ---
         async function synchroniserStocks() {
             const btn = document.getElementById('btn-sync');
             btn.innerHTML = "⏳ Téléchargement et filtrage..."; btn.disabled = true;
@@ -454,9 +473,11 @@
             btn.innerHTML = "🔄 Sync. Adial"; btn.disabled = false;
         }
 
-        // --- CALCULS ET RÉSULTATS ---
+        // --- CALCUL & CHECKLIST ---
+        let derniereProduction = 0; // Pour l'archive
         function calculerProductionGlobale() {
-            let pT = {}, iT = {}, r = {}, al = [];
+            let pT = {}, iT = {}, r = {}, alertes = [];
+            let totalPizzas = 0;
             distributeurs.forEach((d, mIdx) => {
                 r[d] = {}; let sum = 0;
                 pizzasActives.forEach((p) => {
@@ -465,55 +486,75 @@
                     let o = parseInt(document.getElementById(`obj_${mIdx}_${pIdx}`).value) || 0;
                     localStorage.setItem(`obj_${mIdx}_${pIdx}`, o); sum += o;
                     let diff = Math.max(0, o - s);
-                    if(diff > 0) { r[d][p] = diff; pT[p] = (pT[p] || 0) + diff; for(let [ing, g] of Object.entries(recettes[p])) iT[ing] = (iT[ing] || 0) + (g * diff); }
+                    if(diff > 0) { 
+                        r[d][p] = diff; pT[p] = (pT[p] || 0) + diff; totalPizzas += diff;
+                        for(let [ing, g] of Object.entries(recettes[p])) iT[ing] = (iT[ing] || 0) + (g * diff); 
+                    }
                 });
-                if(sum > 70) al.push(`⚠️ Surcharge prévue à ${d} : ${sum} pizzas (Maximum 70).`);
+                if(sum > 70) alertes.push(`⚠️ Surcharge prévue à ${d} (${sum}/70).`);
             });
-            afficherResultats(pT, iT, r, al);
+            derniereProduction = totalPizzas;
+            afficherResultats(pT, iT, r, alertes);
         }
 
-        function afficherResultats(p, ing, r, al) {
+        function afficherResultats(p, ing, r, alertes) {
             document.getElementById("zone-resultats").style.display = "block";
-            let dAl = document.getElementById("zone-alertes"); dAl.innerHTML = al.join("<br>"); dAl.style.display = al.length ? "block" : "none";
+            let frigo = JSON.parse(localStorage.getItem('frigo')) || {};
             
-            let listPizzasHTML = Object.entries(p).map(([n,q]) => `<li><span>${n}</span> <span class="highlight">${q}</span></li>`).join("");
-            document.getElementById("liste-pizzas-totales").innerHTML = listPizzasHTML || "<li><span>Aucune production requise</span> <span>-</span></li>";
+            // Vérif Frigo
+            for(let [n, q] of Object.entries(ing)) {
+                if(frigo[n] !== undefined && q > frigo[n]) {
+                    alertes.push(`❄️ <b>Rupture Frigo :</b> Il manque ${((q - frigo[n])/1000).toFixed(2)} Kg de ${n.replace(' (g)','')}.`);
+                }
+            }
+
+            let dAl = document.getElementById("zone-alertes"); 
+            dAl.innerHTML = alertes.join("<br>"); dAl.style.display = alertes.length ? "block" : "none";
+            
+            document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li><span>${n}</span> <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire.</li>";
             
             let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
-            let cV = [], cF = [], cD = [], cA = [];
-            const mEx = ["sauce", "origan", "miel", "epice", "herbe"];
-            const mV = ["boeuf", "allumettes", "merguez", "poulet", "jambon", "saucisses", "viande"];
-            const mF = ["roquefort", "emmental", "scalarella", "chèvre", "chevre", "cheddar", "camembert", "comte", "comté", "compte", "compté", "reblochon", "boursin"];
-            
+            let cV = [], cF = [], cD = [];
             for(let [n, q] of Object.entries(ing)) {
-                let nl = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); if(mEx.some(m => nl.includes(m))) continue;
+                if(n.includes("sauce") || n.includes("Epice")) continue;
                 let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
-                let li = `<li class="checklist-item"><label><input type="checkbox"><span>${n} <span class="highlight">${tq}</span></span></label></li>`;
-                if(mV.some(m => nl.includes(m))) cV.push(li); else if(mF.some(m => nl.includes(m))) cF.push(li); else if(nl.includes("disque")) cD.push(li); else cA.push(li);
+                let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
+                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) cV.push(li); 
+                else if(n.includes("Disque")) cD.push(li); 
+                else cF.push(li);
             }
-            if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
-            if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages</h4><ul>${cF.join("")}</ul></div>`;
             if(cD.length) dI.innerHTML += `<div class="ing-category"><h4>🍕 Disques</h4><ul>${cD.join("")}</ul></div>`;
-            if(cA.length) dI.innerHTML += `<div class="ing-category"><h4>📦 Autres (Hors sauces/épices)</h4><ul>${cA.join("")}</ul></div>`;
+            if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
+            if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages & Autres</h4><ul>${cF.join("")}</ul></div>`;
             
-            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `
-                <div style="flex:1; min-width:250px; background:#f8fafc; padding:15px; border:1px solid var(--border); border-radius:8px;">
-                    <b style="color:var(--dark); display:block; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">📍 ${m}</b>
-                    <ul style="font-size:14px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("") || "<li>Distributeur à jour</li>"}</ul>
-                </div>`).join("");
-            
-            const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById("date-production").innerText = "Pour le " + new Date().toLocaleDateString('fr-FR', optionsDate);
+            document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="flex:1; background:var(--card-bg); padding:15px; border:1px solid var(--border); border-radius:8px;"><b>${m}</b><ul style="margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("")}</ul></div>`).join("");
+            majChecklist(); // Reset progress
         }
 
-        function reinitialiserStocks() { 
-            if(confirm("Remettre tous les stocks à zéro ?")) { 
-                distributeurs.forEach((d, mIdx) => pizzasActives.forEach((p) => {
-                    let pIdx = listePizzasTotale.indexOf(p);
-                    document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0;
-                })); 
-                document.getElementById("zone-resultats").style.display = "none"; 
-            } 
+        function majChecklist() {
+            const boxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+            const checked = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked');
+            const pct = boxes.length ? Math.round((checked.length / boxes.length) * 100) : 0;
+            document.getElementById('checklist-bar').style.width = pct + '%';
+            document.getElementById('checklist-pct').innerText = pct + '%';
+        }
+
+        // --- HISTORIQUE ---
+        function archiverProduction() {
+            if(derniereProduction === 0) return alert("Rien à archiver.");
+            let hist = JSON.parse(localStorage.getItem('historique')) || [];
+            let date = new Date().toLocaleDateString('fr-FR') + " " + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+            hist.unshift({ date: date, total: derniereProduction });
+            if(hist.length > 15) hist.pop();
+            localStorage.setItem('historique', JSON.stringify(hist));
+            alert("✅ Production archivée avec succès !");
+            document.getElementById('btn-archive').style.display = 'none'; // Cacher pour pas double-clic
+        }
+        function ouvrirModalHistorique() {
+            let hist = JSON.parse(localStorage.getItem('historique')) || [];
+            let html = hist.length ? hist.map(h => `<li style="border-bottom:1px solid var(--border); padding:8px 0; font-size:14px;">🗓️ ${h.date} <strong style="float:right; color:var(--primary);">${h.total} Pizzas</strong></li>`).join("") : "<li>Aucune archive.</li>";
+            document.getElementById('historique-list').innerHTML = html;
+            document.getElementById('historique-modal').style.display = 'flex';
         }
         function imprimerPDF() { window.print(); }
     </script>
