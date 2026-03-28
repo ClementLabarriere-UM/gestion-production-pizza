@@ -4,7 +4,7 @@
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Production V2 - Digiclem</title>
+    <title>Espace Production - Gang Of Pizza</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -13,7 +13,7 @@
             --primary: #EE5541; 
             --primary-hover: #d32f2f;
             --dark: #1e293b;
-            --bg-color: #EE5541; /* Rouge par défaut */
+            --bg-color: #EE5541;
             --card-bg: #ffffff;
             --border: #e2e8f0;
             --text-main: #334155;
@@ -25,21 +25,13 @@
 
         /* DARK MODE VARIABLES */
         body.dark-mode {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f1f5f9;
-            --text-light: #94a3b8;
-            --border: #334155;
-            --primary: #dc2626;
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f1f5f9;
+            --text-light: #94a3b8; --border: #334155; --primary: #dc2626;
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; margin: 0; 
-            background-color: var(--bg-color); color: var(--text-main); 
-            padding-bottom: 40px; transition: background-color 0.3s;
-        }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; transition: background-color 0.3s; }
 
-        /* --- ÉCRAN DE VERROUILLAGE --- */
+        /* ÉCRAN DE VERROUILLAGE */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
         .login-box { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 350px; }
         .login-box img { max-width: 180px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
@@ -50,11 +42,11 @@
 
         #app-content { display: none; }
 
-        /* --- WIDGET METEO --- */
+        /* WIDGET METEO */
         #meteo-widget { background: rgba(255,255,255,0.1); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 500; }
         body.dark-mode #meteo-widget { background: rgba(0,0,0,0.2); }
 
-        /* --- BARRE DE NAVIGATION --- */
+        /* BARRE DE NAVIGATION */
         .topbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: background-color 0.3s; }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 40px; }
@@ -66,40 +58,36 @@
         .btn-sync { background-color: #1e293b; color: white; border:none; }
         .btn-calc { background-color: var(--primary); color: white; border:none; }
 
-        /* --- CONTENU PRINCIPAL --- */
+        /* CONTENU PRINCIPAL */
         .main-container { max-width: 1300px; margin: 20px auto; padding: 0 20px; }
 
-        /* Cartes Distributeurs */
         #formulaire-distributeurs { display: flex; flex-wrap: wrap; gap: 20px; }
         .distributeur-card { flex: 1; min-width: 320px; background: var(--card-bg); padding: 0; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); overflow: hidden; transition: background-color 0.3s; border: 1px solid var(--border); }
         .card-header { background-color: transparent; padding: 15px 20px; border-bottom: 1px solid var(--border); }
         .card-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-header h2 { margin: 0; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
-        /* Jauge */
         .jauge-container { text-align: right; }
         .jauge-text { font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; display: block; }
         .jauge-bg { width: 100px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
         .jauge-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s, background 0.3s; }
 
-        /* Tableaux */
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
         th { color: var(--text-light); font-weight: 600; text-transform: uppercase; font-size: 11px; }
         td strong { color: var(--text-main); font-weight: 600; }
         .input-group { display: flex; align-items: center; gap: 0; background: var(--border); border-radius: 6px; padding: 2px; width: fit-content; }
         .btn-qty { background: transparent; border: none; width: 28px; height: 28px; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; }
-        input[type="number"] { width: 35px; height: 28px; text-align: center; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-main); outline: none; -moz-appearance: textfield; }
+        input[type="number"] { width: 45px; height: 28px; text-align: center; border: none; background: transparent; font-size: 14px; font-weight: 700; color: var(--text-main); outline: none; -moz-appearance: textfield; }
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        /* --- ZONE DE RÉSULTATS (BILAN) --- */
+        /* ZONE DE RÉSULTATS (BILAN) */
         .resultats-container { background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-top: 30px; display: none; transition: background-color 0.3s; border: 1px solid var(--border); }
         .result-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
         .result-header h2 { margin: 0; font-size: 22px; color: var(--text-main); }
         .flex-row { display: flex; gap: 30px; margin-top: 15px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 300px; }
         
-        /* Checklist interactive */
         .progress-wrapper { background: var(--border); height: 8px; border-radius: 4px; margin-bottom: 15px; overflow: hidden; }
         #checklist-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s; }
         
@@ -119,7 +107,7 @@
 
         /* Modals */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index:10000; justify-content:center; align-items:center; }
-        .modal-content { background:var(--card-bg); color:var(--text-main); padding:25px; border-radius:12px; width:400px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; }
+        .modal-content { background:var(--card-bg); color:var(--text-main); padding:25px; border-radius:12px; width:450px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; }
         .modal-content h3 { margin-top:0; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .modal-actions { display:flex; justify-content:space-between; margin-top:25px; gap: 10px; }
         .modal-actions button { flex: 1; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
@@ -142,7 +130,7 @@
 </head>
 <body>
 
-    <div id="meteo-widget">⏳ Chargement de la météo Vallon de Tourne...</div>
+    <div id="meteo-widget">⏳ Recherche de votre position pour la météo...</div>
 
     <div id="login-screen">
         <div class="login-box">
@@ -158,14 +146,15 @@
         <div class="topbar">
             <div class="brand">
                 <img src="logo.png" alt="Logo">
-                <h1>Digiclem</h1>
+                <h1>Gang Of Pizza - Vallon de Tourne <span style="color:var(--text-light); font-weight:400;">| Espace Production</span></h1>
             </div>
             <div class="header-actions">
                 <button class="btn-top" onclick="toggleDarkMode()" id="btn-darkmode">🌙</button>
-                <button class="btn-top" onclick="ouvrirModalFrigo()">❄️ Frigo</button>
+                <button class="btn-top" onclick="ouvrirModalLivraison()">🚚 Livraisons</button>
+                <button class="btn-top" onclick="ouvrirModalFrigo()">❄️ Stocks & Seuils</button>
                 <button class="btn-top" onclick="ouvrirModalHistorique()">📈 Historique</button>
-                <button class="btn-top" onclick="ouvrirModalParametres()">⚙️ Menu</button>
-                <button class="btn-top btn-sync" onclick="synchroniserStocks()" id="btn-sync">🔄 Adial</button>
+                <button class="btn-top" onclick="ouvrirModalParametres()">⚙️ Carte</button>
+                <button class="btn-top btn-sync" onclick="synchroniserStocks()" id="btn-sync">🔄 API Adial</button>
                 <button class="btn-top btn-calc" onclick="calculerProductionGlobale()">📊 Calculer</button>
             </div>
         </div>
@@ -181,7 +170,6 @@
                         <button class="btn-top" style="display:inline-block; background:var(--border);" onclick="imprimerPDF()">🖨️ Imprimer</button>
                     </div>
                 </div>
-                
                 <div id="zone-alertes"></div>
                 
                 <div class="flex-row">
@@ -215,7 +203,7 @@
             <h3>⚙️ Pizzas à afficher</h3>
             <div id="settings-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
             <div class="modal-actions">
-                <button class="btn-cancel" onclick="fermerModalParametres()">Fermer</button>
+                <button class="btn-cancel" onclick="document.getElementById('settings-modal').style.display='none'">Fermer</button>
                 <button class="btn-confirm" onclick="sauvegarderParametres()">Enregistrer</button>
             </div>
         </div>
@@ -223,8 +211,11 @@
 
     <div id="frigo-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>❄️ Inventaire Frigo (Kilos)</h3>
-            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Indiquez le stock restant. Une alerte s'affichera si la production demande plus.</p>
+            <h3>❄️ Inventaire & Seuils</h3>
+            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Définissez votre stock réel et le seuil d'alerte. (Kg pour les viandes/fromages, Unités pour le reste).</p>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; font-weight:bold; font-size:12px; color:var(--text-light); margin-bottom:10px;">
+                <span>Ingrédient</span><span style="text-align:center;">Stock Actuel</span><span style="text-align:center;">Seuil Alerte</span>
+            </div>
             <div id="frigo-inputs" style="display:flex; flex-direction:column; gap:10px;"></div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="document.getElementById('frigo-modal').style.display='none'">Annuler</button>
@@ -233,9 +224,21 @@
         </div>
     </div>
 
+    <div id="livraison-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>🚚 Enregistrer une livraison</h3>
+            <p style="font-size:12px; color:var(--text-light); margin-top:-5px;">Ajoutez les quantités reçues, elles s'additionneront automatiquement à votre stock actuel.</p>
+            <div id="livraison-inputs" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('livraison-modal').style.display='none'">Annuler</button>
+                <button class="btn-confirm" onclick="validerLivraison()">Ajouter au stock</button>
+            </div>
+        </div>
+    </div>
+
     <div id="historique-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>📈 Historique des productions</h3>
+            <h3>📈 Historique (Local)</h3>
             <ul id="historique-list" style="margin-top:10px;"></ul>
             <div class="modal-actions">
                 <button class="btn-cancel" style="width:100%;" onclick="document.getElementById('historique-modal').style.display='none'">Fermer</button>
@@ -244,65 +247,94 @@
     </div>
 
     <script>
-        // --- DONNÉES MÉTIER ---
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
         const recettes = {
-            "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6},
-            "Burger": {"Disque tomaté": 1, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Scalarella + Cheddar (g)": 110},
+            "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
+            "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
             "Camembert Rôti": {"Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
-            "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Scalarella (g)": 110},
-            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8},
+            "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
+            "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
             "Croq'": {"Disque crémé": 1, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
             "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8},
-            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Comté râpé (g)": 30, "Scalarella (g)": 90},
-            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Poivrons grillés (g)": 30, "Scalarella (g)": 110},
+            "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
+            "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
             "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
-            "Maxi Kebab": {"Disque crémé": 1, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120},
-            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80},
-            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
+            "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
+            "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
+            "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi)": 5},
             "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90}
         };
+
         const listePizzasTotale = Object.keys(recettes);
-        const clesFrigo = ["Scalarella (g)", "Emmental râpé (g)", "Egrené au boeuf (g)", "Poulet rôti (g)", "Allumettes fumées (g)", "Jambon (g)"];
+        // Extraction de TOUS les ingrédients pour le frigo
+        const clesFrigo = [...new Set(Object.values(recettes).flatMap(r => Object.keys(r)))].sort();
         
         let pizzasActives = JSON.parse(localStorage.getItem('pizzasActives')) || listePizzasTotale;
         let isDarkMode = localStorage.getItem('darkMode') === 'true';
+        let frigoData = JSON.parse(localStorage.getItem('frigoData')) || {};
 
-        // --- INIT & CONNEXION ---
+        // Initialisation de la structure Frigo si vide
+        clesFrigo.forEach(k => { if(!frigoData[k]) frigoData[k] = { stock: 0, seuil: 0 }; });
+
+        function isGrams(name) { return name.includes("(g)"); }
+
+        // --- CONNEXION & ALERTES ---
         function verifierMotDePasse() {
             if (document.getElementById('input-mdp').value === "20061978") {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'block';
-                chargerMeteo(); initialiserApp(); applyTheme();
+                chargerMeteo(); initialiserApp(); applyTheme(); verifierAlertesGlobales();
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("input-mdp").addEventListener("keypress", (e) => { if(e.key === "Enter") verifierMotDePasse(); });
         });
 
-        // --- DARK MODE ---
-        function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            localStorage.setItem('darkMode', isDarkMode);
-            applyTheme();
-        }
-        function applyTheme() {
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            document.getElementById('btn-darkmode').innerText = isDarkMode ? "☀️" : "🌙";
+        function verifierAlertesGlobales() {
+            let alertes = [];
+            for(let k of clesFrigo) {
+                if(frigoData[k].stock <= frigoData[k].seuil && frigoData[k].seuil > 0) {
+                    let valDisplay = isGrams(k) ? (frigoData[k].stock/1000).toFixed(2) + " Kg" : frigoData[k].stock;
+                    alertes.push(`⚠️ ${k.replace(' (g)','')} (Reste : ${valDisplay})`);
+                }
+            }
+            if(alertes.length > 0) alert("🚨 ALERTES STOCK FRIGO :\n\n" + alertes.join("\n") + "\n\nPensez à vérifier vos livraisons !");
         }
 
-        // --- METEO (Open-Meteo API Gratuite) ---
+        // --- DARK MODE ---
+        function toggleDarkMode() { isDarkMode = !isDarkMode; localStorage.setItem('darkMode', isDarkMode); applyTheme(); }
+        function applyTheme() { document.body.classList.toggle('dark-mode', isDarkMode); document.getElementById('btn-darkmode').innerText = isDarkMode ? "☀️" : "🌙"; }
+
+        // --- METEO & EVENEMENTS INTELLIGENTS ---
+        const joursFeries = { "01/01":"Nouvel An", "06/04":"Lundi de Pâques", "01/05":"Fête du Travail", "08/05":"Victoire 1945", "14/05":"Ascension", "14/07":"Fête Nationale", "15/08":"Assomption", "01/11":"Toussaint", "11/11":"Armistice", "25/12":"Noël" };
+        function getEventForToday() {
+            let today = new Date();
+            let ddMm = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2);
+            if(joursFeries[ddMm]) return `🎉 ${joursFeries[ddMm]} : Forte affluence prévue !`;
+            if(today.getDay() === 6) return `⚽ Samedi : Soirée Match & Pizzas !`;
+            return "";
+        }
+
         async function chargerMeteo() {
+            let evtMsg = getEventForToday();
+            let finalMsg = evtMsg ? ` | ${evtMsg}` : "";
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    fetchMeteo(pos.coords.latitude, pos.coords.longitude, finalMsg, "locale");
+                }, () => fetchMeteo(44.40, 4.39, finalMsg, "Vallon"));
+            } else fetchMeteo(44.40, 4.39, finalMsg, "Vallon");
+        }
+
+        async function fetchMeteo(lat, lon, finalMsg, locName) {
             try {
-                // Vallon Pont d'Arc / Ardèche
-                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=44.40&longitude=4.39&daily=weathercode,temperature_2m_max&timezone=Europe%2FParis&forecast_days=1");
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max&timezone=Europe%2FParis&forecast_days=1`);
                 const data = await res.json();
-                const temp = data.daily.temperature_2m_max[0];
-                const code = data.daily.weathercode[0];
-                let icon = "☀️"; let msg = "Beau temps, préparez du stock pour les balades !";
-                if(code >= 61) { icon = "🌧️"; msg = "Pluie annoncée : Hausse des ventes au distributeur ce soir ! 🍕📈"; }
-                document.getElementById('meteo-widget').innerHTML = `${icon} <strong>Météo Vallon :</strong> ${temp}°C - ${msg}`;
-            } catch(e) { document.getElementById('meteo-widget').style.display = 'none'; }
+                let temp = data.daily.temperature_2m_max[0]; let code = data.daily.weathercode[0];
+                let icon = "☀️"; let msg = "Beau temps !";
+                if(code >= 61) { icon = "🌧️"; msg = "Pluie : Boost des ventes distributeur à prévoir !"; }
+                document.getElementById('meteo-widget').innerHTML = `${icon} <strong>Météo ${locName} :</strong> ${temp}°C - ${msg}${finalMsg}`;
+            } catch(e) { document.getElementById('meteo-widget').innerHTML = "Météo indisponible."; }
         }
 
         // --- APP & JAUGES ---
@@ -312,30 +344,13 @@
         }
 
         function initialiserApp() {
-            const cont = document.getElementById("formulaire-distributeurs");
-            cont.innerHTML = "";
+            const cont = document.getElementById("formulaire-distributeurs"); cont.innerHTML = "";
             distributeurs.forEach((d, mIdx) => {
-                let h = `<div class="distributeur-card">
-                    <div class="card-header">
-                        <div class="card-header-top">
-                            <h2>📍 ${d}</h2>
-                            <div class="jauge-container">
-                                <span class="jauge-text" id="jauge-text-${mIdx}">0 / 70</span>
-                                <div class="jauge-bg"><div class="jauge-fill" id="jauge-bar-${mIdx}"></div></div>
-                            </div>
-                        </div>
-                        <button class="btn-top" style="font-size:11px; padding:4px 8px;" onclick="copierMachine(${mIdx})">📋 Copier</button>
-                    </div>
-                    <table><tr><th>Recette</th><th>Stock</th><th>Obj.</th></tr>`;
-                
+                let h = `<div class="distributeur-card"><div class="card-header"><div class="card-header-top"><h2>📍 ${d}</h2><div class="jauge-container"><span class="jauge-text" id="jauge-text-${mIdx}">0 / 70</span><div class="jauge-bg"><div class="jauge-fill" id="jauge-bar-${mIdx}"></div></div></div></div><button class="btn-top" style="font-size:11px; padding:4px 8px;" onclick="copierMachine(${mIdx})">📋 Copier vers...</button></div><table><tr><th>Recette</th><th>Stock</th><th>Obj.</th></tr>`;
                 pizzasActives.forEach((p) => {
                     let pIdx = listePizzasTotale.indexOf(p);
                     let sO = localStorage.getItem(`obj_${mIdx}_${pIdx}`) || 0;
-                    h += `<tr>
-                        <td><strong>${p}</strong></td>
-                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0" oninput="majJauges()"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td>
-                        <td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td>
-                    </tr>`;
+                    h += `<tr><td><strong>${p}</strong></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="stock_${mIdx}_${pIdx}" value="0" oninput="majJauges()"><button class="btn-qty" onclick="modifierQte('stock_${mIdx}_${pIdx}',1)">+</button></div></td><td><div class="input-group"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',-1)">-</button><input type="number" id="obj_${mIdx}_${pIdx}" value="${sO}"><button class="btn-qty" onclick="modifierQte('obj_${mIdx}_${pIdx}',1)">+</button></div></td></tr>`;
                 });
                 cont.innerHTML += h + `</table></div>`;
             });
@@ -345,17 +360,10 @@
         function majJauges() {
             distributeurs.forEach((d, mIdx) => {
                 let sum = 0;
-                pizzasActives.forEach(p => {
-                    let pIdx = listePizzasTotale.indexOf(p);
-                    let val = document.getElementById(`obj_${mIdx}_${pIdx}`);
-                    if(val) sum += parseInt(val.value) || 0;
-                });
-                let elText = document.getElementById(`jauge-text-${mIdx}`);
-                let elBar = document.getElementById(`jauge-bar-${mIdx}`);
+                pizzasActives.forEach(p => { let val = document.getElementById(`obj_${mIdx}_${listePizzasTotale.indexOf(p)}`); if(val) sum += parseInt(val.value) || 0; });
+                let elText = document.getElementById(`jauge-text-${mIdx}`); let elBar = document.getElementById(`jauge-bar-${mIdx}`);
                 if(elText && elBar) {
-                    elText.innerText = `${sum} / 70`;
-                    let pct = Math.min(100, (sum / 70) * 100);
-                    elBar.style.width = `${pct}%`;
+                    elText.innerText = `${sum} / 70`; elBar.style.width = `${Math.min(100, (sum / 70) * 100)}%`;
                     if(sum > 70) { elBar.style.background = 'var(--danger)'; elText.style.color = 'var(--danger)'; }
                     else if(sum > 55) { elBar.style.background = 'var(--warning)'; elText.style.color = 'var(--warning)'; }
                     else { elBar.style.background = 'var(--success)'; elText.style.color = 'var(--text-main)'; }
@@ -363,121 +371,96 @@
             });
         }
 
-        // --- MENU PIZZAS ---
-        function ouvrirModalParametres() {
-            const div = document.getElementById("settings-options"); div.innerHTML = "";
-            listePizzasTotale.forEach(p => {
-                let check = pizzasActives.includes(p) ? "checked" : "";
-                div.innerHTML += `<label style="display:flex; align-items:center; font-size:14px;"><input type="checkbox" class="pizza-opt" value="${p}" ${check} style="margin-right:8px;"> ${p}</label>`;
-            });
-            document.getElementById("settings-modal").style.display = "flex";
-        }
-        function fermerModalParametres() { document.getElementById("settings-modal").style.display = "none"; }
-        function sauvegarderParametres() {
-            pizzasActives = Array.from(document.querySelectorAll('.pizza-opt:checked')).map(cb => cb.value);
-            localStorage.setItem('pizzasActives', JSON.stringify(pizzasActives));
-            fermerModalParametres(); initialiserApp();
-        }
-
-        // --- INVENTAIRE FRIGO ---
+        // --- GESTION FRIGO (Stocks & Seuils) ---
         function ouvrirModalFrigo() {
-            let frigo = JSON.parse(localStorage.getItem('frigo')) || {};
             let html = "";
             clesFrigo.forEach(k => {
-                let val = frigo[k] ? (frigo[k]/1000) : 0; // Affichage en Kilo
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:5px 0;">
-                    <span style="font-size:14px; font-weight:600;">${k.replace(' (g)','')}</span>
-                    <div class="input-group" style="background:var(--card-bg); border:1px solid var(--border);">
-                        <input type="number" id="frigo_${k}" value="${val}" step="0.5" style="width:60px;"> <span style="font-size:12px; padding-right:8px;">Kg</span>
-                    </div>
+                let vStock = isGrams(k) ? (frigoData[k].stock/1000) : frigoData[k].stock;
+                let vSeuil = isGrams(k) ? (frigoData[k].seuil/1000) : frigoData[k].seuil;
+                html += `<div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:5px; align-items:center; border-bottom:1px solid var(--border); padding:5px 0;">
+                    <span style="font-size:13px; font-weight:600;">${k.replace(' (g)','')}</span>
+                    <input type="number" id="fs_${k}" value="${vStock}" step="0.5" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px; text-align:center;">
+                    <input type="number" id="fa_${k}" value="${vSeuil}" step="0.5" style="width:100%; border:1px solid var(--border); border-radius:4px; padding:4px; text-align:center; background:rgba(239,68,68,0.1);">
                 </div>`;
             });
             document.getElementById('frigo-inputs').innerHTML = html;
             document.getElementById('frigo-modal').style.display = 'flex';
         }
         function sauvegarderFrigo() {
-            let frigo = {};
             clesFrigo.forEach(k => {
-                let val = parseFloat(document.getElementById(`frigo_${k}`).value) || 0;
-                frigo[k] = val * 1000; // Stockage en grammes
+                let s = parseFloat(document.getElementById(`fs_${k}`).value) || 0;
+                let a = parseFloat(document.getElementById(`fa_${k}`).value) || 0;
+                frigoData[k].stock = isGrams(k) ? s*1000 : s;
+                frigoData[k].seuil = isGrams(k) ? a*1000 : a;
             });
-            localStorage.setItem('frigo', JSON.stringify(frigo));
+            localStorage.setItem('frigoData', JSON.stringify(frigoData));
             document.getElementById('frigo-modal').style.display = 'none';
         }
 
-        // --- COPIE ---
-        function copierMachine(sourceIdx) {
-            let cible = confirm(`Copier les objectifs de ${distributeurs[sourceIdx]} vers les autres machines ?`);
-            if(!cible) return;
-            pizzasActives.forEach(p => {
-                let pIdx = listePizzasTotale.indexOf(p);
-                let val = document.getElementById(`obj_${sourceIdx}_${pIdx}`).value;
-                distributeurs.forEach((d, i) => { if(i !== sourceIdx) document.getElementById(`obj_${i}_${pIdx}`).value = val; });
+        // --- LIVRAISONS (+ Ajout au stock) ---
+        function ouvrirModalLivraison() {
+            let html = "";
+            clesFrigo.forEach(k => {
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:5px 0;">
+                    <span style="font-size:13px; font-weight:600;">${k.replace(' (g)','')}</span>
+                    <div class="input-group" style="background:var(--card-bg); border:1px solid var(--border);">
+                        <span style="padding:0 8px;">+</span><input type="number" id="liv_${k}" value="" step="0.5" style="width:50px;"> <span style="font-size:12px; padding-right:8px;">${isGrams(k)?'Kg':'Unité'}</span>
+                    </div>
+                </div>`;
             });
-            majJauges();
+            document.getElementById('livraison-inputs').innerHTML = html;
+            document.getElementById('livraison-modal').style.display = 'flex';
+        }
+        function validerLivraison() {
+            let ajouts = 0;
+            clesFrigo.forEach(k => {
+                let v = parseFloat(document.getElementById(`liv_${k}`).value);
+                if(v > 0) { frigoData[k].stock += (isGrams(k) ? v*1000 : v); ajouts++; }
+            });
+            if(ajouts > 0) {
+                localStorage.setItem('frigoData', JSON.stringify(frigoData));
+                alert(`✅ ${ajouts} produit(s) ajouté(s) au stock Frigo !`);
+            }
+            document.getElementById('livraison-modal').style.display = 'none';
         }
 
-        // --- API ADIAL ---
+        function copierMachine(sIdx) { if(confirm("Copier vers les autres ?")) { pizzasActives.forEach(p => { let v = document.getElementById(`obj_${sIdx}_${listePizzasTotale.indexOf(p)}`).value; distributeurs.forEach((d, i) => { if(i !== sIdx) document.getElementById(`obj_${i}_${listePizzasTotale.indexOf(p)}`).value = v; }); }); majJauges(); } }
+        function ouvrirModalParametres() { let html=""; listePizzasTotale.forEach(p => html+=`<label style="font-size:14px;"><input type="checkbox" class="pizza-opt" value="${p}" ${pizzasActives.includes(p)?"checked":""}> ${p}</label>`); document.getElementById("settings-options").innerHTML=html; document.getElementById("settings-modal").style.display="flex"; }
+        function sauvegarderParametres() { pizzasActives = Array.from(document.querySelectorAll('.pizza-opt:checked')).map(cb=>cb.value); localStorage.setItem('pizzasActives', JSON.stringify(pizzasActives)); document.getElementById("settings-modal").style.display="none"; initialiserApp(); }
+
+        // --- LA VRAIE API ADIAL ---
         async function synchroniserStocks() {
-            const btn = document.getElementById('btn-sync');
-            btn.innerHTML = "⏳ Téléchargement et filtrage..."; btn.disabled = true;
-            
-            const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
+            const btn = document.getElementById('btn-sync'); btn.innerHTML = "⏳ Téléchargement..."; btn.disabled = true;
             const proxyUrl = "https://solitary-recipe-92bd.clement-labarriere.workers.dev";
-
+            const groupId = "gelbAAyLaWy0KDfVsfH8ftlxAU6g90T3OrWWcFrCgVE";
             try {
-                const rS = await fetch(`${proxyUrl}/groups/${groupId}/stocks`);
-                const rA = await fetch(`${proxyUrl}/apds/`);
-                let rP = await fetch(`${proxyUrl}/pizzas/`);
-                if (!rP.ok) rP = await fetch(`${proxyUrl}/pizzas`);
-
+                const rS = await fetch(`${proxyUrl}/groups/${groupId}/stocks`); const rA = await fetch(`${proxyUrl}/apds/`); let rP = await fetch(`${proxyUrl}/pizzas/`); if (!rP.ok) rP = await fetch(`${proxyUrl}/pizzas`);
                 const dS = await rS.json(), dA = await rA.json(), dP = await rP.json();
-                
                 let dictA = {}, dictP = {};
-                (dA.apds || dA).forEach(m => dictA[m.id] = m.name);
-                (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
-                
-                let counts = {};
-                const now = Date.now();
-                
-                (dS.stocks || []).forEach(it => {
-                    if(it.pizzaId && it.locationUsed === true && it.expiryDate > now) {
-                        let m = dictA[it.apdId], p = dictP[it.pizzaId];
-                        if(m && p) { if(!counts[m]) counts[m] = {}; counts[m][p] = (counts[m][p] || 0) + 1; }
-                    }
-                });
-                
+                (dA.apds || dA).forEach(m => dictA[m.id] = m.name); (dP.pizzas || dP).forEach(p => dictP[p.id] = p.pizzaName);
+                let counts = {}; const now = Date.now();
+                (dS.stocks || []).forEach(it => { if(it.pizzaId && it.locationUsed && it.expiryDate > now) { let m = dictA[it.apdId], p = dictP[it.pizzaId]; if(m && p) { if(!counts[m]) counts[m] = {}; counts[m][p] = (counts[m][p] || 0) + 1; } } });
                 const norm = s => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
                 distributeurs.forEach((d, mIdx) => {
-                    pizzasActives.forEach((p) => {
-                        let pIdx = listePizzasTotale.indexOf(p);
-                        document.getElementById(`stock_${mIdx}_${pIdx}`).value = 0;
-                    });
-                    
+                    pizzasActives.forEach(p => document.getElementById(`stock_${mIdx}_${listePizzasTotale.indexOf(p)}`).value = 0);
                     for(let [mApi, pzs] of Object.entries(counts)) {
                         if(norm(mApi).includes(norm(d)) || norm(d).includes(norm(mApi))) {
                             for(let [pApi, q] of Object.entries(pzs)) {
                                 let pIdx = listePizzasTotale.findIndex(p => norm(pApi).includes(norm(p)) || norm(p).includes(norm(pApi)));
-                                // On ne remplit la case que si la pizza est cochée dans les paramètres
-                                if(pIdx !== -1 && pizzasActives.includes(listePizzasTotale[pIdx])) { 
-                                    document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
-                                }
+                                if(pIdx !== -1 && pizzasActives.includes(listePizzasTotale[pIdx])) document.getElementById(`stock_${mIdx}_${pIdx}`).value = q;
                             }
                         }
                     }
                 });
-                alert("✅ Synchronisation réussie ! Les pizzas périmées sont ignorées.");
-            } catch(e) { 
-                console.error(e); alert("❌ Erreur de réseau.");
-            }
-            btn.innerHTML = "🔄 Sync. Adial"; btn.disabled = false;
+                alert("✅ API Adial : Synchronisation réussie !"); majJauges();
+            } catch(e) { alert("❌ Erreur API Adial."); }
+            btn.innerHTML = "🔄 API Adial"; btn.disabled = false;
         }
 
-        // --- CALCUL & CHECKLIST ---
-        let derniereProduction = 0; // Pour l'archive
+        // --- CALCUL & DEDUCTION FRIGO ---
+        let derniereProduction = 0;
         function calculerProductionGlobale() {
-            let pT = {}, iT = {}, r = {}, alertes = [];
-            let totalPizzas = 0;
+            let pT = {}, iT = {}, r = {}, alertes = []; let totalPizzas = 0;
             distributeurs.forEach((d, mIdx) => {
                 r[d] = {}; let sum = 0;
                 pizzasActives.forEach((p) => {
@@ -486,10 +469,7 @@
                     let o = parseInt(document.getElementById(`obj_${mIdx}_${pIdx}`).value) || 0;
                     localStorage.setItem(`obj_${mIdx}_${pIdx}`, o); sum += o;
                     let diff = Math.max(0, o - s);
-                    if(diff > 0) { 
-                        r[d][p] = diff; pT[p] = (pT[p] || 0) + diff; totalPizzas += diff;
-                        for(let [ing, g] of Object.entries(recettes[p])) iT[ing] = (iT[ing] || 0) + (g * diff); 
-                    }
+                    if(diff > 0) { r[d][p] = diff; pT[p] = (pT[p] || 0) + diff; totalPizzas += diff; for(let [ing, g] of Object.entries(recettes[p])) iT[ing] = (iT[ing] || 0) + (g * diff); }
                 });
                 if(sum > 70) alertes.push(`⚠️ Surcharge prévue à ${d} (${sum}/70).`);
             });
@@ -499,12 +479,14 @@
 
         function afficherResultats(p, ing, r, alertes) {
             document.getElementById("zone-resultats").style.display = "block";
-            let frigo = JSON.parse(localStorage.getItem('frigo')) || {};
             
-            // Vérif Frigo
             for(let [n, q] of Object.entries(ing)) {
-                if(frigo[n] !== undefined && q > frigo[n]) {
-                    alertes.push(`❄️ <b>Rupture Frigo :</b> Il manque ${((q - frigo[n])/1000).toFixed(2)} Kg de ${n.replace(' (g)','')}.`);
+                if(frigoData[n] !== undefined) {
+                    if(q > frigoData[n].stock) {
+                        let manquant = q - frigoData[n].stock;
+                        let aff = isGrams(n) ? (manquant/1000).toFixed(2)+" Kg" : manquant;
+                        alertes.push(`❌ <b>Rupture Frigo :</b> Impossible de produire. Il manque ${aff} de ${n.replace(' (g)','')}.`);
+                    }
                 }
             }
 
@@ -517,43 +499,45 @@
             let cV = [], cF = [], cD = [];
             for(let [n, q] of Object.entries(ing)) {
                 if(n.includes("sauce") || n.includes("Epice")) continue;
-                let tq = n.includes("(g)") && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
+                let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
                 let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
-                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) cV.push(li); 
-                else if(n.includes("Disque")) cD.push(li); 
-                else cF.push(li);
+                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) cV.push(li); else if(n.includes("Disque")) cD.push(li); else cF.push(li);
             }
             if(cD.length) dI.innerHTML += `<div class="ing-category"><h4>🍕 Disques</h4><ul>${cD.join("")}</ul></div>`;
             if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
             if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages & Autres</h4><ul>${cF.join("")}</ul></div>`;
             
             document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="flex:1; background:var(--card-bg); padding:15px; border:1px solid var(--border); border-radius:8px;"><b>${m}</b><ul style="margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("")}</ul></div>`).join("");
-            majChecklist(); // Reset progress
+            majChecklist(); document.getElementById('btn-archive').style.display = 'inline-block';
         }
 
         function majChecklist() {
             const boxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
-            const checked = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked');
-            const pct = boxes.length ? Math.round((checked.length / boxes.length) * 100) : 0;
-            document.getElementById('checklist-bar').style.width = pct + '%';
-            document.getElementById('checklist-pct').innerText = pct + '%';
+            const pct = boxes.length ? Math.round((document.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length / boxes.length) * 100) : 0;
+            document.getElementById('checklist-bar').style.width = pct + '%'; document.getElementById('checklist-pct').innerText = pct + '%';
         }
 
-        // --- HISTORIQUE ---
         function archiverProduction() {
             if(derniereProduction === 0) return alert("Rien à archiver.");
-            let hist = JSON.parse(localStorage.getItem('historique')) || [];
-            let date = new Date().toLocaleDateString('fr-FR') + " " + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-            hist.unshift({ date: date, total: derniereProduction });
-            if(hist.length > 15) hist.pop();
-            localStorage.setItem('historique', JSON.stringify(hist));
-            alert("✅ Production archivée avec succès !");
-            document.getElementById('btn-archive').style.display = 'none'; // Cacher pour pas double-clic
+            if(confirm("Confirmer la production ? Cela va déduire les ingrédients de votre Frigo.")) {
+                // Déduction du frigo
+                let alertes = [];
+                pizzasActives.forEach((p) => {
+                    let pIdx = listePizzasTotale.indexOf(p);
+                    let diff = 0; distributeurs.forEach((d, mIdx) => { diff += Math.max(0, (parseInt(document.getElementById(`obj_${mIdx}_${pIdx}`).value)||0) - (parseInt(document.getElementById(`stock_${mIdx}_${pIdx}`).value)||0)); });
+                    if(diff > 0) { for(let [ing, g] of Object.entries(recettes[p])) { if(frigoData[ing] !== undefined) frigoData[ing].stock -= (g * diff); } }
+                });
+                localStorage.setItem('frigoData', JSON.stringify(frigoData));
+                
+                let hist = JSON.parse(localStorage.getItem('historique')) || [];
+                hist.unshift({ date: new Date().toLocaleString('fr-FR'), total: derniereProduction });
+                if(hist.length > 20) hist.pop(); localStorage.setItem('historique', JSON.stringify(hist));
+                alert("✅ Production archivée ! Stocks Frigo mis à jour."); document.getElementById('btn-archive').style.display = 'none';
+            }
         }
         function ouvrirModalHistorique() {
             let hist = JSON.parse(localStorage.getItem('historique')) || [];
-            let html = hist.length ? hist.map(h => `<li style="border-bottom:1px solid var(--border); padding:8px 0; font-size:14px;">🗓️ ${h.date} <strong style="float:right; color:var(--primary);">${h.total} Pizzas</strong></li>`).join("") : "<li>Aucune archive.</li>";
-            document.getElementById('historique-list').innerHTML = html;
+            document.getElementById('historique-list').innerHTML = hist.length ? hist.map(h => `<li style="border-bottom:1px solid var(--border); padding:8px 0; font-size:14px;">🗓️ ${h.date} <strong style="float:right; color:var(--primary);">${h.total} Pizzas</strong></li>`).join("") : "<li>Aucune archive.</li>";
             document.getElementById('historique-modal').style.display = 'flex';
         }
         function imprimerPDF() { window.print(); }
