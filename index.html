@@ -114,10 +114,13 @@
         .btn-cancel { background: var(--border); color: var(--text-main); }
         .btn-confirm { background: var(--primary); color: white; }
 
-        .footer-credit { text-align: center; margin-top: 50px; color: white; font-size: 13px; opacity: 0.8; }
+        /* Footer & Logo Digiclem */
+        .footer-credit { text-align: center; margin-top: 50px; color: white; font-size: 13px; opacity: 0.9; }
         .footer-credit a { color: white; text-decoration: none; font-weight: 600; }
+        .footer-logo { height: 35px; margin-top: 15px; opacity: 0.95; transition: opacity 0.3s; }
         body.dark-mode .footer-credit { color: var(--text-light); }
         body.dark-mode .footer-credit a { color: var(--primary); }
+        body.dark-mode .footer-logo { opacity: 0.8; filter: brightness(0.9); }
 
         @media print {
             body { background-color: white !important; padding: 0; }
@@ -194,7 +197,10 @@
                 <div id="liste-repartition" style="display:flex; gap:15px; flex-wrap:wrap;"></div>
             </div>
 
-            <div class="footer-credit">Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)</div>
+            <div class="footer-credit">
+                Création 2026 par Clément Labarriere (<a href="https://digiclem.fr" target="_blank">digiclem.fr</a>)<br>
+                <img src="digiclem.png" alt="Agence Digiclem" class="footer-logo">
+            </div>
         </div>
     </div>
 
