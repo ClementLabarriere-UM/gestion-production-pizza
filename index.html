@@ -4,7 +4,7 @@
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Production - Gang Of Pizza</title>
+    <title>Gang Of Pizza - Vallon de Tourne | Espace Production</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -146,7 +146,7 @@
         <div class="topbar">
             <div class="brand">
                 <img src="logo.png" alt="Logo">
-                <h1>Gang Of Pizza - Vallon de Tourne <span style="color:var(--text-light); font-weight:400;">| Espace Production</span></h1>
+                <h1>Gang Of Pizza - Vallon de Tourne <span style="color:var(--text-light); font-weight:400; font-size:16px;">| Espace Production</span></h1>
             </div>
             <div class="header-actions">
                 <button class="btn-top" onclick="toggleDarkMode()" id="btn-darkmode">🌙</button>
@@ -166,7 +166,7 @@
                 <div class="result-header">
                     <h2>📋 Bilan de Production</h2>
                     <div>
-                        <button class="btn-top" style="display:inline-block;" id="btn-archive" onclick="archiverProduction()">💾 Archiver</button>
+                        <button class="btn-top" style="display:inline-block;" id="btn-archive" onclick="validerProduction()">✅ Valider la production</button>
                         <button class="btn-top" style="display:inline-block; background:var(--border);" onclick="imprimerPDF()">🖨️ Imprimer</button>
                     </div>
                 </div>
@@ -517,7 +517,7 @@
             document.getElementById('checklist-bar').style.width = pct + '%'; document.getElementById('checklist-pct').innerText = pct + '%';
         }
 
-        function archiverProduction() {
+        function validerProduction() {
             if(derniereProduction === 0) return alert("Rien à archiver.");
             if(confirm("Confirmer la production ? Cela va déduire les ingrédients de votre Frigo.")) {
                 // Déduction du frigo
@@ -532,7 +532,7 @@
                 let hist = JSON.parse(localStorage.getItem('historique')) || [];
                 hist.unshift({ date: new Date().toLocaleString('fr-FR'), total: derniereProduction });
                 if(hist.length > 20) hist.pop(); localStorage.setItem('historique', JSON.stringify(hist));
-                alert("✅ Production archivée ! Stocks Frigo mis à jour."); document.getElementById('btn-archive').style.display = 'none';
+                alert("✅ Production validée ! Stocks Frigo mis à jour."); document.getElementById('btn-archive').style.display = 'none';
             }
         }
         function ouvrirModalHistorique() {
