@@ -498,18 +498,41 @@
             
             document.getElementById("liste-pizzas-totales").innerHTML = Object.entries(p).map(([n,q]) => `<li><span>${n}</span> <span class="highlight">${q}</span></li>`).join("") || "<li>Rien à produire.</li>";
             
-            let dI = document.getElementById("liste-ingredients"); dI.innerHTML = "";
-            let cV = [], cF = [], cD = [];
+           let dI = document.getElementById("liste-ingredients"); 
+            dI.innerHTML = "";
+                        
+            // On prépare maintenant 4 tableaux au lieu de 3
+            let cV = [], cD = [], cFromages = [], cAutres = [];
+
             for(let [n, q] of Object.entries(ing)) {
                 if(n.includes("sauce") || n.includes("Epice")) continue;
+                
                 let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
                 let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
-                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) cV.push(li); else if(n.includes("Disque")) cD.push(li); else cF.push(li);
+                
+                // Le tri des ingrédients
+                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) {
+                    cV.push(li);
+                } 
+                else if(n.includes("Disque")) {
+                    cD.push(li);
+                } 
+                // NOUVEAU : La détection des fromages (tu peux ajouter d'autres mots clés ici si besoin)
+                else if(n.includes("Mozzarella") || n.includes("Chèvre") || n.includes("Raclette") || n.includes("Reblochon") || n.includes("Gorgonzola") || n.includes("Parmesan") || n.includes("Emmental")) {
+                    cFromages.push(li);
+                } 
+                // Tout le reste (Légumes, Miel, Olives...) va dans "Autres"
+                else {
+                    cAutres.push(li);
+                }
             }
+
+            // L'affichage final des 4 catégories
             if(cD.length) dI.innerHTML += `<div class="ing-category"><h4>🍕 Disques</h4><ul>${cD.join("")}</ul></div>`;
             if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
-            if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages & Autres</h4><ul>${cF.join("")}</ul></div>`;
-            
+            if(cFromages.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages</h4><ul>${cFromages.join("")}</ul></div>`;
+            if(cAutres.length) dI.innerHTML += `<div class="ing-category"><h4>🧅 Autres</h4><ul>${cAutres.join("")}</ul></div>`;
+                        
             document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="flex:1; background:var(--card-bg); padding:15px; border:1px solid var(--border); border-radius:8px;"><b>${m}</b><ul style="margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("")}</ul></div>`).join("");
             majChecklist(); document.getElementById('btn-archive').style.display = 'inline-block';
         }
