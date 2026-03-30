@@ -505,7 +505,7 @@
             let cV = [], cD = [], cF = [], cAutres = [];
 
             for(let [n, q] of Object.entries(ing)) {
-                if(n.includes("Sauce") || n.includes("Epice")) continue;
+                if(n.includes("Sauce") || n.includes("Miel") || n.includes("Epice")) continue;
                 
                 let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
                 let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
@@ -521,7 +521,7 @@
                 else if(n.includes("Mozzarella") || n.includes("Chèvre") || n.includes("Raclette") || n.includes("Reblochon") || n.includes("Gorgonzola") || n.includes("Parmesan") || n.includes("Emmental") || n.includes("Scalarella") || n.includes("Camembert") || n.includes("Roquefort")) {
                     cF.push(li);
                 } 
-                // Tout le reste (Légumes, Miel, Olives...) va dans "Autres"
+                // Tout le reste (Légumes, Olives...) va dans "Autres"
                 else {
                     cAutres.push(li);
                 }
