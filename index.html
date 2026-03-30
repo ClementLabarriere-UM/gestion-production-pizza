@@ -502,10 +502,10 @@
             dI.innerHTML = "";
                         
             // On prépare maintenant 4 tableaux au lieu de 3
-            let cV = [], cD = [], cFromages = [], cAutres = [];
+            let cV = [], cD = [], cF = [], cAutres = [];
 
             for(let [n, q] of Object.entries(ing)) {
-                if(n.includes("sauce") || n.includes("Epice")) continue;
+                if(n.includes("Sauce") || n.includes("Epice")) continue;
                 
                 let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
                 let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
@@ -519,7 +519,7 @@
                 } 
                 // AJOUT DE SCALARELLA, CAMEMBERT ET ROQUEFORT ICI :
                 else if(n.includes("Mozzarella") || n.includes("Chèvre") || n.includes("Raclette") || n.includes("Reblochon") || n.includes("Gorgonzola") || n.includes("Parmesan") || n.includes("Emmental") || n.includes("Scalarella") || n.includes("Camembert") || n.includes("Roquefort")) {
-                    cFromages.push(li);
+                    cF.push(li);
                 } 
                 // Tout le reste (Légumes, Miel, Olives...) va dans "Autres"
                 else {
@@ -530,7 +530,7 @@
             // L'affichage final des 4 catégories
             if(cD.length) dI.innerHTML += `<div class="ing-category"><h4>🍕 Disques</h4><ul>${cD.join("")}</ul></div>`;
             if(cV.length) dI.innerHTML += `<div class="ing-category"><h4>🥩 Viandes</h4><ul>${cV.join("")}</ul></div>`;
-            if(cFromages.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages</h4><ul>${cFromages.join("")}</ul></div>`;
+            if(cF.length) dI.innerHTML += `<div class="ing-category"><h4>🧀 Fromages</h4><ul>${cF.join("")}</ul></div>`;
             if(cAutres.length) dI.innerHTML += `<div class="ing-category"><h4>🧅 Autres</h4><ul>${cAutres.join("")}</ul></div>`;
                         
             document.getElementById("liste-repartition").innerHTML = Object.entries(r).map(([m,l]) => `<div style="flex:1; background:var(--card-bg); padding:15px; border:1px solid var(--border); border-radius:8px;"><b>${m}</b><ul style="margin-top:10px;">${Object.entries(l).map(([pn,pq])=>`<li style="padding:4px 0;"><span>${pn}</span> <strong>${pq}</strong></li>`).join("")}</ul></div>`).join("");
