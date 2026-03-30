@@ -511,14 +511,14 @@
                 let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
                 
                 // Le tri des ingrédients
-                if(n.includes("Boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) {
+                if(n.includes("Boeuf") || n.includes("boeuf") || n.includes("Poulet") || n.includes("Jambon") || n.includes("Allumettes") || n.includes("Merguez") || n.includes("kebab")) {
                     cV.push(li);
                 } 
                 else if(n.includes("Disque")) {
                     cD.push(li);
                 } 
-                // NOUVEAU : La détection des fromages (tu peux ajouter d'autres mots clés ici si besoin)
-                else if(n.includes("Mozzarella") || n.includes("Chèvre") || n.includes("Raclette") || n.includes("Reblochon") || n.includes("Gorgonzola") || n.includes("Parmesan") || n.includes("Emmental")) {
+                // AJOUT DE SCALARELLA, CAMEMBERT ET ROQUEFORT ICI :
+                else if(n.includes("Mozzarella") || n.includes("Chèvre") || n.includes("Raclette") || n.includes("Reblochon") || n.includes("Gorgonzola") || n.includes("Parmesan") || n.includes("Emmental") || n.includes("Scalarella") || n.includes("Camembert") || n.includes("Roquefort")) {
                     cFromages.push(li);
                 } 
                 // Tout le reste (Légumes, Miel, Olives...) va dans "Autres"
