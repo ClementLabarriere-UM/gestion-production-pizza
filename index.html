@@ -507,14 +507,16 @@
             for(let [n, q] of Object.entries(ing)) {
                 if(n.includes("Sauce") || n.includes("Miel") || n.includes("Epice")) continue;
                 
-                let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
-                let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
-                
                 // --- NOUVEAU : CONVERSION DES FROMAGES ---
                 if(n === "Camembert (demi)") {
                     n = "Camembert (entier)"; // On change le nom d'affichage
                     q = q / 2;                // On divise la quantité par 2
                 }
+
+
+                let tq = isGrams(n) && q >= 1000 ? (q/1000).toFixed(2)+" Kg" : q;
+                let li = `<li class="checklist-item"><label><input type="checkbox" onchange="majChecklist()"><span>${n.replace(' (g)','')} <span class="highlight">${tq}</span></span></label></li>`;
+                
 
                 // Le tri des ingrédients
 
