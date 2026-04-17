@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Stocks - Gang of Pizza</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; --box: #fff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: var(--box); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
+        .nav-menu { display: flex; gap: 15px; }
+        .nav-menu a { text-decoration: none; padding: 10px 15px; background: #eee; color: #333; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .nav-menu a.active { background: var(--primary); color: white; }
+        .nav-menu a:hover:not(.active) { background: #ddd; }
+        
+        .action-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #c0392b; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f9f9f9; color: #555; }
+        .btn-small { padding: 5px 10px; font-size: 12px; background: #3498db; }
+        .btn-small.danger { background: #e74c3c; }
+        .empty-msg { text-align: center; color: #888; padding: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>📦 Gestion des Stocks</h2>
+        <div class="nav-menu">
+            <a href="production.html">Production</a>
+            <a href="stocks.html" class="active">Stocks</a>
+            <a href="#" onclick="seDeconnecter()" style="background: #555; color: white;">Déconnexion</a>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button onclick="ajouterIngredient()">+ Ajouter un ingrédient</button>
+        <button onclick="chargerStocks()" style="background: #2ecc71;">🔄 Rafraîchir</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Ingrédient</th>
+                <th>Quantité en stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="table-stocks">
+            <tr><td colspan="3" class="empty-msg">Chargement des stocks...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 1. Initialisation Supabase
+    const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+    const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    let currentUser = null;
+
+    // 2. Vérification de sécurité
+    async function verifierConnexion() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            window.location.href = "index.html";
+            return;
+        }
+        currentUser = session.user;
+        chargerStocks(); // On charge les stocks une fois connecté !
+    }
+
+    async function seDeconnecter() {
+        await supabaseClient.auth.signOut();
+        window.location.href = "index.html";
+    }
+
+    // 3. Lire les données (SELECT)
+    async function chargerStocks() {
+        const tbody = document.getElementById('table-stocks');
+        
+        const { data: stocks, error } = await supabaseClient
+            .from('stocks')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('nom_ingredient', { ascending: true });
+
+        if (error) {
+            console.error("Erreur chargement stocks:", error);
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-msg" style="color:red;">Erreur de chargement</td></tr>`;
+            return;
+        }
+
+        if (stocks.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="empty-msg">Votre stock est vide. Ajoutez des ingrédients !</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = stocks.map(item => `
+            <tr>
+                <td style="font-weight: bold;">${item.nom_ingredient}</td>
+                <td>${item.quantite}</td>
+                <td>
+                    <button class="btn-small" onclick="modifierQuantite('${item.id}', ${item.quantite})">✏️ Modifier</button>
+                    <button class="btn-small danger" onclick="supprimerIngredient('${item.id}')">❌ Supprimer</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // 4. Ajouter une donnée (INSERT)
+    async function ajouterIngredient() {
+        let nom = prompt("Nom de l'ingrédient (ex: Emmental râpé) :");
+        if (!nom) return;
+        
+        // Ta logique de conversion V1 est toujours là !
+        if(nom.toLowerCase().includes("camembert")) nom = "Camembert (entier)";
+        if(nom.toLowerCase().includes("reblochon")) nom = "Reblochon (entier)";
+
+        let qte = parseFloat(prompt(`Quantité initiale pour ${nom} :`));
+        if (isNaN(qte)) qte = 0;
+
+        const { error } = await supabaseClient
+            .from('stocks')
+            .insert([{ user_id: currentUser.id, nom_ingredient: nom, quantite: qte }]);
+
+        if (error) alert("Erreur lors de l'ajout : " + error.message);
+        else chargerStocks(); // On rafraîchit le tableau
+    }
+
+    // 5. Mettre à jour une donnée (UPDATE)
+    async function modifierQuantite(id, quantiteActuelle) {
+        let nouvelleQte = prompt("Nouvelle quantité :", quantiteActuelle);
+        if (nouvelleQte === null || isNaN(parseFloat(nouvelleQte))) return;
+
+        const { error } = await supabaseClient
+            .from('stocks')
+            .update({ quantite: parseFloat(nouvelleQte) })
+            .eq('id', id);
+
+        if (error) alert("Erreur lors de la modification : " + error.message);
+        else chargerStocks();
+    }
+
+    // 6. Supprimer une donnée (DELETE)
+    async function supprimerIngredient(id) {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer cet ingrédient de la liste ?")) return;
+
+        const { error } = await supabaseClient
+            .from('stocks')
+            .delete()
+            .eq('id', id);
+
+        if (error) alert("Erreur lors de la suppression : " + error.message);
+        else chargerStocks();
+    }
+
+    // On lance la machine
+    verifierConnexion();
+</script>
+
+</body>
+</html>
