@@ -28,7 +28,9 @@
         // 1. Initialisation de Supabase
         const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
         const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // CHANGEMENT ICI : On appelle la variable 'supabaseClient' pour éviter le conflit avec Safari
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         console.log("Script Supabase chargé et initialisé.");
 
@@ -48,7 +50,8 @@
             console.log("Tentative de connexion pour :", email);
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                // CHANGEMENT ICI : On utilise 'supabaseClient' pour la connexion
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password,
                 });
