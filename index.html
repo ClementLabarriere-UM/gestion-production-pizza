@@ -25,10 +25,12 @@
     </div>
 
     <script>
-        // 1. Initialisation de Supabase avec ta clé PUBLIQUE
+        // 1. Initialisation de Supabase
         const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
         const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        console.log("Script Supabase chargé et initialisé.");
 
         // 2. Fonction de connexion
         async function seConnecter() {
@@ -36,21 +38,33 @@
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
             
+            if (!email || !password) {
+                errorMsg.innerText = "Merci de remplir tous les champs.";
+                return;
+            }
+
+            errorMsg.style.color = "blue";
             errorMsg.innerText = "Connexion en cours...";
+            console.log("Tentative de connexion pour :", email);
 
-            // Appel à l'authentification Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
 
-            if (error) {
-            // L'ancien code disait juste "Erreur : Identifiants incorrects."
-            errorMsg.innerText = "Erreur : " + error.message;
-            console.error("Détail de l'erreur :", error);
-            } else {
-                // Succès ! On redirige vers ton application
-                window.location.href = "production.html";
+                if (error) {
+                    console.error("Erreur détectée :", error.message);
+                    errorMsg.style.color = "red";
+                    errorMsg.innerText = "Erreur : " + error.message;
+                } else {
+                    console.log("Connexion réussie ! Redirection...");
+                    window.location.href = "production.html";
+                }
+            } catch (err) {
+                console.error("Erreur critique :", err);
+                errorMsg.style.color = "red";
+                errorMsg.innerText = "Une erreur technique est survenue.";
             }
         }
     </script>
