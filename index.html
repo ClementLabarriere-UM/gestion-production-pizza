@@ -45,8 +45,9 @@
             });
 
             if (error) {
-                // Si le mot de passe est faux ou le compte n'existe pas
-                errorMsg.innerText = "Erreur : Identifiants incorrects.";
+            // L'ancien code disait juste "Erreur : Identifiants incorrects."
+            errorMsg.innerText = "Erreur : " + error.message;
+            console.error("Détail de l'erreur :", error);
             } else {
                 // Succès ! On redirige vers ton application
                 window.location.href = "production.html";
