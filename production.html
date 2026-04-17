@@ -68,6 +68,73 @@
 
     let currentUser = null;
 
+    // --- FONCTION DE VALIDATION ET DÉDUCTION ---
+    async function validerProduction() {
+        if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks.")) return;
+
+        const inputs = document.querySelectorAll('.prod-input');
+        const besoins = {};
+        const pizzasProduites = [];
+
+        // 1. On rassemble ce qui a été produit
+        inputs.forEach(input => {
+            const quantite = parseInt(input.value) || 0;
+            if (quantite > 0) {
+                const nomPizza = input.dataset.pizza;
+                pizzasProduites.push(`${quantite}x ${nomPizza}`);
+                
+                const recette = recettes[nomPizza];
+                if (recette) {
+                    for (let [ing, q] of Object.entries(recette)) {
+                        let finalIng = ing;
+                        let finalQ = q * quantite;
+                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
+                    }
+                }
+            }
+        });
+
+        if (pizzasProduites.length === 0) {
+            alert("Vous n'avez saisi aucune quantité à produire !");
+            return;
+        }
+
+        // 2. On met à jour les stocks dans Supabase (Déduction)
+        for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
+            // On cherche le stock actuel de cet ingrédient
+            const { data: stockExistant } = await supabaseClient
+                .from('stocks')
+                .select('*')
+                .eq('nom_ingredient', ingredient)
+                .single();
+
+            if (stockExistant) {
+                // On soustrait
+                const nouveauStock = stockExistant.quantite - quantiteRequise;
+                await supabaseClient
+                    .from('stocks')
+                    .update({ quantite: nouveauStock })
+                    .eq('id', stockExistant.id);
+            } else {
+                // S'il n'était pas en stock, on le crée en négatif pour alerter le franchisé
+                await supabaseClient
+                    .from('stocks')
+                    .insert([{ user_id: currentUser.id, nom_ingredient: ingredient, quantite: -quantiteRequise }]);
+            }
+        }
+
+        // 3. On enregistre dans l'historique
+        await supabaseClient
+            .from('historique')
+            .insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
+
+        // 4. On nettoie l'écran
+        inputs.forEach(input => input.value = 0);
+        calculerBesoins();
+        alert("Production validée ! Les stocks ont été mis à jour.");
+    }
+
     // --- SÉCURITÉ ---
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
