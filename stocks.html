@@ -3,70 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Stocks - Gang of Pizza</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Stocks - Gang of Pizza</title>
     <style>
-        :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; --box: #fff; }
+        :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: var(--box); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 25px; }
-        .nav-menu { display: flex; gap: 15px; }
-        .nav-menu a { text-decoration: none; padding: 10px 15px; background: #eee; color: #333; border-radius: 6px; font-weight: bold; transition: 0.2s; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .nav-menu { margin-bottom: 20px; }
+        .nav-menu a { text-decoration: none; padding: 10px 20px; background: #eee; color: #333; border-radius: 8px; font-weight: bold; margin-right: 10px; }
         .nav-menu a.active { background: var(--primary); color: white; }
-        .nav-menu a:hover:not(.active) { background: #ddd; }
-        
-        .action-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #c0392b; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f9f9f9; color: #555; }
-        .btn-small { padding: 5px 10px; font-size: 12px; background: #3498db; }
-        .btn-small.danger { background: #e74c3c; }
-        .empty-msg { text-align: center; color: #888; padding: 20px; font-style: italic; }
+        .btn-action { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; background: #2ecc71; font-size: 16px; margin-bottom: 20px; }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        .stock-card { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .stock-name { font-weight: bold; }
+        .stock-qty { background: var(--primary); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>📦 Gestion des Stocks</h2>
-        <div class="nav-menu">
-            <a href="production.html">Production</a>
-            <a href="stocks.html" class="active">Stocks</a>
-            <a href="#" onclick="seDeconnecter()" style="background: #555; color: white;">Déconnexion</a>
-        </div>
+        <h1>📦 Gestion des Stocks</h1>
+        <button onclick="seDeconnecter()" style="padding: 8px 15px; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Déconnexion</button>
     </div>
 
-    <div class="action-bar">
-        <button onclick="ajouterIngredient()">+ Ajouter un ingrédient</button>
-        <button onclick="chargerStocks()" style="background: #2ecc71;">🔄 Rafraîchir</button>
+    <div class="nav-menu">
+        <a href="production.html">🍕 Production</a>
+        <a href="stocks.html" class="active">📦 Stocks & Livraisons</a>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Ingrédient</th>
-                <th>Quantité en stock</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="table-stocks">
-            <tr><td colspan="3" class="empty-msg">Chargement des stocks...</td></tr>
-        </tbody>
-    </table>
+    <button class="btn-action" onclick="ajouterLivraison()">+ Ajouter une Livraison</button>
+
+    <h3>Stock Actuel</h3>
+    <div id="liste-stocks" class="stock-grid">
+        <p style="color: #777;">Chargement des stocks...</p>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-    // 1. Initialisation Supabase
+    // 1. INITIALISATION
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentUser = null;
 
-    // 2. Vérification de sécurité
+    // 2. SÉCURITÉ ET LANCEMENT
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -74,7 +58,7 @@
             return;
         }
         currentUser = session.user;
-        chargerStocks(); // On charge les stocks une fois connecté !
+        chargerStocks(); // On charge les stocks une fois connecté
     }
 
     async function seDeconnecter() {
@@ -82,87 +66,82 @@
         window.location.href = "index.html";
     }
 
-    // 3. Lire les données (SELECT)
+    // 3. LECTURE DES STOCKS DEPUIS LA BASE DE DONNÉES
     async function chargerStocks() {
-        const tbody = document.getElementById('table-stocks');
-        
+        // Supabase filtrera automatiquement pour ne renvoyer que les stocks de l'utilisateur connecté grâce aux règles RLS créées précédemment !
         const { data: stocks, error } = await supabaseClient
             .from('stocks')
             .select('*')
-            .eq('user_id', currentUser.id)
             .order('nom_ingredient', { ascending: true });
 
+        const container = document.getElementById('liste-stocks');
+        
         if (error) {
-            console.error("Erreur chargement stocks:", error);
-            tbody.innerHTML = `<tr><td colspan="3" class="empty-msg" style="color:red;">Erreur de chargement</td></tr>`;
+            console.error("Erreur de chargement :", error);
+            container.innerHTML = `<p style="color: red;">Erreur lors du chargement des stocks.</p>`;
             return;
         }
 
         if (stocks.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="empty-msg">Votre stock est vide. Ajoutez des ingrédients !</td></tr>`;
+            container.innerHTML = `<p style="color: #777;">Votre stock est vide. Ajoutez une livraison !</p>`;
             return;
         }
 
-        tbody.innerHTML = stocks.map(item => `
-            <tr>
-                <td style="font-weight: bold;">${item.nom_ingredient}</td>
-                <td>${item.quantite}</td>
-                <td>
-                    <button class="btn-small" onclick="modifierQuantite('${item.id}', ${item.quantite})">✏️ Modifier</button>
-                    <button class="btn-small danger" onclick="supprimerIngredient('${item.id}')">❌ Supprimer</button>
-                </td>
-            </tr>
+        // Affichage des cartes de stock
+        container.innerHTML = stocks.map(item => `
+            <div class="stock-card">
+                <span class="stock-name">${item.nom_ingredient}</span>
+                <span class="stock-qty">${item.quantite}</span>
+            </div>
         `).join('');
     }
 
-    // 4. Ajouter une donnée (INSERT)
-    async function ajouterIngredient() {
-        let nom = prompt("Nom de l'ingrédient (ex: Emmental râpé) :");
-        if (!nom) return;
-        
-        // Ta logique de conversion V1 est toujours là !
+    // 4. AJOUT D'UNE LIVRAISON (AVEC CONVERSION)
+    async function ajouterLivraison() {
+        let nom = prompt("Nom de l'ingrédient livré (ex: Emmental râpé) :");
+        if (!nom) return; // Annulation
+
+        // --- CONVERSION AUTOMATIQUE POUR LES FROMAGES ---
         if(nom.toLowerCase().includes("camembert")) nom = "Camembert (entier)";
         if(nom.toLowerCase().includes("reblochon")) nom = "Reblochon (entier)";
+        // ------------------------------------------------
 
-        let qte = parseFloat(prompt(`Quantité initiale pour ${nom} :`));
-        if (isNaN(qte)) qte = 0;
+        let quantiteAjout = parseFloat(prompt(`Quantité reçue pour : ${nom} ?`));
+        if (isNaN(quantiteAjout) || quantiteAjout <= 0) {
+            alert("Quantité invalide.");
+            return;
+        }
 
-        const { error } = await supabaseClient
+        // Étape A : Vérifier si l'ingrédient existe déjà dans le stock de ce franchisé
+        const { data: existant } = await supabaseClient
             .from('stocks')
-            .insert([{ user_id: currentUser.id, nom_ingredient: nom, quantite: qte }]);
+            .select('*')
+            .eq('nom_ingredient', nom)
+            .single();
 
-        if (error) alert("Erreur lors de l'ajout : " + error.message);
-        else chargerStocks(); // On rafraîchit le tableau
+        if (existant) {
+            // L'ingrédient existe : on additionne
+            const nouvelleQuantite = existant.quantite + quantiteAjout;
+            await supabaseClient
+                .from('stocks')
+                .update({ quantite: nouvelleQuantite })
+                .eq('id', existant.id);
+        } else {
+            // Nouvel ingrédient : on l'insère (user_id est géré automatiquement, mais on peut le forcer par sécurité)
+            await supabaseClient
+                .from('stocks')
+                .insert([{ 
+                    user_id: currentUser.id,
+                    nom_ingredient: nom, 
+                    quantite: quantiteAjout 
+                }]);
+        }
+
+        // On rafraîchit l'écran pour voir la mise à jour !
+        chargerStocks();
     }
 
-    // 5. Mettre à jour une donnée (UPDATE)
-    async function modifierQuantite(id, quantiteActuelle) {
-        let nouvelleQte = prompt("Nouvelle quantité :", quantiteActuelle);
-        if (nouvelleQte === null || isNaN(parseFloat(nouvelleQte))) return;
-
-        const { error } = await supabaseClient
-            .from('stocks')
-            .update({ quantite: parseFloat(nouvelleQte) })
-            .eq('id', id);
-
-        if (error) alert("Erreur lors de la modification : " + error.message);
-        else chargerStocks();
-    }
-
-    // 6. Supprimer une donnée (DELETE)
-    async function supprimerIngredient(id) {
-        if (!confirm("Êtes-vous sûr de vouloir supprimer cet ingrédient de la liste ?")) return;
-
-        const { error } = await supabaseClient
-            .from('stocks')
-            .delete()
-            .eq('id', id);
-
-        if (error) alert("Erreur lors de la suppression : " + error.message);
-        else chargerStocks();
-    }
-
-    // On lance la machine
+    // On lance l'application au démarrage
     verifierConnexion();
 </script>
 
