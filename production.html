@@ -148,89 +148,89 @@
         currentUser = session.user;
         document.getElementById('user-email').innerText = currentUser.email;
         initApp();
-        
-        // --- FONCTION DE VALIDATION ET DÉDUCTION DES STOCKS ---
-        async function validerProduction() {
-            // 1. Demande de confirmation
-            if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks dans la base de données.")) return;
+    }
 
-            const inputs = document.querySelectorAll('.prod-input');
-            const besoins = {};
-            const pizzasProduites = [];
 
-            // 2. Calcul des besoins totaux basés sur les saisies
-            inputs.forEach(input => {
-                const quantite = parseInt(input.value) || 0;
-                if (quantite > 0) {
-                    const nomPizza = input.dataset.pizza;
-                    pizzasProduites.push(`${quantite}x ${nomPizza}`);
-                    
-                    const recette = recettes[nomPizza];
-                    if (recette) {
-                        for (let [ing, q] of Object.entries(recette)) {
-                            let finalIng = ing;
-                            let finalQ = q * quantite;
-                            // Conversion automatique Camembert/Reblochon
-                            if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                            if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
-                            
-                            besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
-                        }
+    // --- FONCTION DE VALIDATION ET DÉDUCTION DES STOCKS ---
+    async function validerProduction() {
+        // 1. Demande de confirmation
+        if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks dans la base de données.")) return;
+
+        const inputs = document.querySelectorAll('.prod-input');
+        const besoins = {};
+        const pizzasProduites = [];
+
+        // 2. Calcul des besoins totaux basés sur les saisies
+        inputs.forEach(input => {
+            const quantite = parseInt(input.value) || 0;
+            if (quantite > 0) {
+                const nomPizza = input.dataset.pizza;
+                pizzasProduites.push(`${quantite}x ${nomPizza}`);
+                
+                const recette = recettes[nomPizza];
+                if (recette) {
+                    for (let [ing, q] of Object.entries(recette)) {
+                        let finalIng = ing;
+                        let finalQ = q * quantite;
+                        // Conversion automatique Camembert/Reblochon
+                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
+                        
+                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
                     }
                 }
-            });
-
-            if (pizzasProduites.length === 0) {
-                alert("Veuillez saisir au moins une pizza à produire.");
-                return;
             }
+        });
 
-            try {
-                // 3. Mise à jour des stocks dans Supabase (Boucle sur chaque ingrédient utilisé)
-                for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
-                    const { data: stockExistant } = await supabaseClient
-                        .from('stocks')
-                        .select('*')
-                        .eq('nom_ingredient', ingredient)
-                        .single();
-
-                    if (stockExistant) {
-                        const nouveauStock = stockExistant.quantite - quantiteRequise;
-                        await supabaseClient
-                            .from('stocks')
-                            .update({ quantite: nouveauStock, updated_at: new Date() })
-                            .eq('id', stockExistant.id);
-                    } else {
-                        // Si l'ingrédient n'existe pas en stock, on le crée en négatif pour signaler le manque
-                        await supabaseClient
-                            .from('stocks')
-                            .insert([{ 
-                                user_id: currentUser.id, 
-                                nom_ingredient: ingredient, 
-                                quantite: -quantiteRequise 
-                            }]);
-                    }
-                }
-
-                // 4. Enregistrement dans la table historique
-                await supabaseClient
-                    .from('historique')
-                    .insert([{ 
-                        user_id: currentUser.id, 
-                        resume_pizzas: pizzasProduites.join(' | ') 
-                    }]);
-
-                // 5. Remise à zéro de l'interface
-                inputs.forEach(input => input.value = 0);
-                calculerBesoins();
-                alert("Production validée ! Vos stocks ont été mis à jour et la session a été ajoutée à l'historique.");
-
-            } catch (err) {
-                console.error("Erreur lors de la validation :", err);
-                alert("Une erreur technique est survenue lors de la mise à jour des stocks.");
-            }
+        if (pizzasProduites.length === 0) {
+            alert("Veuillez saisir au moins une pizza à produire.");
+            return;
         }
 
+        try {
+            // 3. Mise à jour des stocks dans Supabase (Boucle sur chaque ingrédient utilisé)
+            for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
+                const { data: stockExistant } = await supabaseClient
+                    .from('stocks')
+                    .select('*')
+                    .eq('nom_ingredient', ingredient)
+                    .single();
+
+                if (stockExistant) {
+                    const nouveauStock = stockExistant.quantite - quantiteRequise;
+                    await supabaseClient
+                        .from('stocks')
+                        .update({ quantite: nouveauStock, updated_at: new Date() })
+                        .eq('id', stockExistant.id);
+                } else {
+                    // Si l'ingrédient n'existe pas en stock, on le crée en négatif pour signaler le manque
+                    await supabaseClient
+                        .from('stocks')
+                        .insert([{ 
+                            user_id: currentUser.id, 
+                            nom_ingredient: ingredient, 
+                            quantite: -quantiteRequise 
+                        }]);
+                }
+            }
+
+            // 4. Enregistrement dans la table historique
+            await supabaseClient
+                .from('historique')
+                .insert([{ 
+                    user_id: currentUser.id, 
+                    resume_pizzas: pizzasProduites.join(' | ') 
+                }]);
+
+            // 5. Remise à zéro de l'interface
+            inputs.forEach(input => input.value = 0);
+            calculerBesoins();
+            alert("Production validée ! Vos stocks ont été mis à jour et la session a été ajoutée à l'historique.");
+
+        } catch (err) {
+            console.error("Erreur lors de la validation :", err);
+            alert("Une erreur technique est survenue lors de la mise à jour des stocks.");
+        }
     }
 
     async function seDeconnecter() {
