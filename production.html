@@ -5,16 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gang of Pizza - Gestion de Production</title>
     <style>
-        /* Garde tout ton CSS habituel ici (je le raccourcis pour la lisibilité) */
         :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        
+        /* Menu Principal (Haut) */
+        .nav-menu { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-menu a { text-decoration: none; padding: 10px 20px; background: #eee; color: #333; border-radius: 8px; font-weight: bold; }
+        .nav-menu a.active { background: var(--primary); color: white; }
+
+        /* Onglets internes (Carte / Prod / Checklist) */
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab { padding: 10px 20px; background: #eee; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; white-space: nowrap; }
         .tab.active { background: var(--primary); color: white; }
+        
         .content-section { display: none; }
         .content-section.active { display: block; }
+        
         /* Checklist styles */
         .ing-category { margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); }
         .checklist-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -34,10 +42,16 @@
     </div>
 
     <div class="nav-menu">
-        <a href="production.html">🍕 Production</a>
+        <a href="production.html" class="active">🍕 Production</a>
         <a href="stocks.html">📦 Stocks & Livraisons</a>
         <a href="distributeurs.html">🏪 Mes Distributeurs</a>
-        <a href="historique.html" class="active">⏳ Historique</a>
+        <a href="historique.html">⏳ Historique</a>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab active" onclick="showTab('carte')">Carte</button>
+        <button class="tab" onclick="showTab('production')">Production</button>
+        <button class="tab" onclick="showTab('checklist')">Checklist</button>
     </div>
 
     <div id="carte" class="content-section active">
@@ -65,78 +79,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+    // --- INITIALISATION SUPABASE ---
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentUser = null;
-
-    // --- FONCTION DE VALIDATION ET DÉDUCTION ---
-    async function validerProduction() {
-        if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks.")) return;
-
-        const inputs = document.querySelectorAll('.prod-input');
-        const besoins = {};
-        const pizzasProduites = [];
-
-        // 1. On rassemble ce qui a été produit
-        inputs.forEach(input => {
-            const quantite = parseInt(input.value) || 0;
-            if (quantite > 0) {
-                const nomPizza = input.dataset.pizza;
-                pizzasProduites.push(`${quantite}x ${nomPizza}`);
-                
-                const recette = recettes[nomPizza];
-                if (recette) {
-                    for (let [ing, q] of Object.entries(recette)) {
-                        let finalIng = ing;
-                        let finalQ = q * quantite;
-                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
-                    }
-                }
-            }
-        });
-
-        if (pizzasProduites.length === 0) {
-            alert("Vous n'avez saisi aucune quantité à produire !");
-            return;
-        }
-
-        // 2. On met à jour les stocks dans Supabase (Déduction)
-        for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
-            // On cherche le stock actuel de cet ingrédient
-            const { data: stockExistant } = await supabaseClient
-                .from('stocks')
-                .select('*')
-                .eq('nom_ingredient', ingredient)
-                .single();
-
-            if (stockExistant) {
-                // On soustrait
-                const nouveauStock = stockExistant.quantite - quantiteRequise;
-                await supabaseClient
-                    .from('stocks')
-                    .update({ quantite: nouveauStock })
-                    .eq('id', stockExistant.id);
-            } else {
-                // S'il n'était pas en stock, on le crée en négatif pour alerter le franchisé
-                await supabaseClient
-                    .from('stocks')
-                    .insert([{ user_id: currentUser.id, nom_ingredient: ingredient, quantite: -quantiteRequise }]);
-            }
-        }
-
-        // 3. On enregistre dans l'historique
-        await supabaseClient
-            .from('historique')
-            .insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
-
-        // 4. On nettoie l'écran
-        inputs.forEach(input => input.value = 0);
-        calculerBesoins();
-        alert("Production validée ! Les stocks ont été mis à jour.");
-    }
 
     // --- SÉCURITÉ ---
     async function verifierConnexion() {
@@ -148,89 +96,6 @@
         currentUser = session.user;
         document.getElementById('user-email').innerText = currentUser.email;
         initApp();
-    }
-
-
-    // --- FONCTION DE VALIDATION ET DÉDUCTION DES STOCKS ---
-    async function validerProduction() {
-        // 1. Demande de confirmation
-        if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks dans la base de données.")) return;
-
-        const inputs = document.querySelectorAll('.prod-input');
-        const besoins = {};
-        const pizzasProduites = [];
-
-        // 2. Calcul des besoins totaux basés sur les saisies
-        inputs.forEach(input => {
-            const quantite = parseInt(input.value) || 0;
-            if (quantite > 0) {
-                const nomPizza = input.dataset.pizza;
-                pizzasProduites.push(`${quantite}x ${nomPizza}`);
-                
-                const recette = recettes[nomPizza];
-                if (recette) {
-                    for (let [ing, q] of Object.entries(recette)) {
-                        let finalIng = ing;
-                        let finalQ = q * quantite;
-                        // Conversion automatique Camembert/Reblochon
-                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
-                        
-                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
-                    }
-                }
-            }
-        });
-
-        if (pizzasProduites.length === 0) {
-            alert("Veuillez saisir au moins une pizza à produire.");
-            return;
-        }
-
-        try {
-            // 3. Mise à jour des stocks dans Supabase (Boucle sur chaque ingrédient utilisé)
-            for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
-                const { data: stockExistant } = await supabaseClient
-                    .from('stocks')
-                    .select('*')
-                    .eq('nom_ingredient', ingredient)
-                    .single();
-
-                if (stockExistant) {
-                    const nouveauStock = stockExistant.quantite - quantiteRequise;
-                    await supabaseClient
-                        .from('stocks')
-                        .update({ quantite: nouveauStock, updated_at: new Date() })
-                        .eq('id', stockExistant.id);
-                } else {
-                    // Si l'ingrédient n'existe pas en stock, on le crée en négatif pour signaler le manque
-                    await supabaseClient
-                        .from('stocks')
-                        .insert([{ 
-                            user_id: currentUser.id, 
-                            nom_ingredient: ingredient, 
-                            quantite: -quantiteRequise 
-                        }]);
-                }
-            }
-
-            // 4. Enregistrement dans la table historique
-            await supabaseClient
-                .from('historique')
-                .insert([{ 
-                    user_id: currentUser.id, 
-                    resume_pizzas: pizzasProduites.join(' | ') 
-                }]);
-
-            // 5. Remise à zéro de l'interface
-            inputs.forEach(input => input.value = 0);
-            calculerBesoins();
-            alert("Production validée ! Vos stocks ont été mis à jour et la session a été ajoutée à l'historique.");
-
-        } catch (err) {
-            console.error("Erreur lors de la validation :", err);
-            alert("Une erreur technique est survenue lors de la mise à jour des stocks.");
-        }
     }
 
     async function seDeconnecter() {
@@ -250,7 +115,6 @@
         { id: 'savoyarde', nom: 'Savoyarde', base: 'Blanche' },
         { id: 'indiana', nom: 'Indiana', base: 'Blanche' },
         { id: 'viking', nom: 'Viking', base: 'Rouge' }
-        // Ajoute ici toutes tes pizzas...
     ];
 
     const recettes = {
@@ -260,7 +124,6 @@
         "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
         "Chèvre-Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
         "Viking": {"Disque tomaté": 1, "Boursin(g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110}
-        // ... complète avec tes recettes
     };
 
     function initApp() {
@@ -315,11 +178,9 @@
 
             if (recette) {
                 for (let [ing, q] of Object.entries(recette)) {
-                    // Logique Camembert/Reblochon
                     let finalIng = ing;
                     let finalQ = q * quantite;
                     if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                    
                     besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
                 }
             }
@@ -356,7 +217,83 @@
         event.currentTarget.classList.add('active');
     }
 
-    // Lancement
+    // --- FONCTION DE VALIDATION ET DÉDUCTION DES STOCKS ---
+    async function validerProduction() {
+        if(!confirm("Confirmer la production ? Cela va déduire les ingrédients de vos stocks dans la base de données.")) return;
+
+        const inputs = document.querySelectorAll('.prod-input');
+        const besoins = {};
+        const pizzasProduites = [];
+
+        inputs.forEach(input => {
+            const quantite = parseInt(input.value) || 0;
+            if (quantite > 0) {
+                const nomPizza = input.dataset.pizza;
+                pizzasProduites.push(`${quantite}x ${nomPizza}`);
+                
+                const recette = recettes[nomPizza];
+                if (recette) {
+                    for (let [ing, q] of Object.entries(recette)) {
+                        let finalIng = ing;
+                        let finalQ = q * quantite;
+                        // Conversion automatique 
+                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
+                        
+                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
+                    }
+                }
+            }
+        });
+
+        if (pizzasProduites.length === 0) {
+            alert("Veuillez saisir au moins une pizza à produire.");
+            return;
+        }
+
+        try {
+            for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
+                const { data: stockExistant } = await supabaseClient
+                    .from('stocks')
+                    .select('*')
+                    .eq('nom_ingredient', ingredient)
+                    .single();
+
+                if (stockExistant) {
+                    const nouveauStock = stockExistant.quantite - quantiteRequise;
+                    await supabaseClient
+                        .from('stocks')
+                        .update({ quantite: nouveauStock, updated_at: new Date() })
+                        .eq('id', stockExistant.id);
+                } else {
+                    await supabaseClient
+                        .from('stocks')
+                        .insert([{ 
+                            user_id: currentUser.id, 
+                            nom_ingredient: ingredient, 
+                            quantite: -quantiteRequise 
+                        }]);
+                }
+            }
+
+            await supabaseClient
+                .from('historique')
+                .insert([{ 
+                    user_id: currentUser.id, 
+                    resume_pizzas: pizzasProduites.join(' | ') 
+                }]);
+
+            inputs.forEach(input => input.value = 0);
+            calculerBesoins();
+            alert("Production validée ! Vos stocks ont été mis à jour et la session a été ajoutée à l'historique.");
+
+        } catch (err) {
+            console.error("Erreur lors de la validation :", err);
+            alert("Une erreur technique est survenue lors de la mise à jour des stocks.");
+        }
+    }
+
+    // --- LANCEMENT ---
     verifierConnexion();
 </script>
 
