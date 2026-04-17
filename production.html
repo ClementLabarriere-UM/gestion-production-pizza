@@ -13,137 +13,48 @@
             --border: #333;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 50px; }
         .logo-area h1 { margin: 0; font-size: 1.5rem; color: var(--primary); }
 
-        /* Menu Principal Navigation */
         .nav-menu { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .nav-menu a { 
-            text-decoration: none; padding: 10px 18px; background: #222; 
-            color: #bbb; border-radius: 8px; font-weight: bold; border: 1px solid var(--border);
-            transition: 0.3s;
-        }
+        .nav-menu a { text-decoration: none; padding: 10px 18px; background: #222; color: #bbb; border-radius: 8px; font-weight: bold; border: 1px solid var(--border); transition: 0.3s; }
         .nav-menu a.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Onglets Internes (Carte / Prod / Checklist) */
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { 
-            padding: 12px 25px; background: #222; border-radius: 8px; 
-            cursor: pointer; border: 1px solid var(--border); font-weight: 600; color: #bbb;
-        }
+        .tab { padding: 12px 25px; background: #222; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); font-weight: 600; color: #bbb; }
         .tab.active { border-bottom: 3px solid var(--primary); color: white; background: #2a2a2a; }
 
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* Style des Cartes (Interface restaurée) */
-        .grid-ingredients {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .ing-category {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .ing-category h4 {
-            margin-top: 0;
-            color: var(--primary);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-        }
-
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
+        .grid-ingredients { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .ing-category { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .ing-category h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; text-transform: uppercase; font-size: 0.9rem; }
+        .checklist-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
         .checklist-item:last-child { border-bottom: none; }
+        .checklist-item input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+        .highlight { color: var(--primary); font-weight: bold; margin-left: 5px; }
 
-        .checklist-item input[type="checkbox"] {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary);
-            cursor: pointer;
-        }
+        .btn-action { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
 
-        .highlight {
-            color: var(--primary);
-            font-weight: bold;
-            margin-left: 5px;
-        }
+        .pizza-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .pizza-checkbox { background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; }
 
-        .btn-action {
-            padding: 10px 20px; border-radius: 6px; border: none; 
-            cursor: pointer; font-weight: bold; transition: 0.3s;
-        }
-
-        /* Inputs de production */
-        .prod-row {
-            background: var(--card-bg);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        input[type="number"] {
-            background: #333; border: 1px solid #444; color: white;
-            padding: 8px; border-radius: 5px; width: 60px; text-align: center;
-        }
-
-        .pizza-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 10px;
-        }
-
-        .pizza-checkbox {
-            background: var(--card-bg);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* Nouveaux styles pour la grille des distributeurs */
+        .dist-block { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .dist-header { color: var(--primary); margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .calc-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #222; }
+        .calc-row:last-child { border-bottom: none; }
+        .calc-inputs { display: flex; gap: 15px; align-items: center; }
+        .input-group { display: flex; flex-direction: column; align-items: center; }
+        .input-group label { font-size: 0.75rem; color: #888; margin-bottom: 3px; }
+        .calc-inputs input { width: 50px; background: #333; border: 1px solid #555; color: white; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold; }
+        .result-badge { background: #2c3e50; color: #3498db; padding: 5px 10px; border-radius: 6px; font-weight: bold; min-width: 35px; text-align: center; }
     </style>
 </head>
 <body>
@@ -169,7 +80,7 @@
 
     <div class="nav-tabs">
         <div class="tab active" id="tab-carte" onclick="showTab('carte')">1. Carte</div>
-        <div class="tab" id="tab-production" onclick="showTab('production')">2. Quantités</div>
+        <div class="tab" id="tab-production" onclick="showTab('production')">2. Calculs (Distributeurs)</div>
         <div class="tab" id="tab-checklist" onclick="showTab('checklist')">3. Checklist</div>
     </div>
 
@@ -179,8 +90,10 @@
     </div>
 
     <div id="production" class="content-section">
-        <h3 style="color: var(--primary)">Combien de pizzas avez-vous produites ?</h3>
-        <div id="entree-production" style="max-width: 500px;"></div>
+        <h3 style="color: var(--primary)">Saisissez vos stocks et objectifs</h3>
+        <div id="entree-production">
+            <p style="color: #888;">Chargement de vos distributeurs...</p>
+        </div>
     </div>
 
     <div id="checklist" class="content-section">
@@ -191,21 +104,20 @@
                 <button onclick="validerProduction()" class="btn-action" style="background: #2ecc71; color: white;">✅ Terminer & Déduire</button>
             </div>
         </div>
-        <div id="liste-ingredients" class="grid-ingredients">
-            </div>
+        <div id="liste-ingredients" class="grid-ingredients"></div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentUser = null;
+    let listeDistributeurs = [];
+    let totauxAProduire = {}; // Sauvegarde les totaux pour la validation
 
-    // --- DONNÉES ---
     const pizzas = [
         { id: 'reine', nom: 'Reine' }, { id: 'cannibale', nom: 'Cannibale' },
         { id: '4_fromages', nom: '4 Fromages' }, { id: 'burger', nom: 'Burger' },
@@ -223,7 +135,6 @@
         "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110}
     };
 
-    // --- LOGIQUE ---
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = "index.html"; return; }
@@ -232,12 +143,16 @@
         initApp();
     }
 
-    async function seDeconnecter() {
-        await supabaseClient.auth.signOut();
-        window.location.href = "index.html";
-    }
+    async function initApp() {
+        // 1. Récupération des distributeurs du franchisé depuis Supabase
+        const { data: dists } = await supabaseClient
+            .from('distributeurs')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('nom');
+            
+        listeDistributeurs = dists || [];
 
-    function initApp() {
         renderCarte();
         chargerSelection();
     }
@@ -267,31 +182,100 @@
 
     function renderProduction(selection) {
         const container = document.getElementById('entree-production');
-        container.innerHTML = selection.map(nom => `
-            <div class="prod-row">
-                <label>${nom}</label>
-                <input type="number" class="prod-input" data-pizza="${nom}" value="0" min="0" onchange="calculerBesoins()">
-            </div>
-        `).join('');
+
+        if (listeDistributeurs.length === 0) {
+            container.innerHTML = `<div style="background: #fadbd8; border-left: 4px solid #e74c3c; padding: 15px; border-radius: 8px; color: #c0392b;">
+                <strong>Aucun distributeur trouvé.</strong><br>
+                Allez dans l'onglet "Distributeurs" pour configurer vos machines avant de calculer la production.
+            </div>`;
+            return;
+        }
+
+        if (selection.length === 0) {
+            container.innerHTML = `<p style="color: #888;">Veuillez sélectionner des pizzas dans l'onglet "Carte".</p>`;
+            return;
+        }
+
+        let html = '';
+        
+        // Pour chaque distributeur, on crée un bloc
+        listeDistributeurs.forEach(dist => {
+            html += `<div class="dist-block">
+                <h4 class="dist-header">🏪 ${dist.nom}</h4>`;
+            
+            // Pour chaque pizza sélectionnée, on crée la ligne Stock / Objectif
+            selection.forEach(nomPizza => {
+                const safeId = nomPizza.replace(/\s+/g, '_');
+                html += `
+                <div class="calc-row">
+                    <strong style="width: 150px;">${nomPizza}</strong>
+                    <div class="calc-inputs">
+                        <div class="input-group">
+                            <label>Stock</label>
+                            <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="0" min="0" onchange="calculerBesoins()" onclick="this.select()">
+                        </div>
+                        <div class="input-group">
+                            <label>Objectif</label>
+                            <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="0" min="0" onchange="calculerBesoins()" onclick="this.select()">
+                        </div>
+                        <div class="input-group">
+                            <label>À faire</label>
+                            <div class="result-badge" id="res-${dist.id}-${safeId}">+0</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
         calculerBesoins();
     }
 
     function calculerBesoins() {
-        const inputs = document.querySelectorAll('.prod-input');
-        const besoins = {};
-        inputs.forEach(input => {
-            const nomPizza = input.dataset.pizza;
-            const qte = parseInt(input.value) || 0;
-            const recette = recettes[nomPizza];
-            if (recette) {
-                for (let [ing, q] of Object.entries(recette)) {
-                    let finalIng = ing; let finalQ = q * qte;
-                    if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                    besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
+        const selection = JSON.parse(localStorage.getItem('pizzas_selectionnees') || '[]');
+        totauxAProduire = {}; // On réinitialise les totaux globaux
+        const besoinsIngredients = {};
+
+        // 1. Calcul des écarts (Objectif - Stock) par distributeur
+        listeDistributeurs.forEach(dist => {
+            selection.forEach(nomPizza => {
+                const safeId = nomPizza.replace(/\s+/g, '_');
+                const stockInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                const objInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="obj"]`);
+                
+                if (stockInput && objInput) {
+                    const stock = parseInt(stockInput.value) || 0;
+                    const obj = parseInt(objInput.value) || 0;
+                    
+                    let aProduire = obj - stock;
+                    if (aProduire < 0) aProduire = 0; // On ne produit pas de quantité négative !
+                    
+                    // Affichage de la pastille bleue
+                    document.getElementById(`res-${dist.id}-${safeId}`).innerText = '+' + aProduire;
+
+                    // Ajout au total global de cette pizza
+                    totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
+                }
+            });
+        });
+
+        // 2. Calcul des ingrédients nécessaires basés sur les totaux
+        for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
+            if (quantite > 0) {
+                const recette = recettes[nomPizza];
+                if (recette) {
+                    for (let [ing, q] of Object.entries(recette)) {
+                        let finalIng = ing; let finalQ = q * quantite;
+                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
+                        besoinsIngredients[finalIng] = (besoinsIngredients[finalIng] || 0) + finalQ;
+                    }
                 }
             }
-        });
-        renderChecklist(besoins);
+        }
+
+        renderChecklist(besoinsIngredients);
     }
 
     function renderChecklist(ing) {
@@ -325,9 +309,68 @@
     }
 
     async function validerProduction() {
-        if(!confirm("Valider la production et déduire du stock ?")) return;
-        // ... (Le code de déduction que je t'ai donné tout à l'heure reste identique ici)
-        alert("Stock mis à jour !");
+        if(!confirm("Valider la production ? Les ingrédients seront déduits de vos stocks.")) return;
+
+        const besoins = {};
+        const pizzasProduites = [];
+
+        // On se base sur le résumé calculé par les distributeurs
+        let totalPizzas = 0;
+        for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
+            if (quantite > 0) {
+                totalPizzas += quantite;
+                pizzasProduites.push(`${quantite}x ${nomPizza}`);
+                
+                const recette = recettes[nomPizza];
+                if (recette) {
+                    for (let [ing, q] of Object.entries(recette)) {
+                        let finalIng = ing; let finalQ = q * quantite;
+                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
+                        besoins[finalIng] = (besoins[finalIng] || 0) + finalQ;
+                    }
+                }
+            }
+        }
+
+        if (totalPizzas === 0) {
+            alert("Rien à produire ! Vos stocks actuels sont égaux ou supérieurs à vos objectifs.");
+            return;
+        }
+
+        try {
+            // Déduction en base
+            for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
+                const { data: stockExistant } = await supabaseClient
+                    .from('stocks')
+                    .select('*')
+                    .eq('nom_ingredient', ingredient)
+                    .single();
+
+                if (stockExistant) {
+                    await supabaseClient.from('stocks').update({ quantite: stockExistant.quantite - quantiteRequise }).eq('id', stockExistant.id);
+                } else {
+                    await supabaseClient.from('stocks').insert([{ user_id: currentUser.id, nom_ingredient: ingredient, quantite: -quantiteRequise }]);
+                }
+            }
+
+            // Historique
+            await supabaseClient.from('historique').insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
+
+            // Remise à zéro
+            document.querySelectorAll('.calc-val').forEach(input => input.value = 0);
+            calculerBesoins();
+            alert("Production validée ! Vos stocks ont été mis à jour.");
+
+        } catch (err) {
+            alert("Erreur lors de la validation.");
+            console.error(err);
+        }
+    }
+
+    async function seDeconnecter() {
+        await supabaseClient.auth.signOut();
+        window.location.href = "index.html";
     }
 
     verifierConnexion();
