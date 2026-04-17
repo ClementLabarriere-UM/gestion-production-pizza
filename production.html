@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gang of Pizza - Production V2</title>
     <style>
-        :root {
-            --primary: #e74c3c;
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --text: #e0e0e0;
-            --border: #333;
-        }
-
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
         
@@ -32,7 +25,6 @@
         .content-section { display: none; }
         .content-section.active { display: block; }
 
-        /* Checklist et Grilles */
         .grid-ingredients { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .ing-category { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .ing-category h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; text-transform: uppercase; font-size: 0.9rem; }
@@ -46,28 +38,15 @@
         .pizza-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
         .pizza-checkbox { background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; }
 
-        /* --- LE NOUVEAU TABLEAU RESPONSIVE (TABLETTE) --- */
-        .prod-table-container { 
-            overflow-x: auto; 
-            background: var(--card-bg); 
-            border-radius: 10px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
+        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .prod-table { width: 100%; border-collapse: collapse; min-width: 700px; }
         .prod-table th, .prod-table td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid #2a2a2a; }
         .prod-table th:last-child, .prod-table td:last-child { border-right: none; }
-        
         .prod-table th { background: #222; color: var(--primary); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         
-        /* Figer la première colonne au scroll */
-        .prod-table th.col-fixe, .prod-table td.col-fixe { 
-            position: sticky; left: 0; background: #222; z-index: 5; 
-            text-align: left; font-weight: bold; border-right: 2px solid var(--primary);
-        }
+        .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: #222; z-index: 5; text-align: left; font-weight: bold; border-right: 2px solid var(--primary); }
         .prod-table th.col-fixe { z-index: 6; }
 
-        /* Cellules de calculs internes */
         .cell-calc { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .cell-inputs { display: flex; gap: 8px; justify-content: center; }
         .input-group { display: flex; flex-direction: column; align-items: center; }
@@ -75,10 +54,12 @@
         .cell-inputs input { width: 40px; background: #333; border: 1px solid #555; color: white; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 1rem; }
         .cell-inputs input:focus { border-color: var(--primary); outline: none; background: #444; }
         
-        /* Badges de résultats */
         .badge-diff { background: #2c3e50; color: #3498db; padding: 3px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
         .badge-total { background: var(--primary); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; }
         .col-total { background: #1a1a1a; }
+        
+        /* Indicateur de sauvegarde */
+        #sync-status { font-size: 0.8em; color: #888; text-align: right; margin-top: 5px; min-height: 18px; }
     </style>
 </head>
 <body>
@@ -92,6 +73,7 @@
         <div style="text-align: right;">
             <div id="user-email" style="font-size: 0.8em; color: #888; margin-bottom: 5px;"></div>
             <button onclick="seDeconnecter()" class="btn-action" style="background: #333; color: white; font-size: 12px;">Déconnexion</button>
+            <div id="sync-status">☁️ Synchronisé</div>
         </div>
     </div>
 
@@ -117,7 +99,7 @@
     <div id="production" class="content-section">
         <h3 style="color: var(--primary)">Saisissez vos stocks et objectifs par distributeur</h3>
         <div id="entree-production">
-            <p style="color: #888;">Chargement de vos distributeurs...</p>
+            <p style="color: #888;">Chargement de vos données...</p>
         </div>
     </div>
 
@@ -142,6 +124,10 @@
     let currentUser = null;
     let listeDistributeurs = [];
     let totauxAProduire = {}; 
+    
+    // Structure de sauvegarde Cloud
+    let cloudPrefs = { carte: [], matrice: {} };
+    let timerSauvegarde = null;
 
     const pizzas = [
         { id: 'reine', nom: 'Reine' }, { id: 'cannibale', nom: 'Cannibale' },
@@ -169,15 +155,30 @@
     }
 
     async function initApp() {
-        const { data: dists } = await supabaseClient
-            .from('distributeurs')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .order('nom');
-            
+        // Récupération des machines
+        const { data: dists } = await supabaseClient.from('distributeurs').select('*').eq('user_id', currentUser.id).order('nom');
         listeDistributeurs = dists || [];
+
+        // Récupération des préférences Cloud
+        const { data: profil } = await supabaseClient.from('profiles').select('preferences_production').eq('id', currentUser.id).single();
+        if (profil && profil.preferences_production) {
+            cloudPrefs = profil.preferences_production;
+            if(!cloudPrefs.carte) cloudPrefs.carte = [];
+            if(!cloudPrefs.matrice) cloudPrefs.matrice = {};
+        }
+
         renderCarte();
         chargerSelection();
+    }
+
+    // --- SAUVEGARDE EN ARRIÈRE-PLAN ---
+    function triggerSave() {
+        document.getElementById('sync-status').innerText = "⏳ Synchronisation...";
+        clearTimeout(timerSauvegarde);
+        timerSauvegarde = setTimeout(async () => {
+            const { error } = await supabaseClient.from('profiles').update({ preferences_production: cloudPrefs }).eq('id', currentUser.id);
+            if(!error) document.getElementById('sync-status').innerText = "☁️ Synchronisé";
+        }, 1000);
     }
 
     function renderCarte() {
@@ -191,19 +192,17 @@
 
     function majSelection() {
         const checkboxes = document.querySelectorAll('#liste-pizzas-selection input:checked');
-        const selection = Array.from(checkboxes).map(cb => cb.value);
-        localStorage.setItem('pizzas_selectionnees', JSON.stringify(selection));
-        renderProduction(selection);
+        cloudPrefs.carte = Array.from(checkboxes).map(cb => cb.value);
+        triggerSave();
+        renderProduction(cloudPrefs.carte);
     }
 
     function chargerSelection() {
-        const saved = JSON.parse(localStorage.getItem('pizzas_selectionnees') || '[]');
         const checkboxes = document.querySelectorAll('#liste-pizzas-selection input');
-        checkboxes.forEach(cb => { if(saved.includes(cb.value)) cb.checked = true; });
-        renderProduction(saved);
+        checkboxes.forEach(cb => { if(cloudPrefs.carte.includes(cb.value)) cb.checked = true; });
+        renderProduction(cloudPrefs.carte);
     }
 
-    // --- CONSTRUCTION DU GRAND TABLEAU ---
     function renderProduction(selection) {
         const container = document.getElementById('entree-production');
 
@@ -221,42 +220,37 @@
         let html = `<div class="prod-table-container">
             <table class="prod-table">
                 <thead>
-                    <tr>
-                        <th class="col-fixe">🍕 Pizzas</th>`;
+                    <tr><th class="col-fixe">🍕 Pizzas</th>`;
         
-        // En-têtes des distributeurs
-        listeDistributeurs.forEach(dist => {
-            html += `<th>${dist.nom}</th>`;
-        });
-        
+        listeDistributeurs.forEach(dist => { html += `<th>${dist.nom}</th>`; });
         html += `<th class="col-total">Total à faire</th></tr></thead><tbody>`;
 
-        // Lignes du tableau (1 par pizza)
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
             
-            // Cellules de saisie pour chaque distributeur
             listeDistributeurs.forEach(dist => {
+                // Lecture des données sauvegardées
+                const stockVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.stock || "";
+                const objVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.obj || "";
+
                 html += `
                 <td>
                     <div class="cell-calc">
                         <div class="cell-inputs">
                             <div class="input-group">
                                 <label>Stock</label>
-                                <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="" placeholder="0" min="0" onchange="calculerBesoins()" onclick="this.select()">
+                                <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" placeholder="0" min="0" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             </div>
                             <div class="input-group">
                                 <label>Obj.</label>
-                                <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="" placeholder="0" min="0" onchange="calculerBesoins()" onclick="this.select()">
+                                <input type="number" class="calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" placeholder="0" min="0" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             </div>
                         </div>
                         <div class="badge-diff" id="res-${dist.id}-${safeId}">+0</div>
                     </div>
                 </td>`;
             });
-
-            // Cellule du total en bout de ligne
             html += `<td class="col-total"><div class="badge-total" id="tot-${safeId}">0</div></td></tr>`;
         });
 
@@ -265,12 +259,23 @@
         calculerBesoins();
     }
 
+    function majMatriceCloud(distId, nomPizza) {
+        if (!cloudPrefs.matrice[distId]) cloudPrefs.matrice[distId] = {};
+        
+        const stock = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="stock"]`).value;
+        const obj = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="obj"]`).value;
+        
+        cloudPrefs.matrice[distId][nomPizza] = { stock, obj };
+        
+        calculerBesoins();
+        triggerSave();
+    }
+
     function calculerBesoins() {
-        const selection = JSON.parse(localStorage.getItem('pizzas_selectionnees') || '[]');
+        const selection = cloudPrefs.carte;
         totauxAProduire = {}; 
         const besoinsIngredients = {};
 
-        // 1. Calculer les écarts cellulaires
         listeDistributeurs.forEach(dist => {
             selection.forEach(nomPizza => {
                 const safeId = nomPizza.replace(/\s+/g, '_');
@@ -284,23 +289,18 @@
                     let aProduire = obj - stock;
                     if (aProduire < 0) aProduire = 0;
                     
-                    // Màj de la petite bulle "+X"
                     document.getElementById(`res-${dist.id}-${safeId}`).innerText = '+' + aProduire;
-
-                    // Somme globale par pizza
                     totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
                 }
             });
         });
 
-        // 2. Mettre à jour la colonne "Total à faire"
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             const elTotal = document.getElementById(`tot-${safeId}`);
             if (elTotal) elTotal.innerText = totauxAProduire[nomPizza] || 0;
         });
 
-        // 3. Calculer les ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0) {
                 const recette = recettes[nomPizza];
@@ -314,7 +314,6 @@
                 }
             }
         }
-
         renderChecklist(besoinsIngredients);
     }
 
@@ -389,6 +388,9 @@
 
             await supabaseClient.from('historique').insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
 
+            // Remise à zéro des valeurs et du Cloud après validation
+            cloudPrefs.matrice = {};
+            triggerSave();
             document.querySelectorAll('.calc-val').forEach(input => input.value = "");
             calculerBesoins();
             alert("Production validée ! Vos stocks ont été mis à jour.");
