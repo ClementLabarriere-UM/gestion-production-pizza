@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <button onclick="seDeconnecter()" class="btn-action" style="background-color: #555; color: white;">Déconnexion</button>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="icon" href="logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -253,6 +255,58 @@
     </div>
 
     <script>
+        
+        // --- 1. INITIALISATION DE SUPABASE ---
+        const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+        const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+        let userProfile = null;
+
+        // --- 2. VÉRIFICATION DE LA CONNEXION ---
+        async function verifierConnexion() {
+            // On regarde si une session est active
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (!session) {
+                // S'il n'est pas connecté, on le renvoie à la porte d'entrée !
+                window.location.href = "index.html";
+                return;
+            }
+            
+            currentUser = session.user;
+            console.log("Utilisateur connecté :", currentUser.email);
+
+            // --- 3. RÉCUPÉRATION DU PROFIL ET DE L'ABONNEMENT ---
+            const { data: profile, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+                
+            if (profile) {
+                userProfile = profile;
+                console.log("Abonnement :", userProfile.type_abonnement, "| Max distributeurs :", userProfile.max_distributeurs);
+                
+                // Optionnel : Afficher le nom du franchisé ou son abonnement quelque part sur la page
+                // document.getElementById('nom-boutique').innerText = profile.nom_boutique || profile.email;
+            }
+
+            // Plus tard, c'est ici que nous lancerons la fonction pour charger les stocks
+            // chargerStocksSupabase();
+        }
+
+        // --- 4. FONCTION DE DÉCONNEXION ---
+        async function seDeconnecter() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html";
+        }
+
+        // On lance la vérification dès le chargement de la page
+        verifierConnexion();
+
+
         const distributeurs = ["BOURG-SAINT-ANDÉOL", "LE TEIL", "TRICASTIN"];
         const recettes = {
             "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
