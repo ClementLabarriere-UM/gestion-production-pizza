@@ -15,6 +15,10 @@
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 40px; }
+        /* Gestion de l'affichage du logo selon le thème */
+        .logo-light { display: none; }
+        body.light-mode .logo-dark { display: none; }
+        body.light-mode .logo-light { display: block; }
         .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
         .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
@@ -93,7 +97,8 @@
 <div id="app-screen" class="container no-print">
     <div class="header">
         <div class="logo-area">
-            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <img src="logo.png" alt="Logo" class="logo-dark" onerror="this.style.display='none'">
+            <img src="logo-clair.png" alt="Logo" class="logo-light" onerror="this.style.display='none'">
             <h1>Espace Production by digiclem.</h1>
         </div>
         <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
