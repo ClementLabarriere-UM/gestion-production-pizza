@@ -2,44 +2,70 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Historique - Gang of Pizza</title>
     <style>
-        :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .nav-menu { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .nav-menu a { text-decoration: none; padding: 10px 20px; background: #eee; color: #333; border-radius: 8px; font-weight: bold; }
-        .nav-menu a.active { background: var(--primary); color: white; }
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; }
         
-        .history-item { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #f39c12; margin-bottom: 10px; }
-        .history-date { font-size: 0.9em; color: #777; margin-bottom: 5px; }
-        .history-details { font-weight: bold; color: #2c3e50; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area img { height: 40px; }
+        .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+
+        .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-menu a { text-decoration: none; padding: 12px 18px; background: var(--card-bg); color: var(--text); border-radius: 8px; font-weight: bold; border: 1px solid var(--border); }
+        .nav-menu a.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
+        .btn-action:active { transform: scale(0.95); }
+
+        /* Styles spécifiques à l'historique */
+        .history-item { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border); border-left: 5px solid #f39c12; margin-bottom: 15px; }
+        .history-date { font-size: 0.95em; color: #888; margin-bottom: 10px; font-weight: bold; }
+        .history-details { font-weight: bold; color: var(--text); font-size: 1.1rem; line-height: 1.5; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>⏳ Historique de Production</h1>
-        <button onclick="seDeconnecter()" style="padding: 8px 15px; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Déconnexion</button>
+        <div class="logo-area">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <h1>Gang of Pizza</h1>
+        </div>
+        <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
+            <div id="user-email" style="font-size: 0.85em; color: #888; font-weight: bold;"></div>
+            <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
+            <button onclick="seDeconnecter()" class="btn-action" style="background: #e74c3c; color: white;">Déconnexion</button>
+        </div>
     </div>
 
     <div class="nav-menu">
-        <a href="production.html">🍕 Production</a>
-        <a href="stocks.html">📦 Stocks & Livraisons</a>
-        <a href="distributeurs.html">🏪 Mes Distributeurs</a>
-        <a href="historique.html" class="active">⏳ Historique</a>
+        <a href="production.html">Production</a>
+        <a href="stocks.html">Stocks</a>
+        <a href="distributeurs.html">Distributeurs</a>
+        <a href="historique.html" class="active">Historique</a>
     </div>
 
+    <h2 style="margin-top: 0; color: var(--primary);">⏳ Historique de Production</h2>
+
     <div id="liste-historique">
-        <p style="color: #777;">Chargement de l'historique...</p>
+        <p style="color: #888;">Chargement de l'historique...</p>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -47,27 +73,24 @@
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = "index.html"; return; }
+        document.getElementById('user-email').innerText = session.user.email;
         chargerHistorique();
     }
 
     async function chargerHistorique() {
-        const { data: historique, error } = await supabaseClient
-            .from('historique')
-            .select('*')
-            .order('date_production', { ascending: false });
-
+        const { data: historique, error } = await supabaseClient.from('historique').select('*').order('date_production', { ascending: false });
         const container = document.getElementById('liste-historique');
         
         if (error || historique.length === 0) {
-            container.innerHTML = `<p style="color: #777;">Aucune production enregistrée pour le moment.</p>`;
+            container.innerHTML = `<p style="color: #888;">Aucune production enregistrée pour le moment.</p>`;
             return;
         }
 
         container.innerHTML = historique.map(h => {
-            const date = new Date(h.date_production).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+            const date = new Date(h.date_production).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
             return `
                 <div class="history-item">
-                    <div class="history-date">📅 Le ${date}</div>
+                    <div class="history-date">📅 Enregistré le ${date}</div>
                     <div class="history-details">${h.resume_pizzas}</div>
                 </div>
             `;
@@ -81,6 +104,5 @@
 
     verifierConnexion();
 </script>
-
 </body>
 </html>

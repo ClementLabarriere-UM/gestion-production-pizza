@@ -2,60 +2,77 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mes Distributeurs - Gang of Pizza</title>
     <style>
-        :root { --primary: #e74c3c; --bg: #f4f4f9; --text: #333; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; }
         
-        /* Menu */
-        .nav-menu { margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .nav-menu a { text-decoration: none; padding: 10px 20px; background: #eee; color: #333; border-radius: 8px; font-weight: bold; }
-        .nav-menu a.active { background: var(--primary); color: white; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+        .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Boutons et Jauge */
-        .btn-action { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; color: white; background: #3498db; font-size: 16px; margin-bottom: 20px; }
-        .btn-action:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        
-        .status-box { background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db; }
-        
-        /* Grille des distributeurs */
-        .dist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
-        .dist-card { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .dist-card h4 { margin: 0; color: #2c3e50; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area img { height: 40px; }
+        .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+
+        .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-menu a { text-decoration: none; padding: 12px 18px; background: var(--card-bg); color: var(--text); border-radius: 8px; font-weight: bold; border: 1px solid var(--border); }
+        .nav-menu a.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-action:disabled { background: #555; color: #888; cursor: not-allowed; }
+
+        /* Styles spécifiques aux Distributeurs */
+        .status-box { background: var(--card-bg); padding: 18px; border-radius: 10px; margin-bottom: 25px; border: 1px solid var(--border); border-left: 5px solid #3498db; font-size: 1.1rem; }
+        .dist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .dist-card { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .dist-card h4 { margin: 0; color: var(--primary); font-size: 1.2rem; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>🏪 Mes Distributeurs</h1>
-        <button onclick="seDeconnecter()" style="padding: 8px 15px; background: #555; color: white; border: none; border-radius: 5px; cursor: pointer;">Déconnexion</button>
+        <div class="logo-area">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            <h1>Espace production</h1>
+        </div>
+        <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
+            <div id="user-email" style="font-size: 0.85em; color: #888; font-weight: bold;"></div>
+            <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
+            <button onclick="seDeconnecter()" class="btn-action" style="background: #e74c3c; color: white;">Déconnexion</button>
+        </div>
     </div>
 
     <div class="nav-menu">
-        <a href="production.html">🍕 Production</a>
-        <a href="stocks.html">📦 Stocks & Livraisons</a>
-        <a href="distributeurs.html">🏪 Mes Distributeurs</a>
-        <a href="historique.html" class="active">⏳ Historique</a>
+        <a href="production.html">Production</a>
+        <a href="stocks.html">Stocks</a>
+        <a href="distributeurs.html" class="active">Distributeurs</a>
+        <a href="historique.html">Historique</a>
     </div>
+
+    <h2 style="margin-top: 0; color: var(--primary);">🏪 Gestion du Parc Machine</h2>
 
     <div class="status-box" id="info-abonnement">
         Chargement de votre abonnement...
     </div>
 
-    <button id="btn-ajouter" class="btn-action" onclick="ajouterDistributeur()">+ Ajouter un Distributeur</button>
+    <button id="btn-ajouter" class="btn-action" style="background: #2ecc71; color: white; margin-bottom: 20px;" onclick="ajouterDistributeur()">+ Ajouter un Distributeur</button>
 
-    <div id="liste-distributeurs" class="dist-grid">
-        </div>
+    <div id="liste-distributeurs" class="dist-grid"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -66,11 +83,9 @@
 
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-            window.location.href = "index.html";
-            return;
-        }
+        if (!session) { window.location.href = "index.html"; return; }
         currentUser = session.user;
+        document.getElementById('user-email').innerText = currentUser.email;
         chargerDonnees();
     }
 
@@ -80,102 +95,56 @@
     }
 
     async function chargerDonnees() {
-        // 1. On récupère la limite d'abonnement du franchisé
-        const { data: profil } = await supabaseClient
-            .from('profiles')
-            .select('max_distributeurs, type_abonnement')
-            .eq('id', currentUser.id)
-            .single();
-            
-        if(profil) {
-            maxDistributeurs = profil.max_distributeurs;
-        }
+        const { data: profil } = await supabaseClient.from('profiles').select('max_distributeurs, type_abonnement').eq('id', currentUser.id).single();
+        if(profil) maxDistributeurs = profil.max_distributeurs;
 
-        // 2. On récupère ses distributeurs actuels
-        const { data: distributeurs, error } = await supabaseClient
-            .from('distributeurs')
-            .select('*')
-            .order('created_at', { ascending: true });
-
-        if (error) {
-            console.error(error);
-            return;
-        }
-
-        nbActuels = distributeurs.length;
+        const { data: distributeurs } = await supabaseClient.from('distributeurs').select('*').order('created_at', { ascending: true });
+        nbActuels = distributeurs ? distributeurs.length : 0;
         
-        // 3. Mise à jour de l'affichage (Jauge + Bouton)
         const infoBox = document.getElementById('info-abonnement');
         infoBox.innerHTML = `<strong>Abonnement ${profil.type_abonnement}</strong> : Vous utilisez ${nbActuels} emplacement(s) sur ${maxDistributeurs} autorisés.`;
         
         const btnAjouter = document.getElementById('btn-ajouter');
         if (nbActuels >= maxDistributeurs) {
             btnAjouter.disabled = true;
-            btnAjouter.innerText = "Limite d'abonnement atteinte";
+            btnAjouter.innerText = "🔒 Limite d'abonnement atteinte";
             infoBox.style.borderLeftColor = "#e74c3c";
-            infoBox.style.backgroundColor = "#fadbd8";
         } else {
             btnAjouter.disabled = false;
             btnAjouter.innerText = "+ Ajouter un Distributeur";
             infoBox.style.borderLeftColor = "#3498db";
-            infoBox.style.backgroundColor = "#e8f4f8";
         }
 
-        // 4. Affichage de la liste
         const container = document.getElementById('liste-distributeurs');
         if (nbActuels === 0) {
-            container.innerHTML = `<p style="color: #777;">Aucun distributeur configuré.</p>`;
+            container.innerHTML = `<p style="color: #888;">Aucun distributeur configuré.</p>`;
             return;
         }
 
         container.innerHTML = distributeurs.map(d => `
             <div class="dist-card">
                 <h4>📍 ${d.nom}</h4>
-                <button class="btn-delete" onclick="supprimerDistributeur('${d.id}')">X</button>
+                <button class="btn-delete" onclick="supprimerDistributeur('${d.id}')">Retirer</button>
             </div>
         `).join('');
     }
 
     async function ajouterDistributeur() {
-        if (nbActuels >= maxDistributeurs) {
-            alert("Vous avez atteint la limite de votre abonnement. Veuillez contacter la direction pour passer à l'offre supérieure.");
-            return;
-        }
-
+        if (nbActuels >= maxDistributeurs) return;
         const nom = prompt("Nom ou Emplacement du nouveau distributeur (ex: Gare SNCF) :");
         if (!nom) return;
 
-        const { error } = await supabaseClient
-            .from('distributeurs')
-            .insert([{ 
-                user_id: currentUser.id,
-                nom: nom 
-            }]);
-
-        if (error) {
-            alert("Erreur lors de l'ajout : " + error.message);
-        } else {
-            chargerDonnees(); // On rafraîchit la page
-        }
+        await supabaseClient.from('distributeurs').insert([{ user_id: currentUser.id, nom: nom }]);
+        chargerDonnees();
     }
 
     async function supprimerDistributeur(idDistributeur) {
-        if (!confirm("Voulez-vous vraiment supprimer ce distributeur ?")) return;
-
-        const { error } = await supabaseClient
-            .from('distributeurs')
-            .delete()
-            .eq('id', idDistributeur);
-
-        if (error) {
-            alert("Erreur lors de la suppression : " + error.message);
-        } else {
-            chargerDonnees(); // On rafraîchit la page
-        }
+        if (!confirm("Voulez-vous vraiment supprimer cette machine ? Elle n'apparaîtra plus dans vos calculs de production.")) return;
+        await supabaseClient.from('distributeurs').delete().eq('id', idDistributeur);
+        chargerDonnees(); 
     }
 
     verifierConnexion();
 </script>
-
 </body>
 </html>
