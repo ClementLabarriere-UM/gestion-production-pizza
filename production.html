@@ -6,8 +6,8 @@
     <title>Espace Production V2</title>
     <style>
         /* --- MODE SOMBRE ET CLAIR --- */
-        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; }
-        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; }
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; --hover-row: rgba(255,255,255,0.03); }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; --hover-row: rgba(0,0,0,0.03); }
         
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -15,7 +15,6 @@
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 60px; }
-        /* Gestion de l'affichage du logo selon le thème */
         .logo-light { display: none; }
         body.light-mode .logo-dark { display: none; }
         body.light-mode .logo-light { display: block; }
@@ -28,21 +27,31 @@
         .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
 
-        .stepper-group { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border-radius: 8px; padding: 4px; border: 1px solid var(--border); width: 140px; margin-bottom: 6px; }
-        .stepper-label { font-size: 0.75rem; color: #888; width: 35px; text-align: left; padding-left: 5px; text-transform: uppercase; font-weight: bold;}
-        .stepper-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); width: 34px; height: 34px; border-radius: 6px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .stepper-btn:active { background: var(--primary); color: white; }
-        .stepper-input { width: 35px; background: transparent; border: none; color: var(--text); text-align: center; font-weight: bold; font-size: 1.1rem; outline: none; }
+        /* BOUTON COPIER */
+        .btn-copy { background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 4px; font-size: 0.75rem; cursor: pointer; padding: 4px 8px; margin-top: 8px; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
+        .btn-copy:hover { background: var(--primary); color: white; }
 
-        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
+        /* STEPPERS AMÉLIORÉS */
+        .stepper-group { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border-radius: 6px; padding: 3px; border: 1px solid var(--border); width: 130px; margin-bottom: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .stepper-group.obj-group { border-color: rgba(52, 152, 219, 0.4); background: rgba(52, 152, 219, 0.05); } /* Différenciation visuelle Objectif */
+        .stepper-label { font-size: 0.7rem; color: #888; width: 35px; text-align: left; padding-left: 5px; text-transform: uppercase; font-weight: bold;}
+        .stepper-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); width: 30px; height: 30px; border-radius: 4px; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .stepper-btn:active { background: var(--primary); color: white; }
+        .stepper-input { width: 35px; background: transparent; border: none; color: var(--text); text-align: center; font-weight: bold; font-size: 1rem; outline: none; }
+        .stepper-input:focus { border-bottom: 2px solid var(--primary); }
+
+        /* TABLEAU RÉNOVÉ */
+        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .prod-table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        .prod-table th, .prod-table td { padding: 15px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.9rem; position: sticky; top: 0; z-index: 4; }
-        .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1.1rem; }
+        .prod-table tbody tr { transition: background 0.2s; }
+        .prod-table tbody tr:hover { background: var(--hover-row); }
+        .prod-table th, .prod-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.9rem; position: sticky; top: 0; z-index: 4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1rem; }
         .prod-table th.col-fixe { background: var(--th-bg); z-index: 6; }
 
-        .badge-diff { background: #2c3e50; color: #3498db; padding: 4px 10px; border-radius: 6px; font-size: 1rem; font-weight: bold; display: inline-block; margin-top: 5px; }
-        .badge-total { background: var(--primary); color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1.4rem; display: inline-block; }
+        .badge-diff { background: #2c3e50; color: #3498db; padding: 4px 10px; border-radius: 6px; font-size: 0.95rem; font-weight: bold; display: inline-block; margin-top: 4px; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .badge-total { background: var(--primary); color: white; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 1.3rem; display: inline-block; box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4); }
         
         .grid-ingredients { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         .ing-category { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border); }
@@ -51,12 +60,11 @@
         .checklist-item input[type="checkbox"] { margin-right: 15px; width: 22px; height: 22px; accent-color: var(--primary); }
         .highlight { color: var(--primary); font-weight: bold; margin-left: 5px; }
 
-        /* ÉCRAN DE RÉPARTITION */
         .repart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .repart-card { background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
         .repart-card h4 { margin: 0 0 10px 0; color: #3498db; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
 
-        /* MODALE CARTE */
+        /* MODALES */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
         .modal-content { background: var(--card-bg); margin: 5vh auto; padding: 25px; border: 1px solid var(--border); width: 90%; max-width: 800px; border-radius: 16px; max-height: 85vh; overflow-y: auto; }
         .close { color: var(--text); float: right; font-size: 35px; font-weight: bold; cursor: pointer; }
@@ -66,26 +74,19 @@
 
         #sync-status { font-size: 0.85em; color: #888; text-align: right; margin-top: 5px; font-weight: bold; }
 
-        /* --- PARAMÈTRES SPÉCIAUX POUR L'IMPRESSION --- */
-        @media screen {
-            .print-only { display: none !important; }
-        }
+        /* IMPRESSION */
+        @media screen { .print-only { display: none !important; } }
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
-            
             body { background: white; color: black; margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 11pt; }
-            
             .print-header { text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
             .print-header h1 { margin: 0; font-size: 24pt; text-transform: uppercase; }
             .print-header p { margin: 5px 0 0 0; color: #555; }
-            
             .print-section-title { border-bottom: 2px solid black; margin-top: 20px; padding-bottom: 5px; font-size: 14pt; }
-            
             .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
             .print-box { border: 1px solid #000; padding: 12px; border-radius: 8px; page-break-inside: avoid; }
             .print-box h4 { margin: 0 0 8px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 12pt; }
-            
             .print-list { list-style: none; padding: 0; margin: 0; }
             .print-list li { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #ddd; }
             .print-bold { font-weight: bold; font-size: 12pt; }
@@ -120,7 +121,7 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; color: var(--primary);">Tableau de Production</h2>
-        <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #3498db; color: white; font-size: 1.1rem;">Gérer la Carte</button>
+        <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #3498db; color: white; font-size: 1.1rem;">⚙️ Gérer la Carte</button>
     </div>
 
     <div id="entree-production"><p style="color: #888;">Chargement de vos données...</p></div>
@@ -141,8 +142,7 @@
     <div id="liste-ingredients" class="grid-ingredients"></div>
 </div>
 
-<div id="print-area" class="print-only">
-    </div>
+<div id="print-area" class="print-only"></div>
 
 <div id="modal-carte" class="modal no-print">
     <div class="modal-content">
@@ -150,6 +150,20 @@
         <h2 style="color: var(--primary); margin-top: 0;">Sélectionnez vos pizzas</h2>
         <div id="liste-pizzas-selection" class="pizza-grid"></div>
         <button onclick="fermerModalCarte()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.2rem;">Appliquer</button>
+    </div>
+</div>
+
+<div id="modal-copy" class="modal no-print">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close" onclick="fermerModalCopy()">&times;</span>
+        <h2 style="color: var(--primary); margin-top: 0;">📋 Dupliquer les objectifs</h2>
+        <p style="color: #888;">Copier les objectifs de : <strong id="copy-source-name" style="color: var(--text);"></strong></p>
+        <p style="margin-bottom: 15px;">Vers quels distributeurs ?</p>
+        
+        <div id="copy-targets-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;"></div>
+        
+        <input type="hidden" id="copy-source-id">
+        <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.1rem;">Coller les objectifs</button>
     </div>
 </div>
 
@@ -174,20 +188,13 @@
     let timerSauvegarde = null;
 
     const pizzas = [
-        { id: '4_fromages_rouge', nom: '4 Fromages Rouge' },
-        { id: 'burger', nom: 'Burger' },
-        { id: 'camembert_roti', nom: 'Camembert Rôti' },
-        { id: 'cannibale', nom: 'Cannibale' },
-        { id: 'chevre_miel', nom: 'Chèvre Miel' },
-        { id: 'croq', nom: "Croq'" },
-        { id: 'extreme_nutella', nom: 'Extrême Nutella' },
-        { id: 'franc_comtoise', nom: 'Franc Comtoise' },
-        { id: 'indiana', nom: 'Indiana' },
-        { id: 'margarita', nom: 'Margarita' },
-        { id: 'maxi_kebab', nom: 'Maxi Kebab' },
-        { id: 'reine', nom: 'Reine' },
-        { id: 'savoyarde', nom: 'Savoyarde' },
-        { id: 'ultimatum', nom: 'Ultimatum' },
+        { id: '4_fromages_rouge', nom: '4 Fromages Rouge' }, { id: 'burger', nom: 'Burger' },
+        { id: 'camembert_roti', nom: 'Camembert Rôti' }, { id: 'cannibale', nom: 'Cannibale' },
+        { id: 'chevre_miel', nom: 'Chèvre Miel' }, { id: 'croq', nom: "Croq'" },
+        { id: 'extreme_nutella', nom: 'Extrême Nutella' }, { id: 'franc_comtoise', nom: 'Franc Comtoise' },
+        { id: 'indiana', nom: 'Indiana' }, { id: 'margarita', nom: 'Margarita' },
+        { id: 'maxi_kebab', nom: 'Maxi Kebab' }, { id: 'reine', nom: 'Reine' },
+        { id: 'savoyarde', nom: 'Savoyarde' }, { id: 'ultimatum', nom: 'Ultimatum' },
         { id: 'viking', nom: 'Viking' }
     ];
 
@@ -231,12 +238,10 @@
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- MODALE CARTE ---
+    // --- MODALES (CARTE & COPIE) ---
     function ouvrirModalCarte() { document.getElementById('modal-carte').style.display = "block"; }
-    function fermerModalCarte() { 
-        document.getElementById('modal-carte').style.display = "none"; 
-        majSelectionCarte(); 
-    }
+    function fermerModalCarte() { document.getElementById('modal-carte').style.display = "none"; majSelectionCarte(); }
+    
     function renderModalCarte() {
         document.getElementById('liste-pizzas-selection').innerHTML = pizzas.map(p => {
             const isChecked = cloudPrefs.carte.includes(p.nom) ? 'checked' : '';
@@ -248,6 +253,47 @@
         cloudPrefs.carte = Array.from(checkboxes).map(cb => cb.value);
         triggerSave();
         renderProduction(cloudPrefs.carte);
+    }
+
+    // Fonction Copie d'objectifs
+    function ouvrirModalCopy(sourceId) {
+        const sourceDist = listeDistributeurs.find(d => d.id === sourceId);
+        document.getElementById('copy-source-name').innerText = sourceDist.nom;
+        document.getElementById('copy-source-id').value = sourceId;
+        
+        const container = document.getElementById('copy-targets-list');
+        container.innerHTML = listeDistributeurs
+            .filter(d => d.id !== sourceId)
+            .map(d => `<label class="pizza-checkbox" style="padding: 10px;"><input type="checkbox" value="${d.id}"> ${d.nom}</label>`)
+            .join('');
+        
+        document.getElementById('modal-copy').style.display = 'block';
+    }
+    
+    function fermerModalCopy() { document.getElementById('modal-copy').style.display = 'none'; }
+
+    function validerCopy() {
+        const sourceId = document.getElementById('copy-source-id').value;
+        const cibles = Array.from(document.querySelectorAll('#copy-targets-list input:checked')).map(cb => cb.value);
+
+        if(cibles.length === 0) { alert("Sélectionnez au moins un distributeur."); return; }
+
+        cibles.forEach(targetId => {
+            if(!cloudPrefs.matrice[targetId]) cloudPrefs.matrice[targetId] = {};
+            cloudPrefs.carte.forEach(nomPizza => {
+                const objValue = cloudPrefs.matrice[sourceId]?.[nomPizza]?.obj || "";
+                if(!cloudPrefs.matrice[targetId][nomPizza]) cloudPrefs.matrice[targetId][nomPizza] = { stock: "", obj: "" };
+                
+                cloudPrefs.matrice[targetId][nomPizza].obj = objValue;
+                
+                const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"][data-type="obj"]`);
+                if(inputUI) inputUI.value = objValue;
+            });
+        });
+
+        calculerBesoins();
+        triggerSave();
+        fermerModalCopy();
     }
 
     function triggerSave() {
@@ -293,7 +339,12 @@
         }
 
         let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
-        listeDistributeurs.forEach(dist => { html += `<th>${dist.nom}</th>`; });
+        listeDistributeurs.forEach(dist => { 
+            html += `<th>
+                        <div style="font-size: 1.1rem; margin-bottom: 5px;">${dist.nom}</div>
+                        <button class="btn-copy" onclick="ouvrirModalCopy('${dist.id}')">📋 Copier Obj.</button>
+                    </th>`; 
+        });
         html += `<th style="background: var(--th-bg);">Total à faire</th></tr></thead><tbody>`;
 
         selection.forEach(nomPizza => {
@@ -311,8 +362,8 @@
                             <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', 1)">+</button>
                         </div>
-                        <div class="stepper-group">
-                            <span class="stepper-label">Obj.</span>
+                        <div class="stepper-group obj-group">
+                            <span class="stepper-label" style="color: #3498db;">Obj.</span>
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', -1)">-</button>
                             <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', 1)">+</button>
@@ -338,7 +389,6 @@
         let ecranRepartition = '';
         let printRepartition = '';
 
-        // 1. Calcul des écarts et création de la répartition
         listeDistributeurs.forEach(dist => {
             let listePizzasDist = [];
             selection.forEach(nomPizza => {
@@ -351,13 +401,10 @@
                     document.getElementById(`res-${dist.id}-${safeId}`).innerText = '+' + aProduire;
                     totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
 
-                    if(aProduire > 0) {
-                        listePizzasDist.push({nom: nomPizza, qte: aProduire});
-                    }
+                    if(aProduire > 0) listePizzasDist.push({nom: nomPizza, qte: aProduire});
                 }
             });
 
-            // HTML Répartition
             if(listePizzasDist.length > 0) {
                 let detailsUi = listePizzasDist.map(p => `<li style="margin-bottom:5px;"><span>${p.nom}</span> <strong style="color:var(--primary); float:right;">${p.qte}</strong></li>`).join('');
                 let detailsPrint = listePizzasDist.map(p => `<li><span>${p.nom}</span> <span class="print-bold">${p.qte}</span></li>`).join('');
@@ -369,7 +416,6 @@
 
         document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888;">Aucune pizza à répartir pour le moment.</p>';
 
-        // 2. Mise à jour de la colonne Totaux et HTML Impression Pizzas
         let printPizzasTotal = '';
         let nbPizzasGlobal = 0;
         selection.forEach(nomPizza => {
@@ -383,7 +429,6 @@
             }
         });
 
-        // 3. Calcul des Ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0 && recettes[nomPizza]) {
                 for (let [ing, q] of Object.entries(recettes[nomPizza])) {
@@ -419,12 +464,10 @@
             else { catUi["🧅 Autres"].push(htmlEcran); catPrint["Autres"].push(htmlPrint); }
         }
 
-        // Rendu Écran
         for (let [title, items] of Object.entries(catUi)) {
             if (items.length) container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
         }
 
-        // --- GÉNÉRATION DE LA FEUILLE D'IMPRESSION ---
         let htmlPrintIng = '';
         for (let [title, items] of Object.entries(catPrint)) {
             if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list">${items.join("")}</ul></div>`;
@@ -438,7 +481,6 @@
                 <h1>Fiche de Production</h1>
                 <p>Éditée le ${dateDuJour} à ${heure}</p>
             </div>
-            
             <div class="print-section-title">1. RÉSUMÉ DE LA PRODUCTION</div>
             <div class="print-grid">
                 <div class="print-box">
@@ -446,16 +488,10 @@
                     <ul class="print-list">${htmlPrintPizzas || '<li>Aucune pizza</li>'}</ul>
                 </div>
             </div>
-
             <div class="print-section-title">2. RÉPARTITION POUR REMPLISSAGE</div>
-            <div class="print-grid">
-                ${htmlPrintRepartition || '<p>Aucune répartition.</p>'}
-            </div>
-
+            <div class="print-grid">${htmlPrintRepartition || '<p>Aucune répartition.</p>'}</div>
             <div class="print-section-title">3. INGRÉDIENTS À PRÉPARER</div>
-            <div class="print-grid">
-                ${htmlPrintIng || '<p>Aucun ingrédient.</p>'}
-            </div>
+            <div class="print-grid">${htmlPrintIng || '<p>Aucun ingrédient.</p>'}</div>
         `;
     }
 
