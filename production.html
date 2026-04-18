@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gang of Pizza - Production V2</title>
+    <title>Espace Production V2</title>
     <style>
         /* --- MODE SOMBRE ET CLAIR --- */
         :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; }
@@ -94,7 +94,7 @@
     <div class="header">
         <div class="logo-area">
             <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
-            <h1>Gang of Pizza</h1>
+            <h1>Espace Production by digiclem.</h1>
         </div>
         <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
             <div>
@@ -169,11 +169,21 @@
     let timerSauvegarde = null;
 
     const pizzas = [
-        { id: 'reine', nom: 'Reine' }, { id: 'cannibale', nom: 'Cannibale' },
-        { id: '4_fromages', nom: '4 Fromages' }, { id: 'burger', nom: 'Burger' },
-        { id: 'maxi_burger', nom: 'Maxi Burger' }, { id: 'orientale', nom: 'Orientale' },
-        { id: 'chevre_miel', nom: 'Chèvre-Miel' }, { id: 'savoyarde', nom: 'Savoyarde' },
-        { id: 'indiana', nom: 'Indiana' }, { id: 'viking', nom: 'Viking' }
+        { id: '4_fromages_rouge', nom: '4 Fromages Rouge' },
+        { id: 'burger', nom: 'Burger' },
+        { id: 'camembert_roti', nom: 'Camembert Rôti' },
+        { id: 'cannibale', nom: 'Cannibale' },
+        { id: 'chevre_miel', nom: 'Chèvre Miel' },
+        { id: 'croq', nom: "Croq'" },
+        { id: 'extreme_nutella', nom: 'Extrême Nutella' },
+        { id: 'franc_comtoise', nom: 'Franc Comtoise' },
+        { id: 'indiana', nom: 'Indiana' },
+        { id: 'margarita', nom: 'Margarita' },
+        { id: 'maxi_kebab', nom: 'Maxi Kebab' },
+        { id: 'reine', nom: 'Reine' },
+        { id: 'savoyarde', nom: 'Savoyarde' },
+        { id: 'ultimatum', nom: 'Ultimatum' },
+        { id: 'viking', nom: 'Viking' }
     ];
 
     const recettes = {
