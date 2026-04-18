@@ -5,31 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gang of Pizza - Production V2</title>
     <style>
-        /* VARIABLES MODE SOMBRE (Défaut) */
-        :root { 
-            --primary: #e74c3c; 
-            --bg: #121212; 
-            --card-bg: #1e1e1e; 
-            --text: #e0e0e0; 
-            --border: #333; 
-            --input-bg: #2a2a2a;
-            --th-bg: #222;
-        }
-
-        /* VARIABLES MODE CLAIR */
-        body.light-mode {
-            --bg: #f4f4f9; 
-            --card-bg: #ffffff; 
-            --text: #333333; 
-            --border: #dddddd; 
-            --input-bg: #eeeeee;
-            --th-bg: #e8e8e8;
-        }
-
+        /* --- MODE SOMBRE ET CLAIR --- */
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; }
+        
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* HEADER & NAVIGATION */
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 40px; }
@@ -42,49 +24,73 @@
         .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
 
-        /* BOUTONS TABLETTE (Stepper) */
         .stepper-group { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border-radius: 8px; padding: 4px; border: 1px solid var(--border); width: 140px; margin-bottom: 6px; }
         .stepper-label { font-size: 0.75rem; color: #888; width: 35px; text-align: left; padding-left: 5px; text-transform: uppercase; font-weight: bold;}
         .stepper-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); width: 34px; height: 34px; border-radius: 6px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .stepper-btn:active { background: var(--primary); color: white; }
         .stepper-input { width: 35px; background: transparent; border: none; color: var(--text); text-align: center; font-weight: bold; font-size: 1.1rem; outline: none; }
 
-        /* TABLEAU RESPONSIVE */
-        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; }
         .prod-table { width: 100%; border-collapse: collapse; min-width: 700px; }
         .prod-table th, .prod-table td { padding: 15px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; position: sticky; top: 0; z-index: 4; }
-        
+        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.9rem; position: sticky; top: 0; z-index: 4; }
         .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1.1rem; }
         .prod-table th.col-fixe { background: var(--th-bg); z-index: 6; }
 
         .badge-diff { background: #2c3e50; color: #3498db; padding: 4px 10px; border-radius: 6px; font-size: 1rem; font-weight: bold; display: inline-block; margin-top: 5px; }
         .badge-total { background: var(--primary); color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 1.4rem; display: inline-block; }
         
-        /* CHECKLIST */
         .grid-ingredients { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         .ing-category { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border); }
         .ing-category h4 { margin-top: 0; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; text-transform: uppercase; font-size: 0.9rem; }
         .checklist-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 1.1rem; }
-        .checklist-item:last-child { border-bottom: none; }
         .checklist-item input[type="checkbox"] { margin-right: 15px; width: 22px; height: 22px; accent-color: var(--primary); }
         .highlight { color: var(--primary); font-weight: bold; margin-left: 5px; }
 
-        /* FENÊTRE MODALE (CARTE) */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
-        .modal-content { background-color: var(--card-bg); margin: 5vh auto; padding: 25px; border: 1px solid var(--border); width: 90%; max-width: 800px; border-radius: 16px; max-height: 85vh; overflow-y: auto; }
-        .close { color: var(--text); float: right; font-size: 35px; font-weight: bold; cursor: pointer; line-height: 20px; }
-        .pizza-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; margin-bottom: 25px; }
-        .pizza-checkbox { background: var(--input-bg); padding: 15px; border-radius: 10px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: bold; transition: 0.2s; }
-        .pizza-checkbox input { width: 22px; height: 22px; accent-color: var(--primary); }
-        .pizza-checkbox:active { transform: scale(0.98); }
+        /* ÉCRAN DE RÉPARTITION */
+        .repart-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .repart-card { background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
+        .repart-card h4 { margin: 0 0 10px 0; color: #3498db; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
 
-        #sync-status { font-size: 0.85em; color: #888; text-align: right; margin-top: 5px; min-height: 20px; font-weight: bold; }
+        /* MODALE CARTE */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); margin: 5vh auto; padding: 25px; border: 1px solid var(--border); width: 90%; max-width: 800px; border-radius: 16px; max-height: 85vh; overflow-y: auto; }
+        .close { color: var(--text); float: right; font-size: 35px; font-weight: bold; cursor: pointer; }
+        .pizza-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; margin-bottom: 25px; }
+        .pizza-checkbox { background: var(--input-bg); padding: 15px; border-radius: 10px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: bold; }
+        .pizza-checkbox input { width: 22px; height: 22px; accent-color: var(--primary); }
+
+        #sync-status { font-size: 0.85em; color: #888; text-align: right; margin-top: 5px; font-weight: bold; }
+
+        /* --- PARAMÈTRES SPÉCIAUX POUR L'IMPRESSION --- */
+        @media screen {
+            .print-only { display: none !important; }
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            
+            body { background: white; color: black; margin: 0; padding: 0; font-family: Arial, sans-serif; font-size: 11pt; }
+            
+            .print-header { text-align: center; border-bottom: 3px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+            .print-header h1 { margin: 0; font-size: 24pt; text-transform: uppercase; }
+            .print-header p { margin: 5px 0 0 0; color: #555; }
+            
+            .print-section-title { border-bottom: 2px solid black; margin-top: 20px; padding-bottom: 5px; font-size: 14pt; }
+            
+            .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+            .print-box { border: 1px solid #000; padding: 12px; border-radius: 8px; page-break-inside: avoid; }
+            .print-box h4 { margin: 0 0 8px 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; font-size: 12pt; }
+            
+            .print-list { list-style: none; padding: 0; margin: 0; }
+            .print-list li { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #ddd; }
+            .print-bold { font-weight: bold; font-size: 12pt; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="app-screen" class="container no-print">
     <div class="header">
         <div class="logo-area">
             <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
@@ -112,8 +118,12 @@
         <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #3498db; color: white; font-size: 1.1rem;">⚙️ Gérer la Carte</button>
     </div>
 
-    <div id="entree-production">
-        <p style="color: #888;">Chargement de vos données...</p>
+    <div id="entree-production"><p style="color: #888;">Chargement de vos données...</p></div>
+
+    <div style="margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
+        <h2 style="margin: 0; color: var(--primary);">📦 Répartition par machine</h2>
+        <p style="color:#888; font-size: 0.9rem; margin-top: 5px;">Calculé automatiquement pour le remplissage</p>
+        <div id="repartition-ecran" class="repart-grid"></div>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
@@ -124,29 +134,30 @@
         </div>
     </div>
     <div id="liste-ingredients" class="grid-ingredients"></div>
-
 </div>
 
-<div id="modal-carte" class="modal">
+<div id="print-area" class="print-only">
+    </div>
+
+<div id="modal-carte" class="modal no-print">
     <div class="modal-content">
         <span class="close" onclick="fermerModalCarte()">&times;</span>
         <h2 style="color: var(--primary); margin-top: 0;">Sélectionnez vos pizzas</h2>
-        <p style="color: #888;">Cochez les pizzas que vous produisez aujourd'hui. Elles apparaîtront dans votre tableau.</p>
         <div id="liste-pizzas-selection" class="pizza-grid"></div>
-        <button onclick="fermerModalCarte()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.2rem;">Appliquer la sélection</button>
+        <button onclick="fermerModalCarte()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.2rem;">Appliquer</button>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- GESTION DU THÈME ---
+    // --- THÈME ---
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
     function toggleTheme() {
         document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
     }
 
-    // --- SUPABASE & VARIABLES ---
+    // --- INITIALISATION ---
     const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
     const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -169,12 +180,11 @@
         "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
         "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
         "4 Fromages": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6},
-        "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons": 7, "Scalarella + Cheddar (g)": 110},
+        "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (unités)": 7, "Scalarella + Cheddar (g)": 110},
         "Chèvre-Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8},
         "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110}
     };
 
-    // --- INITIALISATION ---
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = "index.html"; return; }
@@ -193,29 +203,22 @@
             if(!cloudPrefs.carte) cloudPrefs.carte = [];
             if(!cloudPrefs.matrice) cloudPrefs.matrice = {};
         }
-
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- MODAL CARTE ---
+    // --- MODALE CARTE ---
     function ouvrirModalCarte() { document.getElementById('modal-carte').style.display = "block"; }
     function fermerModalCarte() { 
         document.getElementById('modal-carte').style.display = "none"; 
-        majSelectionCarte(); // Sauvegarde et met à jour en fermant
+        majSelectionCarte(); 
     }
-
     function renderModalCarte() {
-        const container = document.getElementById('liste-pizzas-selection');
-        container.innerHTML = pizzas.map(p => {
+        document.getElementById('liste-pizzas-selection').innerHTML = pizzas.map(p => {
             const isChecked = cloudPrefs.carte.includes(p.nom) ? 'checked' : '';
-            return `
-            <label class="pizza-checkbox">
-                <input type="checkbox" value="${p.nom}" ${isChecked}> ${p.nom}
-            </label>`;
+            return `<label class="pizza-checkbox"><input type="checkbox" value="${p.nom}" ${isChecked}> ${p.nom}</label>`;
         }).join('');
     }
-
     function majSelectionCarte() {
         const checkboxes = document.querySelectorAll('#liste-pizzas-selection input:checked');
         cloudPrefs.carte = Array.from(checkboxes).map(cb => cb.value);
@@ -223,7 +226,6 @@
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- SYNCHRONISATION CLOUD ---
     function triggerSave() {
         document.getElementById('sync-status').innerText = "⏳ Synchro...";
         document.getElementById('sync-status').style.color = "#f39c12";
@@ -235,81 +237,62 @@
         }, 1000);
     }
 
-    // --- LOGIQUE BOUTONS + / - (TABLETTE) ---
+    // --- LOGIQUE BOUTONS ---
     function changerQuantite(distId, nomPizza, type, delta) {
         const input = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="${type}"]`);
         if(input) {
             let val = parseInt(input.value) || 0;
-            val += delta;
-            if(val < 0) val = 0;
+            val = Math.max(0, val + delta);
             input.value = val;
             majMatriceCloud(distId, nomPizza);
         }
     }
-
     function majMatriceCloud(distId, nomPizza) {
         if (!cloudPrefs.matrice[distId]) cloudPrefs.matrice[distId] = {};
-        
         const stock = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="stock"]`).value;
         const obj = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="obj"]`).value;
-        
         cloudPrefs.matrice[distId][nomPizza] = { stock, obj };
-        
         calculerBesoins();
         triggerSave();
     }
 
-    // --- TABLEAU DE PRODUCTION ---
+    // --- RENDU DU TABLEAU ---
     function renderProduction(selection) {
         const container = document.getElementById('entree-production');
-
         if (listeDistributeurs.length === 0) {
-            container.innerHTML = `<div style="background: #fadbd8; border-left: 4px solid #e74c3c; padding: 15px; border-radius: 8px; color: #c0392b;">
-                <strong>Aucun distributeur configuré.</strong><br>Allez dans l'onglet "Distributeurs" pour configurer vos machines.
-            </div>`;
+            container.innerHTML = `<div style="background: #fadbd8; padding: 15px; border-radius: 8px; color: #c0392b;"><strong>Aucun distributeur configuré.</strong></div>`;
             return;
         }
         if (selection.length === 0) {
-            container.innerHTML = `<div style="text-align:center; padding: 40px; background: var(--card-bg); border-radius: 12px; border: 2px dashed var(--border);">
-                <p style="font-size: 1.2rem; color: #888;">Votre carte est vide.</p>
-                <button onclick="ouvrirModalCarte()" class="btn-action" style="background: var(--primary); color: white;">Choisir des pizzas</button>
-            </div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 30px; border: 2px dashed #555; border-radius: 12px;"><p>Votre carte est vide.</p></div>`;
             return;
         }
 
-        let html = `<div class="prod-table-container">
-            <table class="prod-table">
-                <thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
-        
+        let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
         listeDistributeurs.forEach(dist => { html += `<th>${dist.nom}</th>`; });
         html += `<th style="background: var(--th-bg);">Total à faire</th></tr></thead><tbody>`;
 
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
-            
             listeDistributeurs.forEach(dist => {
                 const stockVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.stock || "";
                 const objVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.obj || "";
-
                 html += `
                 <td>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        
                         <div class="stepper-group">
                             <span class="stepper-label">Stock</span>
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', -1)">-</button>
                             <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', 1)">+</button>
                         </div>
-                        
                         <div class="stepper-group">
                             <span class="stepper-label">Obj.</span>
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', -1)">-</button>
                             <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
                             <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', 1)">+</button>
                         </div>
-
                         <div class="badge-diff" id="res-${dist.id}-${safeId}">+0</div>
                     </div>
                 </td>`;
@@ -322,77 +305,136 @@
         calculerBesoins();
     }
 
-    // --- CALCUL ET CHECKLIST ---
+    // --- LE CŒUR DU CALCUL (ÉCRAN ET IMPRESSION) ---
     function calculerBesoins() {
         const selection = cloudPrefs.carte;
         totauxAProduire = {}; 
         const besoinsIngredients = {};
 
+        let ecranRepartition = '';
+        let printRepartition = '';
+
+        // 1. Calcul des écarts et création de la répartition
         listeDistributeurs.forEach(dist => {
+            let listePizzasDist = [];
             selection.forEach(nomPizza => {
                 const safeId = nomPizza.replace(/\s+/g, '_');
                 const stockInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
                 const objInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="obj"]`);
                 
                 if (stockInput && objInput) {
-                    const stock = parseInt(stockInput.value) || 0;
-                    const obj = parseInt(objInput.value) || 0;
-                    
-                    let aProduire = obj - stock;
-                    if (aProduire < 0) aProduire = 0;
-                    
+                    let aProduire = Math.max(0, (parseInt(objInput.value) || 0) - (parseInt(stockInput.value) || 0));
                     document.getElementById(`res-${dist.id}-${safeId}`).innerText = '+' + aProduire;
                     totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
+
+                    if(aProduire > 0) {
+                        listePizzasDist.push({nom: nomPizza, qte: aProduire});
+                    }
                 }
             });
+
+            // HTML Répartition
+            if(listePizzasDist.length > 0) {
+                let detailsUi = listePizzasDist.map(p => `<li style="margin-bottom:5px;"><span>${p.nom}</span> <strong style="color:var(--primary); float:right;">${p.qte}</strong></li>`).join('');
+                let detailsPrint = listePizzasDist.map(p => `<li><span>${p.nom}</span> <span class="print-bold">${p.qte}</span></li>`).join('');
+                
+                ecranRepartition += `<div class="repart-card"><h4>🏪 ${dist.nom}</h4><ul style="padding:0; margin:0; list-style:none;">${detailsUi}</ul></div>`;
+                printRepartition += `<div class="print-box"><h4>${dist.nom}</h4><ul class="print-list">${detailsPrint}</ul></div>`;
+            }
         });
 
+        document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888;">Aucune pizza à répartir pour le moment.</p>';
+
+        // 2. Mise à jour de la colonne Totaux et HTML Impression Pizzas
+        let printPizzasTotal = '';
+        let nbPizzasGlobal = 0;
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             const elTotal = document.getElementById(`tot-${safeId}`);
             if (elTotal) elTotal.innerText = totauxAProduire[nomPizza] || 0;
+            
+            if(totauxAProduire[nomPizza] > 0) {
+                printPizzasTotal += `<li><span>${nomPizza}</span> <span class="print-bold">${totauxAProduire[nomPizza]}</span></li>`;
+                nbPizzasGlobal += totauxAProduire[nomPizza];
+            }
         });
 
+        // 3. Calcul des Ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
-            if (quantite > 0) {
-                const recette = recettes[nomPizza];
-                if (recette) {
-                    for (let [ing, q] of Object.entries(recette)) {
-                        let finalIng = ing; let finalQ = q * quantite;
-                        if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
-                        if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
-                        besoinsIngredients[finalIng] = (besoinsIngredients[finalIng] || 0) + finalQ;
-                    }
+            if (quantite > 0 && recettes[nomPizza]) {
+                for (let [ing, q] of Object.entries(recettes[nomPizza])) {
+                    let finalIng = ing; let finalQ = q * quantite;
+                    if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
+                    if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
+                    besoinsIngredients[finalIng] = (besoinsIngredients[finalIng] || 0) + finalQ;
                 }
             }
         }
-        renderChecklist(besoinsIngredients);
+        
+        renderChecklist(besoinsIngredients, printPizzasTotal, nbPizzasGlobal, printRepartition);
     }
 
-    function renderChecklist(ing) {
+    function renderChecklist(ing, htmlPrintPizzas, totalPizzas, htmlPrintRepartition) {
         const container = document.getElementById("liste-ingredients");
         container.innerHTML = "";
-        let cat = { "🍕 Disques": [], "🥩 Viandes": [], "🧀 Fromages": [], "🧅 Autres": [] };
+        
+        let catUi = { "🍕 Disques": [], "🥩 Viandes": [], "🧀 Fromages": [], "🧅 Autres": [] };
+        let catPrint = { "Disques": [], "Viandes": [], "Fromages": [], "Autres": [] };
 
         for (let [n, q] of Object.entries(ing)) {
             if (q <= 0) continue;
             let displayQ = q >= 1000 ? (q/1000).toFixed(2) + " Kg" : q;
-            let html = `<div class="checklist-item"><input type="checkbox"> <span>${n} : <span class="highlight">${displayQ}</span></span></div>`;
+            if(!n.includes("unités") && !n.includes("Disque") && !displayQ.toString().includes("Kg")) displayQ += " g";
+
+            let htmlEcran = `<div class="checklist-item"><input type="checkbox"> <span>${n} : <span class="highlight">${displayQ}</span></span></div>`;
+            let htmlPrint = `<li><span>${n}</span> <span class="print-bold">${displayQ}</span></li>`;
             
-            if (n.includes("Disque")) cat["🍕 Disques"].push(html);
-            else if (n.toLowerCase().match(/boeuf|poulet|jambon|merguez|kebab/)) cat["🥩 Viandes"].push(html);
-            else if (n.toLowerCase().match(/mozzarella|chèvre|emmental|scalarella|roquefort|boursin/)) cat["🧀 Fromages"].push(html);
-            else cat["🧅 Autres"].push(html);
+            if (n.includes("Disque")) { catUi["🍕 Disques"].push(htmlEcran); catPrint["Disques"].push(htmlPrint); }
+            else if (n.toLowerCase().match(/boeuf|poulet|jambon|merguez|kebab/)) { catUi["🥩 Viandes"].push(htmlEcran); catPrint["Viandes"].push(htmlPrint); }
+            else if (n.toLowerCase().match(/mozzarella|chèvre|emmental|scalarella|roquefort|boursin/)) { catUi["🧀 Fromages"].push(htmlEcran); catPrint["Fromages"].push(htmlPrint); }
+            else { catUi["🧅 Autres"].push(htmlEcran); catPrint["Autres"].push(htmlPrint); }
         }
 
-        for (let [title, items] of Object.entries(cat)) {
-            if (items.length) {
-                container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
-            }
+        // Rendu Écran
+        for (let [title, items] of Object.entries(catUi)) {
+            if (items.length) container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
         }
+
+        // --- GÉNÉRATION DE LA FEUILLE D'IMPRESSION ---
+        let htmlPrintIng = '';
+        for (let [title, items] of Object.entries(catPrint)) {
+            if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list">${items.join("")}</ul></div>`;
+        }
+
+        const dateDuJour = new Date().toLocaleDateString('fr-FR');
+        const heure = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+
+        document.getElementById('print-area').innerHTML = `
+            <div class="print-header">
+                <h1>Fiche de Production</h1>
+                <p>Éditée le ${dateDuJour} à ${heure}</p>
+            </div>
+            
+            <div class="print-section-title">1. RÉSUMÉ DE LA PRODUCTION</div>
+            <div class="print-grid">
+                <div class="print-box">
+                    <h4>Total : ${totalPizzas} pizzas</h4>
+                    <ul class="print-list">${htmlPrintPizzas || '<li>Aucune pizza</li>'}</ul>
+                </div>
+            </div>
+
+            <div class="print-section-title">2. RÉPARTITION POUR REMPLISSAGE</div>
+            <div class="print-grid">
+                ${htmlPrintRepartition || '<p>Aucune répartition.</p>'}
+            </div>
+
+            <div class="print-section-title">3. INGRÉDIENTS À PRÉPARER</div>
+            <div class="print-grid">
+                ${htmlPrintIng || '<p>Aucun ingrédient.</p>'}
+            </div>
+        `;
     }
 
-    // --- VALIDATION ---
     async function validerProduction() {
         if(!confirm("Valider la production ? Les ingrédients seront déduits de vos stocks.")) return;
 
