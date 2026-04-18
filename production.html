@@ -10,7 +10,7 @@
         body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; --hover-row: rgba(0,0,0,0.03); }
         
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1300px; margin: 0 auto; }
         
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
@@ -27,31 +27,29 @@
         .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
         .btn-action:active { transform: scale(0.95); }
 
-        /* BOUTON COPIER */
-        .btn-copy { background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 4px; font-size: 0.75rem; cursor: pointer; padding: 4px 8px; margin-top: 8px; text-transform: uppercase; font-weight: bold; transition: 0.2s; }
-        .btn-copy:hover { background: var(--primary); color: white; }
-
-        /* STEPPERS AMÉLIORÉS */
-        .stepper-group { display: flex; align-items: center; justify-content: space-between; background: var(--input-bg); border-radius: 6px; padding: 3px; border: 1px solid var(--border); width: 130px; margin-bottom: 5px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .stepper-group.obj-group { border-color: rgba(52, 152, 219, 0.4); background: rgba(52, 152, 219, 0.05); } /* Différenciation visuelle Objectif */
-        .stepper-label { font-size: 0.7rem; color: #888; width: 35px; text-align: left; padding-left: 5px; text-transform: uppercase; font-weight: bold;}
-        .stepper-btn { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); width: 30px; height: 30px; border-radius: 4px; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .stepper-btn:active { background: var(--primary); color: white; }
-        .stepper-input { width: 35px; background: transparent; border: none; color: var(--text); text-align: center; font-weight: bold; font-size: 1rem; outline: none; }
-        .stepper-input:focus { border-bottom: 2px solid var(--primary); }
-
-        /* TABLEAU RÉNOVÉ */
+        /* TABLEAU FAÇON EXCEL (Inspiré de ta capture) */
         .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .prod-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        .prod-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .prod-table tbody tr { transition: background 0.2s; }
         .prod-table tbody tr:hover { background: var(--hover-row); }
-        .prod-table th, .prod-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
-        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.9rem; position: sticky; top: 0; z-index: 4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1rem; }
+        .prod-table th, .prod-table td { padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+        
+        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.85rem; position: sticky; top: 0; z-index: 4; }
+        .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1.05rem; }
         .prod-table th.col-fixe { background: var(--th-bg); z-index: 6; }
+        .col-global { background: rgba(52, 152, 219, 0.05); } /* Légère mise en évidence des colonnes globales */
 
-        .badge-diff { background: #2c3e50; color: #3498db; padding: 4px 10px; border-radius: 6px; font-size: 0.95rem; font-weight: bold; display: inline-block; margin-top: 4px; border: 1px solid rgba(52, 152, 219, 0.3); }
-        .badge-total { background: var(--primary); color: white; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 1.3rem; display: inline-block; box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4); }
+        /* Inputs épurés */
+        .simple-input { width: 55px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text); padding: 10px 5px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 1.1rem; transition: 0.2s; }
+        .simple-input:focus { border-color: var(--primary); outline: none; background: rgba(231, 76, 60, 0.05); }
+        .obj-global-input { border-color: rgba(52, 152, 219, 0.4); }
+
+        .badge-diff { background: #2c3e50; color: #3498db; padding: 8px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: bold; display: inline-block; border: 1px solid rgba(52, 152, 219, 0.3); }
+        .badge-diff.positive { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4); }
+
+        /* Copier icon */
+        .btn-copy-icon { background: none; border: none; color: #888; cursor: pointer; font-size: 1.1rem; padding: 2px 5px; border-radius: 4px; transition: 0.2s; }
+        .btn-copy-icon:hover { color: #3498db; background: rgba(52,152,219,0.1); }
         
         .grid-ingredients { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
         .ing-category { background: var(--card-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border); }
@@ -128,7 +126,7 @@
 
     <div style="margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
         <h2 style="margin: 0; color: var(--primary);">📦 Répartition par machine</h2>
-        <p style="color:#888; font-size: 0.9rem; margin-top: 5px;">Calculé automatiquement pour le remplissage</p>
+        <p style="color:#888; font-size: 0.9rem; margin-top: 5px;">Remplissage prévu en fonction de vos objectifs machine</p>
         <div id="repartition-ecran" class="repart-grid"></div>
     </div>
 
@@ -157,13 +155,11 @@
     <div class="modal-content" style="max-width: 500px;">
         <span class="close" onclick="fermerModalCopy()">&times;</span>
         <h2 style="color: var(--primary); margin-top: 0;">📋 Dupliquer les objectifs</h2>
-        <p style="color: #888;">Copier les objectifs de : <strong id="copy-source-name" style="color: var(--text);"></strong></p>
-        <p style="margin-bottom: 15px;">Vers quels distributeurs ?</p>
-        
+        <p style="color: #888;">Copier les quantités machine de : <strong id="copy-source-name" style="color: var(--text);"></strong></p>
+        <p style="margin-bottom: 15px;">Vers quelles autres machines ?</p>
         <div id="copy-targets-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;"></div>
-        
         <input type="hidden" id="copy-source-id">
-        <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.1rem;">Coller les objectifs</button>
+        <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.1rem;">Appliquer la copie</button>
     </div>
 </div>
 
@@ -232,13 +228,14 @@
         if (profil && profil.preferences_production) {
             cloudPrefs = profil.preferences_production;
             if(!cloudPrefs.carte) cloudPrefs.carte = [];
-            if(!cloudPrefs.matrice) cloudPrefs.matrice = {};
+            // Sécurité anti-crash si l'ancien format de données est détecté
+            if(!cloudPrefs.matrice || Object.keys(cloudPrefs.matrice).some(k => k.length > 25)) cloudPrefs.matrice = {};
         }
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- MODALES (CARTE & COPIE) ---
+    // --- GESTION DES MODALES ---
     function ouvrirModalCarte() { document.getElementById('modal-carte').style.display = "block"; }
     function fermerModalCarte() { document.getElementById('modal-carte').style.display = "none"; majSelectionCarte(); }
     
@@ -255,44 +252,36 @@
         renderProduction(cloudPrefs.carte);
     }
 
-    // Fonction Copie d'objectifs
     function ouvrirModalCopy(sourceId) {
         const sourceDist = listeDistributeurs.find(d => d.id === sourceId);
         document.getElementById('copy-source-name').innerText = sourceDist.nom;
         document.getElementById('copy-source-id').value = sourceId;
         
         const container = document.getElementById('copy-targets-list');
-        container.innerHTML = listeDistributeurs
-            .filter(d => d.id !== sourceId)
-            .map(d => `<label class="pizza-checkbox" style="padding: 10px;"><input type="checkbox" value="${d.id}"> ${d.nom}</label>`)
-            .join('');
+        container.innerHTML = listeDistributeurs.filter(d => d.id !== sourceId)
+            .map(d => `<label class="pizza-checkbox"><input type="checkbox" value="${d.id}"> ${d.nom}</label>`).join('');
         
         document.getElementById('modal-copy').style.display = 'block';
     }
-    
     function fermerModalCopy() { document.getElementById('modal-copy').style.display = 'none'; }
 
     function validerCopy() {
         const sourceId = document.getElementById('copy-source-id').value;
         const cibles = Array.from(document.querySelectorAll('#copy-targets-list input:checked')).map(cb => cb.value);
+        if(cibles.length === 0) { alert("Sélectionnez au moins une machine."); return; }
 
-        if(cibles.length === 0) { alert("Sélectionnez au moins un distributeur."); return; }
-
-        cibles.forEach(targetId => {
-            if(!cloudPrefs.matrice[targetId]) cloudPrefs.matrice[targetId] = {};
-            cloudPrefs.carte.forEach(nomPizza => {
-                const objValue = cloudPrefs.matrice[sourceId]?.[nomPizza]?.obj || "";
-                if(!cloudPrefs.matrice[targetId][nomPizza]) cloudPrefs.matrice[targetId][nomPizza] = { stock: "", obj: "" };
-                
-                cloudPrefs.matrice[targetId][nomPizza].obj = objValue;
-                
-                const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"][data-type="obj"]`);
-                if(inputUI) inputUI.value = objValue;
+        cloudPrefs.carte.forEach(nomPizza => {
+            if(!cloudPrefs.matrice[nomPizza]) cloudPrefs.matrice[nomPizza] = { stockGlobal: "", objGlobal: "", dists: {} };
+            const sourceVal = cloudPrefs.matrice[nomPizza].dists[sourceId] || "";
+            
+            cibles.forEach(targetId => {
+                cloudPrefs.matrice[nomPizza].dists[targetId] = sourceVal;
+                const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"]`);
+                if(inputUI) inputUI.value = sourceVal;
             });
+            majDistributeur(nomPizza); // Recalcule l'obj global
         });
 
-        calculerBesoins();
-        triggerSave();
         fermerModalCopy();
     }
 
@@ -307,26 +296,33 @@
         }, 1000);
     }
 
-    // --- LOGIQUE BOUTONS ---
-    function changerQuantite(distId, nomPizza, type, delta) {
-        const input = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="${type}"]`);
-        if(input) {
-            let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta);
-            input.value = val;
-            majMatriceCloud(distId, nomPizza);
-        }
+    // --- LOGIQUE SAISIE TABLEAU ---
+    function majDistributeur(nomPizza) {
+        let sum = 0;
+        listeDistributeurs.forEach(d => {
+            const val = document.querySelector(`input[data-dist="${d.id}"][data-pizza="${nomPizza}"]`).value;
+            if(val) sum += parseInt(val) || 0;
+        });
+        const objInput = document.querySelector(`input[data-type="objGlobal"][data-pizza="${nomPizza}"]`);
+        if(objInput) objInput.value = sum > 0 ? sum : "";
+        majMatriceCloud(nomPizza);
     }
-    function majMatriceCloud(distId, nomPizza) {
-        if (!cloudPrefs.matrice[distId]) cloudPrefs.matrice[distId] = {};
-        const stock = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="stock"]`).value;
-        const obj = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="obj"]`).value;
-        cloudPrefs.matrice[distId][nomPizza] = { stock, obj };
+
+    function majMatriceCloud(nomPizza) {
+        if (!cloudPrefs.matrice[nomPizza]) cloudPrefs.matrice[nomPizza] = { stockGlobal: "", objGlobal: "", dists: {} };
+        
+        cloudPrefs.matrice[nomPizza].stockGlobal = document.querySelector(`input[data-type="stockGlobal"][data-pizza="${nomPizza}"]`).value;
+        cloudPrefs.matrice[nomPizza].objGlobal = document.querySelector(`input[data-type="objGlobal"][data-pizza="${nomPizza}"]`).value;
+        
+        listeDistributeurs.forEach(d => {
+            cloudPrefs.matrice[nomPizza].dists[d.id] = document.querySelector(`input[data-dist="${d.id}"][data-pizza="${nomPizza}"]`).value;
+        });
+        
         calculerBesoins();
         triggerSave();
     }
 
-    // --- RENDU DU TABLEAU ---
+    // --- RENDU DU GRAND TABLEAU ---
     function renderProduction(selection) {
         const container = document.getElementById('entree-production');
         if (listeDistributeurs.length === 0) {
@@ -338,41 +334,34 @@
             return;
         }
 
-        let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
+        let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr>
+            <th class="col-fixe">🍕 Pizzas</th>
+            <th class="col-global">Stock<br>Global</th>
+            <th class="col-global">Obj.<br>Global</th>
+            <th>À Produire</th>`;
+            
         listeDistributeurs.forEach(dist => { 
             html += `<th>
-                        <div style="font-size: 1.1rem; margin-bottom: 5px;">${dist.nom}</div>
-                        <button class="btn-copy" onclick="ouvrirModalCopy('${dist.id}')">📋 Copier Obj.</button>
-                    </th>`; 
+                        ${dist.nom} <button class="btn-copy-icon" onclick="ouvrirModalCopy('${dist.id}')" title="Copier sur une autre machine">📋</button>
+                     </th>`; 
         });
-        html += `<th style="background: var(--th-bg);">Total à faire</th></tr></thead><tbody>`;
+        html += `</tr></thead><tbody>`;
 
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
-            html += `<tr><td class="col-fixe">${nomPizza}</td>`;
+            const data = cloudPrefs.matrice[nomPizza] || { stockGlobal: "", objGlobal: "", dists: {} };
+
+            html += `<tr>
+                <td class="col-fixe">${nomPizza}</td>
+                <td class="col-global"><input type="number" class="simple-input calc-val" data-pizza="${nomPizza}" data-type="stockGlobal" value="${data.stockGlobal}" oninput="majMatriceCloud('${nomPizza}')" onclick="this.select()"></td>
+                <td class="col-global"><input type="number" class="simple-input calc-val obj-global-input" data-pizza="${nomPizza}" data-type="objGlobal" value="${data.objGlobal}" oninput="majMatriceCloud('${nomPizza}')" onclick="this.select()"></td>
+                <td><div class="badge-diff" id="res-${safeId}">+0</div></td>`;
+                
             listeDistributeurs.forEach(dist => {
-                const stockVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.stock || "";
-                const objVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.obj || "";
-                html += `
-                <td>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <div class="stepper-group">
-                            <span class="stepper-label">Stock</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', 1)">+</button>
-                        </div>
-                        <div class="stepper-group obj-group">
-                            <span class="stepper-label" style="color: #3498db;">Obj.</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', 1)">+</button>
-                        </div>
-                        <div class="badge-diff" id="res-${dist.id}-${safeId}">+0</div>
-                    </div>
-                </td>`;
+                const distVal = data.dists[dist.id] || "";
+                html += `<td><input type="number" class="simple-input" data-pizza="${nomPizza}" data-dist="${dist.id}" value="${distVal}" oninput="majDistributeur('${nomPizza}')" onclick="this.select()"></td>`;
             });
-            html += `<td style="background: var(--card-bg);"><div class="badge-total" id="tot-${safeId}">0</div></td></tr>`;
+            html += `</tr>`;
         });
 
         html += `</tbody></table></div>`;
@@ -380,7 +369,7 @@
         calculerBesoins();
     }
 
-    // --- LE CŒUR DU CALCUL (ÉCRAN ET IMPRESSION) ---
+    // --- LE CŒUR DU CALCUL ---
     function calculerBesoins() {
         const selection = cloudPrefs.carte;
         totauxAProduire = {}; 
@@ -388,47 +377,57 @@
 
         let ecranRepartition = '';
         let printRepartition = '';
+        let printPizzasTotal = '';
+        let nbPizzasGlobal = 0;
 
-        listeDistributeurs.forEach(dist => {
-            let listePizzasDist = [];
-            selection.forEach(nomPizza => {
-                const safeId = nomPizza.replace(/\s+/g, '_');
-                const stockInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                const objInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="obj"]`);
-                
-                if (stockInput && objInput) {
-                    let aProduire = Math.max(0, (parseInt(objInput.value) || 0) - (parseInt(stockInput.value) || 0));
-                    document.getElementById(`res-${dist.id}-${safeId}`).innerText = '+' + aProduire;
-                    totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
+        const distRepartitions = {};
+        listeDistributeurs.forEach(d => distRepartitions[d.id] = []);
 
-                    if(aProduire > 0) listePizzasDist.push({nom: nomPizza, qte: aProduire});
-                }
+        selection.forEach(nomPizza => {
+            const safeId = nomPizza.replace(/\s+/g, '_');
+            const data = cloudPrefs.matrice[nomPizza] || { stockGlobal: "", objGlobal: "", dists: {} };
+
+            const stock = parseInt(data.stockGlobal) || 0;
+            const obj = parseInt(data.objGlobal) || 0;
+            
+            // Calcul À Produire
+            let aProduire = Math.max(0, obj - stock);
+            const badge = document.getElementById(`res-${safeId}`);
+            if(badge) {
+                badge.innerText = '+' + aProduire;
+                if(aProduire > 0) badge.classList.add('positive');
+                else badge.classList.remove('positive');
+            }
+            
+            totauxAProduire[nomPizza] = aProduire;
+
+            if (aProduire > 0) {
+                nbPizzasGlobal += aProduire;
+                printPizzasTotal += `<li><span>${nomPizza}</span> <span class="print-bold">${aProduire}</span></li>`;
+            }
+
+            // Répartition pour les machines
+            listeDistributeurs.forEach(d => {
+                const distObj = parseInt(data.dists[d.id]) || 0;
+                if (distObj > 0) distRepartitions[d.id].push({ nom: nomPizza, qte: distObj });
             });
+        });
 
-            if(listePizzasDist.length > 0) {
-                let detailsUi = listePizzasDist.map(p => `<li style="margin-bottom:5px;"><span>${p.nom}</span> <strong style="color:var(--primary); float:right;">${p.qte}</strong></li>`).join('');
-                let detailsPrint = listePizzasDist.map(p => `<li><span>${p.nom}</span> <span class="print-bold">${p.qte}</span></li>`).join('');
+        // HTML Répartition
+        listeDistributeurs.forEach(dist => {
+            const rep = distRepartitions[dist.id];
+            if(rep.length > 0) {
+                let detailsUi = rep.map(p => `<li style="margin-bottom:5px;"><span>${p.nom}</span> <strong style="color:var(--primary); float:right;">${p.qte}</strong></li>`).join('');
+                let detailsPrint = rep.map(p => `<li><span>${p.nom}</span> <span class="print-bold">${p.qte}</span></li>`).join('');
                 
                 ecranRepartition += `<div class="repart-card"><h4>🏪 ${dist.nom}</h4><ul style="padding:0; margin:0; list-style:none;">${detailsUi}</ul></div>`;
                 printRepartition += `<div class="print-box"><h4>${dist.nom}</h4><ul class="print-list">${detailsPrint}</ul></div>`;
             }
         });
 
-        document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888;">Aucune pizza à répartir pour le moment.</p>';
+        document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888;">Aucun objectif machine renseigné.</p>';
 
-        let printPizzasTotal = '';
-        let nbPizzasGlobal = 0;
-        selection.forEach(nomPizza => {
-            const safeId = nomPizza.replace(/\s+/g, '_');
-            const elTotal = document.getElementById(`tot-${safeId}`);
-            if (elTotal) elTotal.innerText = totauxAProduire[nomPizza] || 0;
-            
-            if(totauxAProduire[nomPizza] > 0) {
-                printPizzasTotal += `<li><span>${nomPizza}</span> <span class="print-bold">${totauxAProduire[nomPizza]}</span></li>`;
-                nbPizzasGlobal += totauxAProduire[nomPizza];
-            }
-        });
-
+        // Calcul des Ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0 && recettes[nomPizza]) {
                 for (let [ing, q] of Object.entries(recettes[nomPizza])) {
@@ -484,7 +483,7 @@
             <div class="print-section-title">1. RÉSUMÉ DE LA PRODUCTION</div>
             <div class="print-grid">
                 <div class="print-box">
-                    <h4>Total : ${totalPizzas} pizzas</h4>
+                    <h4>Total : ${totalPizzas} pizzas à produire</h4>
                     <ul class="print-list">${htmlPrintPizzas || '<li>Aucune pizza</li>'}</ul>
                 </div>
             </div>
@@ -534,7 +533,7 @@
 
             cloudPrefs.matrice = {};
             triggerSave();
-            document.querySelectorAll('.calc-val').forEach(input => input.value = "");
+            document.querySelectorAll('.calc-val, .simple-input').forEach(input => input.value = "");
             calculerBesoins();
             alert("✅ Production validée ! Vos stocks ont été mis à jour.");
 
@@ -544,11 +543,7 @@
         }
     }
 
-    async function seDeconnecter() {
-        await supabaseClient.auth.signOut();
-        window.location.href = "index.html";
-    }
-
+    async function seDeconnecter() { await supabaseClient.auth.signOut(); window.location.href = "index.html"; }
     verifierConnexion();
 </script>
 </body>
