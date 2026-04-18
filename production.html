@@ -40,6 +40,11 @@
         .stepper-btn:active { background: var(--primary); color: white; transform: scale(0.90); }
         .stepper-input { width: 35px; background: transparent; border: none; color: var(--text); text-align: center; font-weight: bold; font-size: 1.2rem; outline: none; }
 
+        /* JAUGE DE CAPACITÉ PAR DISTRIBUTEUR */
+        .capa-badge { font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; margin-bottom: 5px; display: inline-block; background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.4); transition: 0.3s; }
+        .capa-badge.danger { background: rgba(231, 76, 60, 0.1); color: var(--primary); border-color: var(--primary); animation: clignote 1.5s infinite; }
+        @keyframes clignote { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
         /* GRAND TABLEAU */
         .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .prod-table { width: 100%; border-collapse: collapse; min-width: 800px; }
@@ -51,7 +56,7 @@
         .prod-table th.col-fixe, .prod-table td.col-fixe { position: sticky; left: 0; background: var(--card-bg); z-index: 5; text-align: left; font-weight: bold; border-right: 3px solid var(--primary); font-size: 1.1rem; }
         .prod-table th.col-fixe { background: var(--th-bg); z-index: 6; }
         
-        .col-total { background: rgba(231, 76, 60, 0.05); } /* Légère mise en évidence de la colonne Total */
+        .col-total { background: rgba(231, 76, 60, 0.05); }
 
         .badge-diff { background: #2c3e50; color: #3498db; padding: 6px 12px; border-radius: 6px; font-size: 1.1rem; font-weight: bold; display: inline-block; margin-top: 5px; border: 1px solid rgba(52, 152, 219, 0.3); }
         .badge-diff.positive { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4); }
@@ -79,7 +84,7 @@
 
         #sync-status { font-size: 0.85em; color: #888; text-align: right; margin-top: 5px; font-weight: bold; }
 
-        /* IMPRESSION (Toujours nickel) */
+        /* IMPRESSION */
         @media screen { .print-only { display: none !important; } }
         @media print {
             .no-print { display: none !important; }
@@ -164,9 +169,7 @@
         <h2 style="color: #3498db; margin-top: 0;">📋 Dupliquer les objectifs</h2>
         <p style="color: #888;">Copier les objectifs de : <strong id="copy-source-name" style="color: var(--text); font-size: 1.1rem;"></strong></p>
         <p style="margin-bottom: 15px;">Cochez les distributeurs qui auront les mêmes objectifs :</p>
-        
         <div id="copy-targets-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;"></div>
-        
         <input type="hidden" id="copy-source-id">
         <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.2rem;">Coller les objectifs</button>
     </div>
@@ -237,14 +240,13 @@
         if (profil && profil.preferences_production) {
             cloudPrefs = profil.preferences_production;
             if(!cloudPrefs.carte) cloudPrefs.carte = [];
-            // Si ancienne structure détectée, on réinitialise pour éviter les bugs
             if(!cloudPrefs.matrice || Object.keys(cloudPrefs.matrice).some(k => k.length > 25)) cloudPrefs.matrice = {};
         }
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- MODALES (CARTE) ---
+    // --- GESTION DES MODALES ---
     function ouvrirModalCarte() { document.getElementById('modal-carte').style.display = "block"; }
     function fermerModalCarte() { document.getElementById('modal-carte').style.display = "none"; majSelectionCarte(); }
     
@@ -262,7 +264,6 @@
         renderProduction(cloudPrefs.carte);
     }
 
-    // --- MODALE COPIE (NOUVELLE FONCTIONNALITÉ) ---
     function ouvrirModalCopy(sourceId) {
         const sourceDist = listeDistributeurs.find(d => d.id === sourceId);
         document.getElementById('copy-source-name').innerText = sourceDist.nom;
@@ -282,7 +283,6 @@
         if(cibles.length === 0) { alert("Veuillez cocher au moins un distributeur."); return; }
 
         cloudPrefs.carte.forEach(nomPizza => {
-            // On récupère l'objectif du distributeur source
             const sourceObj = cloudPrefs.matrice[sourceId]?.[nomPizza]?.obj || "";
             
             cibles.forEach(targetId => {
@@ -291,7 +291,6 @@
                 
                 cloudPrefs.matrice[targetId][nomPizza].obj = sourceObj;
                 
-                // Maj de l'interface visuelle
                 const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"][data-type="obj"]`);
                 if(inputUI) inputUI.value = sourceObj;
             });
@@ -302,7 +301,6 @@
         fermerModalCopy();
     }
 
-    // --- SYNCHRONISATION CLOUD ---
     function triggerSave() {
         document.getElementById('sync-status').innerText = "⏳ Synchro...";
         document.getElementById('sync-status').style.color = "#f39c12";
@@ -314,12 +312,12 @@
         }, 1000);
     }
 
-    // --- LOGIQUE STEPPERS (+ / -) ---
+    // --- LOGIQUE STEPPERS ---
     function changerQuantite(distId, nomPizza, type, delta) {
         const input = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="${type}"]`);
         if(input) {
             let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta); // Empêche de descendre sous 0
+            val = Math.max(0, val + delta); 
             input.value = val;
             majMatriceCloud(distId, nomPizza);
         }
@@ -352,16 +350,15 @@
 
         let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
         
-        // En-têtes Distributeurs avec bouton Copier
         listeDistributeurs.forEach(dist => { 
             html += `<th>
                         <div style="font-size: 1.1rem; margin-bottom: 5px;">${dist.nom}</div>
+                        <div id="capa-${dist.id}" class="capa-badge">0 / 70</div>
                         <button class="btn-copy" onclick="ouvrirModalCopy('${dist.id}')">📋 Copier Obj.</button>
                     </th>`; 
         });
         html += `<th class="col-total">Total à faire</th></tr></thead><tbody>`;
 
-        // Lignes du tableau
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
@@ -400,7 +397,7 @@
         calculerBesoins();
     }
 
-    // --- LE CŒUR DU CALCUL (ÉCRAN ET IMPRESSION) ---
+    // --- LE CŒUR DU CALCUL ET DES JAUGES DE CAPACITÉ ---
     function calculerBesoins() {
         const selection = cloudPrefs.carte;
         totauxAProduire = {}; 
@@ -408,19 +405,28 @@
 
         let ecranRepartition = '';
         let printRepartition = '';
+        
+        let distCapacities = {};
+        listeDistributeurs.forEach(d => distCapacities[d.id] = 0);
 
-        // 1. Calcul des écarts par cellule
         listeDistributeurs.forEach(dist => {
             let listePizzasDist = [];
+            
             selection.forEach(nomPizza => {
                 const safeId = nomPizza.replace(/\s+/g, '_');
                 const stockInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
                 const objInput = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="obj"]`);
                 
                 if (stockInput && objInput) {
-                    let aProduire = Math.max(0, (parseInt(objInput.value) || 0) - (parseInt(stockInput.value) || 0));
+                    const stock = parseInt(stockInput.value) || 0;
+                    const obj = parseInt(objInput.value) || 0;
                     
-                    // Màj visuelle de la bulle
+                    let aProduire = Math.max(0, obj - stock);
+                    
+                    // Calcul du volume final prévu dans ce distributeur
+                    distCapacities[dist.id] += stock + aProduire;
+                    
+                    // Màj visuelle de la bulle 'À Produire'
                     const badge = document.getElementById(`res-${dist.id}-${safeId}`);
                     badge.innerText = '+' + aProduire;
                     if(aProduire > 0) badge.classList.add('positive');
@@ -433,6 +439,19 @@
                     }
                 }
             });
+            
+            // Mise à jour visuelle de la Jauge de Capacité du distributeur (Max 70)
+            const capaBadge = document.getElementById(`capa-${dist.id}`);
+            if (capaBadge) {
+                const capa = distCapacities[dist.id];
+                capaBadge.innerText = `${capa} / 70`;
+                if (capa > 70) {
+                    capaBadge.classList.add('danger');
+                    capaBadge.innerHTML = `⚠️ ${capa} / 70 (Plein)`;
+                } else {
+                    capaBadge.classList.remove('danger');
+                }
+            }
 
             // HTML Répartition
             if(listePizzasDist.length > 0) {
@@ -446,7 +465,7 @@
 
         document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888; font-style:italic;">Aucune pizza à répartir.</p>';
 
-        // 2. Mise à jour de la colonne Totaux et HTML Impression Pizzas
+        // Mise à jour de la colonne Totaux et HTML Impression Pizzas
         let printPizzasTotal = '';
         let nbPizzasGlobal = 0;
         selection.forEach(nomPizza => {
@@ -460,7 +479,7 @@
             }
         });
 
-        // 3. Calcul des Ingrédients
+        // Calcul des Ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0 && recettes[nomPizza]) {
                 for (let [ing, q] of Object.entries(recettes[nomPizza])) {
@@ -501,7 +520,7 @@
             if (items.length) container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
         }
 
-        // --- GÉNÉRATION DE LA FEUILLE D'IMPRESSION ---
+        // GÉNÉRATION DE LA FEUILLE D'IMPRESSION
         let htmlPrintIng = '';
         for (let [title, items] of Object.entries(catPrint)) {
             if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list">${items.join("")}</ul></div>`;
