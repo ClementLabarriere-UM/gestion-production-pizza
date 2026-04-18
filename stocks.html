@@ -130,6 +130,15 @@
         if (!session) { window.location.href = "index.html"; return; }
         currentUser = session.user;
         document.getElementById('user-email').innerText = currentUser.email;
+
+        // Vérification de l'abonnement
+        const { data: profil } = await supabaseClient.from('profiles').select('type_abonnement').eq('id', currentUser.id).single();
+        if (profil && profil.type_abonnement === 'Basic') {
+            alert("L'abonnement Basic n'inclut pas la gestion des stocks. Veuillez contacter le support pour passer à l'offre supérieure.");
+            window.location.href = "production.html";
+            return;
+        }
+
         chargerStocks();
     }
 

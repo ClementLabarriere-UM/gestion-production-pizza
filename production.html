@@ -146,7 +146,7 @@
         <h2 style="margin: 0; color: var(--primary);">📋 Ingrédients & Validation</h2>
         <div style="display: flex; gap: 10px;">
             <button onclick="window.print()" class="btn-action" style="background: #555; color: white; font-size: 1.1rem;">🖨️ Imprimer</button>
-            <button onclick="validerProduction()" class="btn-action" style="background: #2ecc71; color: white; font-size: 1.1rem;">✅ Valider & Déduire</button>
+            <button id="btn-validation-prod" onclick="validerProduction()" class="btn-action" style="background: #2ecc71; color: white; font-size: 1.1rem;">✅ Valider & Déduire</button>
         </div>
     </div>
     <div id="liste-ingredients" class="grid-ingredients"></div>
@@ -169,7 +169,9 @@
         <h2 style="color: #3498db; margin-top: 0;">📋 Dupliquer les objectifs</h2>
         <p style="color: #888;">Copier les objectifs de : <strong id="copy-source-name" style="color: var(--text); font-size: 1.1rem;"></strong></p>
         <p style="margin-bottom: 15px;">Cochez les distributeurs qui auront les mêmes objectifs :</p>
+        
         <div id="copy-targets-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;"></div>
+        
         <input type="hidden" id="copy-source-id">
         <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.2rem;">Coller les objectifs</button>
     </div>
@@ -190,6 +192,7 @@
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentUser = null;
+    let abonnementClient = "Basic";
     let listeDistributeurs = [];
     let totauxAProduire = {}; 
     let cloudPrefs = { carte: [], matrice: {} };
@@ -236,12 +239,28 @@
         const { data: dists } = await supabaseClient.from('distributeurs').select('*').eq('user_id', currentUser.id).order('nom');
         listeDistributeurs = dists || [];
 
-        const { data: profil } = await supabaseClient.from('profiles').select('preferences_production').eq('id', currentUser.id).single();
-        if (profil && profil.preferences_production) {
-            cloudPrefs = profil.preferences_production;
-            if(!cloudPrefs.carte) cloudPrefs.carte = [];
-            if(!cloudPrefs.matrice || Object.keys(cloudPrefs.matrice).some(k => k.length > 25)) cloudPrefs.matrice = {};
+        const { data: profil } = await supabaseClient.from('profiles').select('preferences_production, type_abonnement').eq('id', currentUser.id).single();
+        if (profil) {
+            abonnementClient = profil.type_abonnement || "Basic";
+            if (profil.preferences_production) {
+                cloudPrefs = profil.preferences_production;
+                if(!cloudPrefs.carte) cloudPrefs.carte = [];
+                // Si ancienne structure détectée, on réinitialise pour éviter les bugs
+                if(!cloudPrefs.matrice || Object.keys(cloudPrefs.matrice).some(k => k.length > 25)) cloudPrefs.matrice = {};
+            }
         }
+
+        // --- BLOCAGE PLAN BASIC ---
+        if (abonnementClient === "Basic") {
+            // Masquer l'onglet Stocks
+            document.querySelectorAll('.nav-menu a').forEach(link => {
+                if (link.innerText.includes('Stocks')) link.style.display = 'none';
+            });
+            // Changer le texte du bouton de validation
+            const btnVal = document.getElementById('btn-validation-prod');
+            if(btnVal) btnVal.innerText = "✅ Valider la production";
+        }
+
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
     }
@@ -264,6 +283,7 @@
         renderProduction(cloudPrefs.carte);
     }
 
+    // --- MODALE COPIE ---
     function ouvrirModalCopy(sourceId) {
         const sourceDist = listeDistributeurs.find(d => d.id === sourceId);
         document.getElementById('copy-source-name').innerText = sourceDist.nom;
@@ -283,6 +303,7 @@
         if(cibles.length === 0) { alert("Veuillez cocher au moins un distributeur."); return; }
 
         cloudPrefs.carte.forEach(nomPizza => {
+            // On récupère l'objectif du distributeur source
             const sourceObj = cloudPrefs.matrice[sourceId]?.[nomPizza]?.obj || "";
             
             cibles.forEach(targetId => {
@@ -291,6 +312,7 @@
                 
                 cloudPrefs.matrice[targetId][nomPizza].obj = sourceObj;
                 
+                // Maj de l'interface visuelle
                 const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"][data-type="obj"]`);
                 if(inputUI) inputUI.value = sourceObj;
             });
@@ -301,6 +323,7 @@
         fermerModalCopy();
     }
 
+    // --- SYNCHRONISATION CLOUD ---
     function triggerSave() {
         document.getElementById('sync-status').innerText = "⏳ Synchro...";
         document.getElementById('sync-status').style.color = "#f39c12";
@@ -312,12 +335,12 @@
         }, 1000);
     }
 
-    // --- LOGIQUE STEPPERS ---
+    // --- LOGIQUE STEPPERS (+ / -) ---
     function changerQuantite(distId, nomPizza, type, delta) {
         const input = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="${type}"]`);
         if(input) {
             let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta); 
+            val = Math.max(0, val + delta); // Empêche de descendre sous 0
             input.value = val;
             majMatriceCloud(distId, nomPizza);
         }
@@ -350,6 +373,7 @@
 
         let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
         
+        // En-têtes Distributeurs avec jauge et bouton Copier
         listeDistributeurs.forEach(dist => { 
             html += `<th>
                         <div style="font-size: 1.1rem; margin-bottom: 5px;">${dist.nom}</div>
@@ -359,6 +383,7 @@
         });
         html += `<th class="col-total">Total à faire</th></tr></thead><tbody>`;
 
+        // Lignes du tableau
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
@@ -423,7 +448,7 @@
                     
                     let aProduire = Math.max(0, obj - stock);
                     
-                    // Calcul du volume final prévu dans ce distributeur
+                    // Calcul du volume final prévu dans ce distributeur (Stock actuel + ce qu'on va produire)
                     distCapacities[dist.id] += stock + aProduire;
                     
                     // Màj visuelle de la bulle 'À Produire'
@@ -556,7 +581,7 @@
     }
 
     async function validerProduction() {
-        if(!confirm("Valider la production ? Les ingrédients seront déduits de vos stocks.")) return;
+        if(!confirm("Valider la production ? Les modifications seront appliquées.")) return;
 
         const besoins = {};
         const pizzasProduites = [];
@@ -581,13 +606,15 @@
         if (totalPizzas === 0) { alert("Rien à produire !"); return; }
 
         try {
-            // Déduction en base de données
-            for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
-                const { data: stockExistant } = await supabaseClient.from('stocks').select('*').eq('nom_ingredient', ingredient).single();
-                if (stockExistant) {
-                    await supabaseClient.from('stocks').update({ quantite: stockExistant.quantite - quantiteRequise }).eq('id', stockExistant.id);
-                } else {
-                    await supabaseClient.from('stocks').insert([{ user_id: currentUser.id, nom_ingredient: ingredient, quantite: -quantiteRequise }]);
+            // Déduction en base de données SEULEMENT si l'abonnement n'est pas "Basic"
+            if (abonnementClient !== "Basic") {
+                for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
+                    const { data: stockExistant } = await supabaseClient.from('stocks').select('*').eq('nom_ingredient', ingredient).single();
+                    if (stockExistant) {
+                        await supabaseClient.from('stocks').update({ quantite: stockExistant.quantite - quantiteRequise }).eq('id', stockExistant.id);
+                    } else {
+                        await supabaseClient.from('stocks').insert([{ user_id: currentUser.id, nom_ingredient: ingredient, quantite: -quantiteRequise }]);
+                    }
                 }
             }
 
@@ -599,7 +626,12 @@
             triggerSave();
             document.querySelectorAll('.calc-val').forEach(input => input.value = "");
             calculerBesoins();
-            alert("✅ Production validée ! Vos stocks ont été mis à jour.");
+
+            if (abonnementClient !== "Basic") {
+                alert("✅ Production validée ! Vos stocks ont été mis à jour.");
+            } else {
+                alert("✅ Production validée et enregistrée dans l'historique !");
+            }
 
         } catch (err) {
             alert("Erreur lors de la validation.");
