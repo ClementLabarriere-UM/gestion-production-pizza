@@ -14,6 +14,10 @@
         .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 40px; }
+        /* Gestion de l'affichage du logo selon le thème */
+        .logo-light { display: none; }
+        body.light-mode .logo-dark { display: none; }
+        body.light-mode .logo-light { display: block; }
         .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
 
         .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
