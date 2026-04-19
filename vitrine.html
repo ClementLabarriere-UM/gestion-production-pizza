@@ -2,139 +2,133 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Production - Gang of Pizza</title>
+    <title>Panel Admin - Espace Production</title>
     <style>
-        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
+        h1 { color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         
-        /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #333; }
-        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .logo img { height: 40px; }
-        .btn-login { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .btn-login:hover { background: var(--primary); color: white; }
-
-        /* HERO SECTION */
-        .hero { text-align: center; padding: 100px 20px; background: radial-gradient(circle at center, #2a1110 0%, var(--bg) 70%); }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; }
-        .hero h1 span { color: var(--primary); }
-        .hero p { font-size: 1.2rem; color: #aaa; max-width: 600px; margin: 0 auto 40px; }
-        .btn-cta { background: var(--primary); color: white; padding: 15px 35px; border-radius: 30px; text-decoration: none; font-size: 1.2rem; font-weight: bold; box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3); transition: 0.3s; }
-        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(231, 76, 60, 0.5); }
-
-        /* PRICING */
-        .pricing { padding: 80px 20px; text-align: center; }
-        .pricing h2 { font-size: 2.5rem; margin-bottom: 50px; }
-        .pricing-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; max-width: 1200px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: #222; color: var(--primary); font-size: 0.9rem; text-transform: uppercase; }
         
-        .card { background: var(--card-bg); border: 1px solid #333; border-radius: 16px; padding: 40px 30px; width: 280px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; }
-        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
-        .card.popular { border-color: var(--primary); box-shadow: 0 0 30px rgba(231, 76, 60, 0.15); }
-        .card.popular::before { content: 'Le plus choisi'; position: absolute; top: 15px; right: -35px; background: var(--primary); color: white; font-size: 0.8rem; font-weight: bold; padding: 5px 40px; transform: rotate(45deg); }
-        
-        .card h3 { margin: 0 0 10px; font-size: 1.5rem; }
-        .price { font-size: 2.5rem; font-weight: bold; color: white; margin-bottom: 20px; }
-        .price span { font-size: 1rem; color: #888; font-weight: normal; }
-        
-        .features { list-style: none; padding: 0; margin: 0 0 30px; color: #bbb; }
-        .features li { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .features li::before { content: '✅'; color: #2ecc71; }
-        .features li.disabled { opacity: 0.5; }
-        .features li.disabled::before { content: '❌'; filter: grayscale(1); }
+        .shop-name { font-weight: bold; font-size: 1.1rem; color: white; display: block; }
+        .user-email { font-size: 0.8rem; color: #888; }
 
-        .btn-card { display: block; text-align: center; padding: 12px; background: #333; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        .card.popular .btn-card { background: var(--primary); }
-        .btn-card:hover { background: #555; }
-        .card.popular .btn-card:hover { background: #c0392b; }
-
-        /* FOOTER */
-        footer { text-align: center; padding: 40px; border-top: 1px solid #333; margin-top: 50px; color: #666; }
+        select, input { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 6px; font-weight: bold; }
+        .btn-save { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-save:hover { background: #27ae60; transform: scale(1.02); }
+        
+        #admin-error { color: #e74c3c; font-weight: bold; text-align: center; margin-top: 50px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">
-            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
-            Espace Production
-        </div>
-        <a href="index.html" class="btn-login">Espace Client 🔒</a>
-    </header>
-
-    <div class="hero">
-        <h1>Ne calculez plus.<br><span>Produisez.</span></h1>
-        <p>L'application métier conçue sur-mesure pour les franchisés Gang of Pizza. Calculez vos besoins, automatisez vos stocks et gérez vos distributeurs depuis n'importe quel appareil.</p>
-        <a href="mailto:tonemail@exemple.com?subject=Demande de démo Espace Production" class="btn-cta">Demander une démo gratuite</a>
-        <p style="margin-top: 20px; font-size: 0.9rem;">🎁 1er mois offert sans engagement.</p>
+<div class="container" id="admin-panel" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Gestion des Franchisés</h1>
+        <button onclick="window.location.href='production.html'" class="btn-save" style="background: #3498db;">Retour à l'App</button>
     </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Boutique / Client</th>
+                <th>Abonnement</th>
+                <th>Max Machines</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="clients-list">
+            </tbody>
+    </table>
+</div>
 
-    <div class="pricing" id="tarifs">
-        <h2>Choisissez votre formule</h2>
-        <p style="color: #aaa; margin-top: -30px; margin-bottom: 50px;">Frais de mise en service (création espace & paramétrage) : 49€ HT.</p>
+<div id="admin-error">Vérification des droits administrateur...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+    const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function initAdmin() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { window.location.href = "index.html"; return; }
+
+        const { data: monProfil } = await supabaseClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
         
-        <div class="pricing-grid">
-            <div class="card">
-                <h3>Basic</h3>
-                <div class="price">39€<span>/mois HT</span></div>
-                <ul class="features">
-                    <li>Jusqu'à 3 distributeurs</li>
-                    <li>Calcul de production Auto</li>
-                    <li>Impression des fiches</li>
-                    <li class="disabled">Gestion des Stocks</li>
-                    <li class="disabled">Saisie des Livraisons</li>
-                </ul>
-                <a href="mailto:tonemail@exemple.com" class="btn-card">Nous contacter</a>
-            </div>
+        if (!monProfil || !monProfil.is_admin) {
+            document.getElementById('admin-error').innerText = "Accès refusé. Vous n'êtes pas administrateur.";
+            return;
+        }
 
-            <div class="card popular">
-                <h3>Plus</h3>
-                <div class="price">59€<span>/mois HT</span></div>
-                <ul class="features">
-                    <li>Jusqu'à 6 distributeurs</li>
-                    <li>Calcul de production Auto</li>
-                    <li>Impression des fiches</li>
-                    <li>Gestion des Stocks Auto</li>
-                    <li>Saisie des Livraisons</li>
-                </ul>
-                <a href="mailto:tonemail@exemple.com" class="btn-card">S'abonner</a>
-            </div>
+        document.getElementById('admin-error').style.display = "none";
+        document.getElementById('admin-panel').style.display = "block";
 
-            <div class="card">
-                <h3>Platinium</h3>
-                <div class="price">69€<span>/mois HT</span></div>
-                <ul class="features">
-                    <li>Jusqu'à 10 distributeurs</li>
-                    <li>Calcul de production Auto</li>
-                    <li>Impression des fiches</li>
-                    <li>Gestion des Stocks Auto</li>
-                    <li>Saisie des Livraisons</li>
-                </ul>
-                <a href="mailto:tonemail@exemple.com" class="btn-card">S'abonner</a>
-            </div>
+        chargerClients();
+    }
 
-            <div class="card">
-                <h3>Ultimate</h3>
-                <div class="price">99€<span>/mois HT</span></div>
-                <ul class="features">
-                    <li>Jusqu'à 20 distributeurs</li>
-                    <li>Toutes les fonctionnalités</li>
-                    <li>Stocks & Livraisons illimités</li>
-                    <li>Support prioritaire</li>
-                </ul>
-                <a href="mailto:tonemail@exemple.com" class="btn-card">S'abonner</a>
-            </div>
-        </div>
+    async function chargerClients() {
+        // On récupère tous les profils (boutique, email, abo, max_dists)
+        const { data: profils, error } = await supabaseClient.from('profiles').select('*').order('nom_boutique', { ascending: true });
         
-        <div style="margin-top: 40px; color: #888;">
-            Plus de 20 machines ? <a href="mailto:tonemail@exemple.com" style="color: var(--primary);">Contactez-nous pour une offre Sur-Mesure.</a>
-        </div>
-    </div>
+        const tbody = document.getElementById('clients-list');
+        tbody.innerHTML = "";
 
-    <footer>
-        <p>&copy; 2024 Espace Production by Gang of Pizza. Développé par Clément Labarriere.</p>
-        <a href="mentions-legales.html" style="color: #666; text-decoration: none;">Mentions Légales & Confidentialité</a>
-    </footer>
+        if (error) { alert("Erreur lors de la récupération des clients."); return; }
 
+        profils.forEach(p => {
+            if(p.is_admin) return; // On masque ton propre compte admin
+            
+            // Si le nom de boutique n'est pas renseigné, on met un texte par défaut
+            const nomAffichage = p.nom_boutique || "Boutique non nommée";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <span class="shop-name">${nomAffichage}</span>
+                        <span class="user-email">${p.email || 'Pas d\'email renseigné'}</span>
+                    </td>
+                    <td>
+                        <select id="abo-${p.id}">
+                            <option value="Basic" ${p.type_abonnement === 'Basic' ? 'selected' : ''}>Basic (39€)</option>
+                            <option value="Plus" ${p.type_abonnement === 'Plus' ? 'selected' : ''}>Plus (59€)</option>
+                            <option value="Platinium" ${p.type_abonnement === 'Platinium' ? 'selected' : ''}>Platinium (69€)</option>
+                            <option value="Ultimate" ${p.type_abonnement === 'Ultimate' ? 'selected' : ''}>Ultimate (99€)</option>
+                            <option value="Sur-Mesure" ${p.type_abonnement === 'Sur-Mesure' ? 'selected' : ''}>Sur-Mesure</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" id="max-${p.id}" value="${p.max_distributeurs || 3}" style="width: 70px;">
+                    </td>
+                    <td>
+                        <button class="btn-save" onclick="sauvegarderClient('${p.id}')">Mettre à jour</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function sauvegarderClient(id) {
+        const abo = document.getElementById(`abo-${id}`).value;
+        const max = parseInt(document.getElementById(`max-${id}`).value);
+
+        const { error } = await supabaseClient.from('profiles').update({ 
+            type_abonnement: abo, 
+            max_distributeurs: max 
+        }).eq('id', id);
+
+        if(!error) { 
+            alert("✅ Modification enregistrée avec succès !");
+            chargerClients();
+        } else { 
+            alert("Erreur technique : la mise à jour a échoué."); 
+        }
+    }
+
+    initAdmin();
+</script>
 </body>
 </html>
