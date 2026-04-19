@@ -1,13 +1,78 @@
-Éditeur du site :
-Le présent site est édité par [Ton Prénom Ton Nom], micro-entrepreneur.
-SIRET : [Ton Numéro SIRET]
-Siège social : [Ton adresse postale]
-Email de contact : [Ton email]
-Directeur de la publication : [Ton Prénom Ton Nom]
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentions Légales & Confidentialité - Gang of Pizza</title>
+    <style>
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; }
+        
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; line-height: 1.6; }
+        .container { max-width: 800px; margin: 40px auto; background: var(--card-bg); padding: 40px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        h2 { color: #3498db; margin-top: 30px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        h3 { color: var(--text); margin-top: 20px; }
+        
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        strong { color: var(--primary); }
 
-Hébergement :
-L'hébergement de l'application est assuré par Vercel Inc.
-Adresse : 340 S Lemon Ave #4133 Walnut, CA 91789, États-Unis.
+        .btn-retour { display: inline-block; margin-top: 30px; padding: 10px 20px; background: var(--border); color: var(--text); text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        .btn-retour:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
 
-Base de données :
-Les données sont hébergées par Supabase (hébergement cloud sécurisé).
+<div class="container">
+    <div class="header">
+        <h1>Mentions Légales & Politique de Confidentialité</h1>
+        <p style="color: #888;">Espace Production by Gang of Pizza</p>
+    </div>
+
+    <h2>1. Mentions Légales</h2>
+    
+    <h3>Éditeur du site et Directeur de la publication</h3>
+    <p>
+        Le présent site/application est édité par <strong>Clément Labarriere</strong>, exerçant en tant que micro-entrepreneur.<br>
+        <strong>SIRET :</strong> 98742286200019<br>
+        <strong>Siège social :</strong> 6 lotissement le parc des cigales, 84840 LAPALUD<br>
+        <strong>Email de contact :</strong> <a href="mailto:clabarriere@digiclem.fr" style="color: #3498db;">clabarriere@digiclem.fr</a><br>
+        <strong>Directeur de la publication :</strong> Clément Labarriere
+    </p>
+
+    <h3>Hébergement et Infrastructure</h3>
+    <ul>
+        <li><strong>Hébergement de l'application :</strong> Vercel Inc., 340 S Lemon Ave #4133 Walnut, CA 91789, États-Unis.</li>
+        <li><strong>Gestion du nom de domaine :</strong> OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.</li>
+        <li><strong>Base de données :</strong> Les données sont hébergées par Supabase (infrastructure cloud sécurisée).</li>
+    </ul>
+
+    <h2>2. Politique de Confidentialité (RGPD)</h2>
+
+    <h3>Données collectées</h3>
+    <p>Dans le cadre de l'utilisation de l'application "Espace Production by Gang of Pizza", nous collectons de manière automatisée et saisie par l'utilisateur les données suivantes : adresse email de connexion, données relatives aux stocks d'ingrédients, paramétrages des distributeurs et historique de production.</p>
+
+    <h3>Finalité des données</h3>
+    <p>Ces données sont strictement nécessaires et utilisées exclusivement pour le bon fonctionnement de l'application (sauvegarde des stocks, personnalisation de la carte, synchronisation multi-appareils). <strong>Elles ne sont en aucun cas vendues, louées ou cédées à des tiers.</strong></p>
+
+    <h3>Sécurité</h3>
+    <p>Vos mots de passe et accès sont gérés et cryptés de bout en bout par notre fournisseur d'authentification sécurisé (Supabase Auth). L'éditeur n'a aucun accès à vos mots de passe en clair.</p>
+
+    <h3>Vos droits</h3>
+    <p>Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos données. Pour exercer ce droit ou demander la suppression définitive de votre compte et de l'historique associé, vous pouvez contacter l'éditeur à l'adresse suivante : <strong>clabarriere@digiclem.fr</strong>.</p>
+
+    <div style="text-align: center;">
+        <a href="index.html" class="btn-retour">⬅ Retour à la connexion</a>
+    </div>
+</div>
+
+<script>
+    // Applique le thème de l'utilisateur s'il a déjà été choisi
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+</script>
+
+</body>
+</html>
