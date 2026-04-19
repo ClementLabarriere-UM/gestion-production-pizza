@@ -246,7 +246,7 @@
                 cloudPrefs = profil.preferences_production;
                 if(!cloudPrefs.carte) cloudPrefs.carte = [];
                 // Si ancienne structure détectée, on réinitialise pour éviter les bugs
-                if(!cloudPrefs.matrice || Object.keys(cloudPrefs.matrice).some(k => k.length > 25)) cloudPrefs.matrice = {};
+                if(!cloudPrefs.matrice) cloudPrefs.matrice = {};
             }
         }
 
@@ -348,12 +348,16 @@
 
     function majMatriceCloud(distId, nomPizza) {
         if (!cloudPrefs.matrice[distId]) cloudPrefs.matrice[distId] = {};
+        
+        // On récupère les valeurs actuelles des champs à l'écran
         const stock = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="stock"]`).value;
         const obj = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="obj"]`).value;
-        cloudPrefs.matrice[distId][nomPizza] = { stock, obj };
+        
+        // On enregistre le couple Stock/Objectif dans notre mémoire locale
+        cloudPrefs.matrice[distId][nomPizza] = { stock: stock, obj: obj };
         
         calculerBesoins();
-        triggerSave();
+        triggerSave(); // Envoi immédiat vers Supabase
     }
 
     // --- RENDU DU GRAND TABLEAU ---
