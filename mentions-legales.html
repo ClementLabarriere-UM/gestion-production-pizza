@@ -3,74 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mentions Légales & Confidentialité</title>
+    <title>Mentions Légales & Confidentialité - Gang of Pizza</title>
     <style>
-        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
-        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; }
+        /* --- VARIABLES THEME --- */
+        :root { 
+            --primary: #e74c3c; 
+            --bg: #0f0f11; 
+            --card-bg: #1a1a1c; 
+            --section-bg: #222226;
+            --text: #e0e0e0; 
+            --text-muted: #888888;
+            --border: #333333; 
+        }
         
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; line-height: 1.6; }
-        .container { max-width: 800px; margin: 40px auto; background: var(--card-bg); padding: 40px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body.light-mode { 
+            --bg: #f4f4f9; 
+            --card-bg: #ffffff; 
+            --section-bg: #f8f9fa;
+            --text: #333333; 
+            --text-muted: #666666;
+            --border: #e0e0e0; 
+        }
         
-        .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
-        h1 { color: var(--primary); margin-bottom: 10px; }
-        h2 { color: #3498db; margin-top: 30px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        h3 { color: var(--text); margin-top: 20px; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 40px 20px; 
+            transition: background-color 0.3s; 
+            line-height: 1.7; 
+            background-image: radial-gradient(circle at top center, rgba(231, 76, 60, 0.05) 0%, transparent 50%);
+        }
+
+        .container { 
+            max-width: 850px; 
+            margin: 0 auto; 
+        }
         
+        /* HEADER & LOGO */
+        .header { 
+            text-align: center; 
+            margin-bottom: 50px; 
+        }
+        .logo-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .logo-area img { height: 45px; }
+        
+        .logo-light { display: none; }
+        body.light-mode .logo-dark { display: none; }
+        body.light-mode .logo-light { display: block; }
+
+        h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px; 
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* CARTES D'INFORMATION */
+        .legal-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .legal-section:hover {
+            border-color: #555;
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-block {
+            background: var(--section-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .info-block h4 {
+            margin: 0 0 8px 0;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+        .info-block p, .info-block ul {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
         ul { padding-left: 20px; }
         li { margin-bottom: 8px; }
-        strong { color: var(--primary); }
+        strong { color: var(--text); font-weight: 600; }
+        a { color: #3498db; text-decoration: none; font-weight: 500; transition: 0.2s; }
+        a:hover { color: var(--primary); text-decoration: underline; }
 
-        .btn-retour { display: inline-block; margin-top: 30px; padding: 10px 20px; background: var(--border); color: var(--text); text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        .btn-retour:hover { background: var(--primary); color: white; }
+        /* BOUTON RETOUR */
+        .action-area {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+        }
+        .btn-retour { 
+            display: inline-block; 
+            padding: 14px 30px; 
+            background: transparent; 
+            color: var(--text); 
+            border: 2px solid var(--border);
+            text-decoration: none; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            transition: all 0.3s; 
+            font-size: 1.1rem;
+        }
+        .btn-retour:hover { 
+            background: var(--text); 
+            color: var(--bg); 
+            border-color: var(--text);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>Mentions Légales & Politique de Confidentialité</h1>
-        <p style="color: #888;">Espace Production by digiclem.</p>
+        <div class="logo-area">
+            <img src="logo.png" alt="Logo" class="logo-dark" onerror="this.style.display='none'">
+            <img src="logo-clair.png" alt="Logo" class="logo-light" onerror="this.style.display='none'">
+            Espace Production
+        </div>
+        <h1>Mentions Légales & RGPD</h1>
+        <div class="subtitle">Transparence et protection de vos données professionnelles.</div>
     </div>
 
-    <h2>1. Mentions Légales</h2>
-    
-    <h3>Éditeur du site et Directeur de la publication</h3>
-    <p>
-        Le présent site/application est édité par <strong>Clément Labarriere</strong>, exerçant en tant que micro-entrepreneur.<br>
-        <strong>SIRET :</strong> 98742286200019<br>
-        <strong>Siège social :</strong> 6 lotissement le parc des cigales, 84840 LAPALUD<br>
-        <strong>Email de contact :</strong> <a href="mailto:clabarriere@digiclem.fr" style="color: #3498db;">clabarriere@digiclem.fr</a><br>
-        <strong>Directeur de la publication :</strong> Clément Labarriere
-    </p>
+    <div class="legal-section">
+        <h2 class="section-title">⚖️ Mentions Légales</h2>
+        
+        <div class="info-block">
+            <h4>Éditeur du site & Directeur de la publication</h4>
+            <p>
+                Le présent site et l'application métier associée sont édités par <strong>Clément Labarriere</strong>, exerçant en tant que micro-entrepreneur.<br>
+                <strong>SIRET :</strong> 98742286200019<br>
+                <strong>Siège social :</strong> 6 lotissement le parc des cigales, 84840 LAPALUD<br>
+                <strong>Contact :</strong> <a href="mailto:clabarriere@digiclem.fr">clabarriere@digiclem.fr</a>
+            </p>
+        </div>
 
-    <h3>Hébergement et Infrastructure</h3>
-    <ul>
-        <li><strong>Hébergement de l'application :</strong> Vercel Inc., 340 S Lemon Ave #4133 Walnut, CA 91789, États-Unis.</li>
-        <li><strong>Gestion du nom de domaine :</strong> OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.</li>
-        <li><strong>Base de données :</strong> Les données sont hébergées par Supabase (infrastructure cloud sécurisée).</li>
-    </ul>
+        <div class="info-block">
+            <h4>Hébergement et Infrastructure technique</h4>
+            <ul>
+                <li><strong>Hébergement de l'application :</strong> Vercel Inc., 340 S Lemon Ave #4133 Walnut, CA 91789, États-Unis.</li>
+                <li><strong>Gestion du nom de domaine :</strong> OVH SAS, 2 rue Kellermann, 59100 Roubaix, France.</li>
+                <li><strong>Base de données & Authentification :</strong> Les données sont sécurisées et hébergées sur l'infrastructure cloud de Supabase.</li>
+            </ul>
+        </div>
+    </div>
 
-    <h2>2. Politique de Confidentialité (RGPD)</h2>
+    <div class="legal-section">
+        <h2 class="section-title">🔒 Politique de Confidentialité</h2>
+        
+        <div class="info-block">
+            <h4>1. Données collectées</h4>
+            <p>Dans le cadre de l'utilisation de l'application "Espace Production by digiclem.", nous collectons de manière automatisée et saisie par l'utilisateur les données suivantes : <strong>adresse email de connexion</strong>, <strong>données relatives aux stocks d'ingrédients</strong>, <strong>paramétrages des distributeurs</strong> et <strong>historique de production</strong>.</p>
+        </div>
 
-    <h3>Données collectées</h3>
-    <p>Dans le cadre de l'utilisation de l'application "Espace Production by digiclem.", nous collectons de manière automatisée et saisie par l'utilisateur les données suivantes : adresse email de connexion, données relatives aux stocks d'ingrédients, paramétrages des distributeurs et historique de production.</p>
+        <div class="info-block">
+            <h4>2. Finalité des données</h4>
+            <p>Ces données sont strictement nécessaires et utilisées exclusivement pour le bon fonctionnement de votre espace client (sauvegarde de vos stocks, personnalisation de votre carte de pizzas, synchronisation multi-appareils). <strong style="color: var(--primary);">Elles ne sont en aucun cas vendues, louées ou cédées à des tiers.</strong></p>
+        </div>
 
-    <h3>Finalité des données</h3>
-    <p>Ces données sont strictement nécessaires et utilisées exclusivement pour le bon fonctionnement de l'application (sauvegarde des stocks, personnalisation de la carte, synchronisation multi-appareils). <strong>Elles ne sont en aucun cas vendues, louées ou cédées à des tiers.</strong></p>
+        <div class="info-block">
+            <h4>3. Sécurité des accès</h4>
+            <p>Vos mots de passe et accès sont gérés et cryptés de bout en bout par notre fournisseur d'authentification sécurisé (Supabase Auth). L'éditeur de l'application n'a aucun accès à vos mots de passe en clair.</p>
+        </div>
 
-    <h3>Sécurité</h3>
-    <p>Vos mots de passe et accès sont gérés et cryptés de bout en bout par notre fournisseur d'authentification sécurisé (Supabase Auth). L'éditeur n'a aucun accès à vos mots de passe en clair.</p>
+        <div class="info-block">
+            <h4>4. Vos droits (Conformité CNIL)</h4>
+            <p>Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos données. Pour exercer ce droit ou demander la suppression définitive de votre compte et de l'historique associé, contactez l'éditeur à : <a href="mailto:clabarriere@digiclem.fr">clabarriere@digiclem.fr</a>.</p>
+        </div>
+    </div>
 
-    <h3>Vos droits</h3>
-    <p>Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, de portabilité et de suppression de vos données. Pour exercer ce droit ou demander la suppression définitive de votre compte et de l'historique associé, vous pouvez contacter l'éditeur à l'adresse suivante : <strong>clabarriere@digiclem.fr</strong>.</p>
-
-    <div style="text-align: center;">
-        <a href="/connexion" class="btn-retour">⬅ Retour à la connexion</a>
+    <div class="action-area">
+        <a href="/connexion" class="btn-retour">← Retour à l'application</a>
     </div>
 </div>
 
 <script>
-    // Applique le thème de l'utilisateur s'il a déjà été choisi
+    // Applique le thème de l'utilisateur s'il a déjà été choisi sur l'app
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 </script>
 
