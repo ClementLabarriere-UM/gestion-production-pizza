@@ -120,7 +120,7 @@
         <button class="btn-login" onclick="seConnecter()">Se connecter</button>
         <p id="error-msg"></p>
 
-        <a href="mentions-legales.html" class="legal-link">Mentions légales & Confidentialité</a>
+        <a href="/mentions-legales" class="legal-link">Mentions légales & Confidentialité</a>
     </div>
 
     <script>
@@ -140,7 +140,7 @@
         async function verifierSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                window.location.href = "production.html";
+                window.location.href = "/production";
             }
         }
         verifierSession();
@@ -169,7 +169,7 @@
                     errorMsg.style.color = "#ff6b6b";
                     errorMsg.innerText = "Identifiants incorrects.";
                 } else {
-                    window.location.href = "production.html";
+                    window.location.href = "/production";
                 }
             } catch (err) {
                 errorMsg.style.color = "#ff6b6b";

@@ -50,10 +50,10 @@
     </div>
 
     <div class="nav-menu">
-        <a href="production.html">Production</a>
-        <a href="stocks.html">Stocks</a>
-        <a href="distributeurs.html">Distributeurs</a>
-        <a href="historique.html" class="active">Historique</a>
+        <a href="/production">Production</a>
+        <a href="/stocks">Stocks</a>
+        <a href="/distributeurs">Distributeurs</a>
+        <a href="/historique" class="active">Historique</a>
     </div>
 
     <h2 style="margin-top: 0; color: var(--primary);">⏳ Historique de Production</h2>
@@ -77,7 +77,7 @@
 
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) { window.location.href = "index.html"; return; }
+        if (!session) { window.location.href = "/connexion"; return; }
         document.getElementById('user-email').innerText = session.user.email;
         chargerHistorique();
     }
@@ -104,7 +104,7 @@
 
     async function seDeconnecter() {
         await supabaseClient.auth.signOut();
-        window.location.href = "index.html";
+        window.location.href = "/connexion";
     }
 
     verifierConnexion();

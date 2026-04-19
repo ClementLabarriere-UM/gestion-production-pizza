@@ -28,7 +28,7 @@
 <div class="container" id="admin-panel" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h1>Gestion des Franchisés</h1>
-        <button onclick="window.location.href='production.html'" class="btn-save" style="background: #3498db;">Retour à l'App</button>
+        <button onclick="window.location.href='/production'" class="btn-save" style="background: #3498db;">Retour à l'App</button>
     </div>
     
     <table>
@@ -55,7 +55,7 @@
 
     async function initAdmin() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) { window.location.href = "index.html"; return; }
+        if (!session) { window.location.href = "/connexion"; return; }
 
         const { data: monProfil } = await supabaseClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
         
