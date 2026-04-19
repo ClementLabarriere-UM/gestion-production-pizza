@@ -2,180 +2,216 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Connexion - Espace Production by digiclem.</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Production by digiclem.</title>
     <style>
-        /* --- MODE SOMBRE ET CLAIR --- */
-        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; }
-        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; }
-
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            transition: background-color 0.3s;
-        }
-
-        .login-box { 
-            background: var(--card-bg); 
-            padding: 40px 30px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            width: 100%; 
-            max-width: 380px; 
-            text-align: center; 
-            border: 1px solid var(--border);
-            box-sizing: border-box;
-            margin: 20px;
-        }
-
-        .logo-area { margin-bottom: 30px; }
-        .logo-area p { margin: 0 0 5px 0; color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        .logo-area img { height: 70px; margin-bottom: 10px; }
+        :root { --primary: #e74c3c; --bg: #0f0f11; --card-bg: #1a1a1c; --text: #e0e0e0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; overflow-x: hidden; }
         
-        /* Gestion Logos Thème */
-        .logo-light { display: none; }
-        body.light-mode .logo-dark { display: none; }
-        body.light-mode .logo-light { display: inline-block; }
+        /* HEADER */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 50px; background: rgba(15, 15, 17, 0.8); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .logo img { height: 40px; }
+        .btn-login { background: transparent; border: 2px solid var(--primary); color: var(--primary); padding: 10px 22px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; font-size: 0.95rem; }
+        .btn-login:hover { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); }
 
-        h2 { margin-top: 0; margin-bottom: 25px; color: var(--primary); font-size: 1.5rem; }
+        /* HERO SECTION */
+        .hero { text-align: center; padding: 120px 20px 80px; background: radial-gradient(circle at top center, #3a1c1a 0%, var(--bg) 60%); position: relative; }
+        .hero h1 { font-size: 4rem; margin-bottom: 20px; font-weight: 800; letter-spacing: -1px; }
+        .hero h1 span { background: linear-gradient(90deg, #ff6b6b, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 1.25rem; color: #aaa; max-width: 650px; margin: 0 auto 40px; line-height: 1.8; }
+        .btn-cta { display: inline-block; background: var(--primary); color: white; padding: 18px 40px; border-radius: 30px; text-decoration: none; font-size: 1.2rem; font-weight: bold; box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .btn-cta:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 35px rgba(231, 76, 60, 0.6); }
 
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group input { 
-            width: 100%; 
-            padding: 14px 15px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            background: var(--input-bg); 
-            color: var(--text); 
-            box-sizing: border-box; 
-            font-size: 1rem;
-            transition: all 0.2s;
+        /* --- SECTION TARIFS (DESIGN PREMIUM) --- */
+        .pricing { padding: 100px 20px; text-align: center; position: relative; }
+        .pricing h2 { font-size: 2.8rem; margin-bottom: 10px; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .pricing-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 30px; 
+            max-width: 1200px; 
+            margin: 60px auto 0; 
+            align-items: center; /* Permet à la carte "Popular" de déborder harmonieusement */
         }
-        .input-group input:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1); 
+        
+        .card { 
+            background: linear-gradient(180deg, var(--card-bg) 0%, #121212 100%); 
+            border: 1px solid #333; 
+            border-radius: 24px; 
+            padding: 40px 30px; 
+            text-align: left; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-
-        .btn-login { 
-            width: 100%; 
-            padding: 14px; 
-            background: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1.1rem; 
-            transition: 0.2s; 
-            margin-top: 10px;
+        
+        .card:hover { 
+            transform: translateY(-15px); 
+            border-color: #555; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
         }
-        .btn-login:hover { background: #c0392b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3); }
-        .btn-login:active { transform: translateY(1px); }
-
-        #error-msg { 
-            color: #ff6b6b; 
-            font-size: 0.9rem; 
-            margin-top: 15px; 
-            min-height: 20px; 
+        
+        /* La carte vedette */
+        .card.popular { 
+            background: linear-gradient(180deg, #2c1a1a 0%, #1a1111 100%); 
+            border: 2px solid var(--primary); 
+            transform: scale(1.05); 
+            box-shadow: 0 15px 35px rgba(231, 76, 60, 0.15);
+            z-index: 2;
+        }
+        .card.popular:hover {
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0 25px 50px rgba(231, 76, 60, 0.3);
+        }
+        
+        .badge-popular {
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 8px 24px;
+            border-radius: 0 0 12px 12px;
+            font-size: 0.85rem;
             font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        .card h3 { margin: 0 0 15px; font-size: 1.4rem; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .card.popular h3 { color: var(--primary); margin-top: 15px; } /* Marge pour compenser le badge */
+        
+        .price { font-size: 3.5rem; font-weight: 800; color: white; margin-bottom: 30px; display: flex; align-items: baseline; }
+        .price span { font-size: 1.1rem; color: #666; font-weight: 500; margin-left: 8px; }
+        
+        .features { list-style: none; padding: 0; margin: 0 0 40px; border-top: 1px solid #333; padding-top: 30px; }
+        .features li { margin-bottom: 18px; display: flex; align-items: center; gap: 12px; color: #ddd; font-size: 1.05rem; }
+        
+        /* Pastilles vertes "Inclus" */
+        .features li::before { 
+            content: '✓'; color: #2ecc71; font-weight: bold; font-size: 1.1rem; 
+            background: rgba(46, 204, 113, 0.15); width: 26px; height: 26px; 
+            display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0;
+        }
+        /* Pastilles grises "Non inclus" */
+        .features li.disabled { opacity: 0.4; text-decoration: line-through; }
+        .features li.disabled::before { 
+            content: '✕'; color: #888; 
+            background: rgba(255, 255, 255, 0.05); font-size: 0.9rem;
         }
 
-        .legal-link {
-            display: inline-block;
-            margin-top: 25px;
-            color: #888;
-            font-size: 0.8rem;
-            text-decoration: none;
-            transition: color 0.2s;
+        .btn-card { display: block; text-align: center; padding: 16px; background: #2a2a2a; color: white; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; transition: 0.3s; border: 1px solid #444; }
+        .card.popular .btn-card { background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
+        
+        .btn-card:hover { background: #444; border-color: #666; }
+        .card.popular .btn-card:hover { background: #c0392b; border-color: #c0392b; box-shadow: 0 8px 25px rgba(231, 76, 60, 0.5); }
+
+        /* FOOTER */
+        footer { text-align: center; padding: 50px 20px; border-top: 1px solid #222; margin-top: 50px; color: #666; background: #0a0a0b; }
+        
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .card.popular { transform: scale(1); z-index: 1; }
+            .card.popular:hover { transform: translateY(-10px); }
+            header { padding: 20px; }
+            .hero h1 { font-size: 2.8rem; }
         }
-        .legal-link:hover { color: var(--primary); text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <div class="logo-area">
-            <p>Espace Production by</p>
-            <img src="logo.png" alt="Logo" class="logo-dark" onerror="this.style.display='none'">
-            <img src="logo-clair.png" alt="Logo" class="logo-light" onerror="this.style.display='none'">
+    <header>
+        <div class="logo">
+            <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+            Espace Production
         </div>
-        
-        <h2>Connexion</h2>
-        
-        <div class="input-group">
-            <input type="email" id="email" placeholder="Adresse email" autocomplete="email">
-        </div>
-        <div class="input-group">
-            <input type="password" id="password" placeholder="Mot de passe" autocomplete="current-password">
-        </div>
-        
-        <button class="btn-login" onclick="seConnecter()">Se connecter</button>
-        <p id="error-msg"></p>
+        <a href="index.html" class="btn-login">Espace Client 🔒</a>
+    </header>
 
-        <a href="mentions-legales.html" class="legal-link">Mentions légales & Confidentialité</a>
+    <div class="hero">
+        <h1>Ne calculez plus.<br><span>Produisez.</span></h1>
+        <p>L'application métier conçue sur-mesure pour les franchisés Gang of Pizza. Calculez vos besoins, automatisez vos stocks et gérez vos distributeurs depuis n'importe quel appareil.</p>
+        <a href="mailto:clabarriere@digiclem.fr?subject=Demande de démo Espace Production" class="btn-cta">Demander une démo gratuite</a>
+        <p style="margin-top: 25px; font-size: 1rem; color: #888;">🎁 1er mois offert sans engagement.</p>
     </div>
 
-    <script>
-        // Restauration du thème si l'utilisateur l'avait changé
-        if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    <div class="pricing" id="tarifs">
+        <h2>Une tarification simple et transparente</h2>
+        <p style="color: #888; font-size: 1.1rem; max-width: 600px; margin: 0 auto 50px;">Frais de mise en service (création de l'espace, paramétrage initial de la carte et des distributeurs) : 149€ HT.</p>
+        
+        <div class="pricing-grid">
+            <div class="card">
+                <h3>Basic</h3>
+                <div class="price">39€<span>/mois HT</span></div>
+                <ul class="features">
+                    <li>Jusqu'à <strong>3 machines</strong></li>
+                    <li>Calcul de production Auto</li>
+                    <li>Impression des fiches métier</li>
+                    <li>Synchronisation Cloud</li>
+                    <li class="disabled">Gestion des Stocks</li>
+                    <li class="disabled">Saisie des Livraisons</li>
+                </ul>
+                <a href="mailto:clabarriere@digiclem.fr?subject=Souscription Abonnement Basic" class="btn-card">Nous contacter</a>
+            </div>
 
-        // Touche Entrée pour valider
-        document.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') seConnecter();
-        });
+            <div class="card popular">
+                <div class="badge-popular">Le plus choisi</div>
+                <h3>Plus</h3>
+                <div class="price">59€<span>/mois HT</span></div>
+                <ul class="features">
+                    <li>Jusqu'à <strong>6 machines</strong></li>
+                    <li>Calcul de production Auto</li>
+                    <li>Impression des fiches métier</li>
+                    <li>Synchronisation Cloud</li>
+                    <li><strong>Gestion des Stocks Auto</strong></li>
+                    <li><strong>Saisie des Livraisons</strong></li>
+                </ul>
+                <a href="mailto:clabarriere@digiclem.fr?subject=Souscription Abonnement Plus" class="btn-card">Démarrer l'essai</a>
+            </div>
 
-        const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
-        const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
-        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+            <div class="card">
+                <h3>Platinium</h3>
+                <div class="price">69€<span>/mois HT</span></div>
+                <ul class="features">
+                    <li>Jusqu'à <strong>10 machines</strong></li>
+                    <li>Calcul de production Auto</li>
+                    <li>Impression des fiches métier</li>
+                    <li>Synchronisation Cloud</li>
+                    <li>Gestion des Stocks Auto</li>
+                    <li>Saisie des Livraisons</li>
+                </ul>
+                <a href="mailto:clabarriere@digiclem.fr?subject=Souscription Abonnement Platinium" class="btn-card">Démarrer l'essai</a>
+            </div>
 
-        // Vérifie si déjà connecté
-        async function verifierSession() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                window.location.href = "production.html";
-            }
-        }
-        verifierSession();
+            <div class="card">
+                <h3>Ultimate</h3>
+                <div class="price">99€<span>/mois HT</span></div>
+                <ul class="features">
+                    <li>Jusqu'à <strong>20 machines</strong></li>
+                    <li>Toutes les fonctionnalités</li>
+                    <li>Support prioritaire 7j/7</li>
+                    <li>Synchronisation Cloud</li>
+                    <li>Gestion des Stocks Auto</li>
+                    <li>Saisie des Livraisons</li>
+                </ul>
+                <a href="mailto:clabarriere@digiclem.fr?subject=Souscription Abonnement Ultimate" class="btn-card">Démarrer l'essai</a>
+            </div>
+        </div>
+        
+        <div style="margin-top: 60px; padding: 30px; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 16px; max-width: 800px; margin-left: auto; margin-right: auto;">
+            <h3 style="margin-top: 0; color: #fff;">Besoin d'une infrastructure sur-mesure ?</h3>
+            <p style="color: #aaa; margin-bottom: 0;">Vous gérez plus de 20 distributeurs ou un réseau multi-franchises ? <a href="mailto:clabarriere@digiclem.fr?subject=Demande de devis Sur-Mesure" style="color: var(--primary); font-weight: bold; text-decoration: none;">Contactez-nous pour une offre personnalisée.</a></p>
+        </div>
+    </div>
 
-        async function seConnecter() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
-            
-            if (!email || !password) {
-                errorMsg.innerText = "Merci de remplir tous les champs.";
-                errorMsg.style.color = "#ff6b6b";
-                return;
-            }
+    <footer>
+        <p>&copy; 2026 Espace Production by digiclem. Conçu et développé par Clément Labarriere.</p>
+        <a href="mentions-legales.html" style="color: #666; text-decoration: none; font-size: 0.9rem; transition: 0.2s;">Mentions Légales & Politique de Confidentialité</a>
+    </footer>
 
-            errorMsg.style.color = "#3498db";
-            errorMsg.innerText = "Connexion en cours...";
-
-            try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (error) {
-                    errorMsg.style.color = "#ff6b6b";
-                    errorMsg.innerText = "Identifiants incorrects.";
-                } else {
-                    window.location.href = "production.html";
-                }
-            } catch (err) {
-                errorMsg.style.color = "#ff6b6b";
-                errorMsg.innerText = "Une erreur technique est survenue.";
-            }
-        }
-    </script>
 </body>
 </html>
