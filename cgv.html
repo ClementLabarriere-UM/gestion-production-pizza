@@ -1,0 +1,209 @@
+import os
+
+# Contenu du fichier CGV avec le design "Pimpé"
+cgv_html_content = """<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGV - Espace Production by digiclem.</title>
+    <style>
+        /* --- VARIABLES THEME --- */
+        :root { 
+            --primary: #e74c3c; 
+            --bg: #0f0f11; 
+            --card-bg: #1a1a1c; 
+            --section-bg: #222226;
+            --text: #e0e0e0; 
+            --text-muted: #888888;
+            --border: #333333; 
+        }
+        
+        body.light-mode { 
+            --bg: #f4f4f9; 
+            --card-bg: #ffffff; 
+            --section-bg: #f8f9fa;
+            --text: #333333; 
+            --text-muted: #666666;
+            --border: #e0e0e0; 
+        }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 40px 20px; 
+            transition: background-color 0.3s; 
+            line-height: 1.7; 
+            background-image: radial-gradient(circle at top center, rgba(231, 76, 60, 0.05) 0%, transparent 50%);
+        }
+
+        .container { 
+            max-width: 850px; 
+            margin: 0 auto; 
+        }
+        
+        /* HEADER */
+        .header { 
+            text-align: center; 
+            margin-bottom: 50px; 
+        }
+        .logo-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        .logo-area img { height: 45px; }
+
+        h1 { 
+            font-size: 2.5rem; 
+            margin-bottom: 10px; 
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* SECTIONS */
+        .legal-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-block {
+            background: var(--section-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .info-block h4 {
+            margin: 0 0 8px 0;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+        .info-block p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .highlight-box {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        /* BOUTON RETOUR */
+        .action-area {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .btn-retour { 
+            display: inline-block; 
+            padding: 14px 30px; 
+            background: transparent; 
+            color: var(--text); 
+            border: 2px solid var(--border);
+            text-decoration: none; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            transition: all 0.3s;
+        }
+        .btn-retour:hover { 
+            background: var(--text); 
+            color: var(--bg); 
+            border-color: var(--text);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo-area">Espace Production</div>
+        <h1>Conditions Générales de Vente</h1>
+        <div class="subtitle">Cadre contractuel pour les exploitants de distribution automatique.</div>
+    </div>
+
+    <div class="legal-section">
+        <h2 class="section-title">📦 Objet du Service</h2>
+        <div class="info-block">
+            <p>Le Logiciel "Espace Production by digiclem." est une solution SaaS exclusivement dédiée aux exploitants professionnels de distributeurs automatiques (pizzas, tacos, paninis, burgers, etc.). Il permet l'optimisation de la production et la gestion des stocks.</p>
+        </div>
+    </div>
+
+    <div class="legal-section">
+        <h2 class="section-title">🚀 Essai & Mise en service</h2>
+        <div class="info-block">
+            <h4>Période d'essai gratuite</h4>
+            <p>L'Éditeur offre un (1) mois d'essai gratuit portant sur la redevance de l'abonnement. Le Client peut résilier durant ce mois sans frais d'abonnement supplémentaires.</p>
+        </div>
+        <div class="highlight-box">
+            ⚠️ Les frais de mise en service (149€ HT) sont facturés dès la création du compte. Ils couvrent le paramétrage technique initial et restent acquis à l'Éditeur, même en cas de résiliation durant la période d'essai.
+        </div>
+    </div>
+
+    <div class="legal-section">
+        <h2 class="section-title">⏳ Durée & Engagement</h2>
+        <div class="info-block">
+            <h4>Engagement 12 mois</h4>
+            <p>À l'issue de la période d'essai, le contrat est conclu pour une durée ferme de douze (12) mois. Toute résiliation anticipée entraîne l'exigibilité immédiate des mensualités restantes.</p>
+        </div>
+        <div class="info-block">
+            <h4>Préavis de résiliation</h4>
+            <p>La résiliation doit être notifiée par email au moins un (1) mois avant la date anniversaire du contrat.</p>
+        </div>
+    </div>
+
+    <div class="legal-section">
+        <h2 class="section-title">🛡️ Limitation de Responsabilité</h2>
+        <div class="info-block">
+            <p>Le Logiciel est un outil d'aide à la décision. L'Éditeur ne pourra être tenu responsable des pertes de chiffre d'affaires, ruptures de stocks en machine ou pertes de matières premières. La responsabilité totale de l'Éditeur est plafonnée au montant payé par le Client sur les 12 derniers mois.</p>
+        </div>
+    </div>
+
+    <div class="action-area">
+        <a href="/connexion" class="btn-retour">← Retour à l'application</a>
+    </div>
+</div>
+
+<script>
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+</script>
+
+</body>
+</html>"""
+
+with open("cgv.html", "w", encoding="utf-8") as f:
+    f.write(cgv_html_content)
+
+print("Fichier cgv.html généré avec succès.")
