@@ -2,20 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Panel Admin - Gang of Pizza</title>
+    <title>Admin - Espace Production</title>
     <style>
         :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; border: 1px solid var(--border); }
         h1 { color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 10px; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background: #222; color: var(--primary); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: #222; color: var(--primary); font-size: 0.9rem; text-transform: uppercase; }
         
-        select, input { background: #333; color: white; border: 1px solid #555; padding: 8px; border-radius: 5px; }
-        .btn-save { background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-save:hover { background: #27ae60; }
+        .shop-name { font-weight: bold; font-size: 1.1rem; color: white; display: block; }
+        .user-email { font-size: 0.8rem; color: #888; }
+
+        select, input { background: #333; color: white; border: 1px solid #555; padding: 10px; border-radius: 6px; font-weight: bold; }
+        .btn-save { background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-save:hover { background: #27ae60; transform: scale(1.02); }
         
         #admin-error { color: #e74c3c; font-weight: bold; text-align: center; margin-top: 50px; font-size: 1.2rem; }
     </style>
@@ -24,17 +27,15 @@
 
 <div class="container" id="admin-panel" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h1>👑 Tour de Contrôle Administrateur</h1>
+        <h1>Gestion des Franchisés</h1>
         <button onclick="window.location.href='production.html'" class="btn-save" style="background: #3498db;">Retour à l'App</button>
     </div>
     
-    <p>Gérez les abonnements et les limites de vos franchisés ici.</p>
-
     <table>
         <thead>
             <tr>
-                <th>ID Utilisateur (Supabase)</th>
-                <th>Abonnement Actuel</th>
+                <th>Boutique / Client</th>
+                <th>Abonnement</th>
                 <th>Max Machines</th>
                 <th>Action</th>
             </tr>
@@ -44,7 +45,7 @@
     </table>
 </div>
 
-<div id="admin-error">Vérification des droits administrateur en cours...</div>
+<div id="admin-error">Vérification des droits administrateur...</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -56,7 +57,6 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = "index.html"; return; }
 
-        // Vérifie si l'utilisateur est admin
         const { data: monProfil } = await supabaseClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
         
         if (!monProfil || !monProfil.is_admin) {
@@ -64,7 +64,6 @@
             return;
         }
 
-        // Affiche le panel
         document.getElementById('admin-error').style.display = "none";
         document.getElementById('admin-panel').style.display = "block";
 
@@ -72,16 +71,26 @@
     }
 
     async function chargerClients() {
-        const { data: profils } = await supabaseClient.from('profiles').select('*');
+        // On récupère tous les profils (boutique, email, abo, max_dists)
+        const { data: profils, error } = await supabaseClient.from('profiles').select('*').order('nom_boutique', { ascending: true });
+        
         const tbody = document.getElementById('clients-list');
         tbody.innerHTML = "";
 
+        if (error) { alert("Erreur lors de la récupération des clients."); return; }
+
         profils.forEach(p => {
-            if(p.is_admin) return; // On ne s'affiche pas soi-même
+            if(p.is_admin) return; // On masque ton propre compte admin
             
+            // Si le nom de boutique n'est pas renseigné, on met un texte par défaut
+            const nomAffichage = p.nom_boutique || "Boutique non nommée";
+
             tbody.innerHTML += `
                 <tr>
-                    <td style="font-size: 0.8rem; color: #888;">${p.id}</td>
+                    <td>
+                        <span class="shop-name">${nomAffichage}</span>
+                        <span class="user-email">${p.email || 'Pas d\'email renseigné'}</span>
+                    </td>
                     <td>
                         <select id="abo-${p.id}">
                             <option value="Basic" ${p.type_abonnement === 'Basic' ? 'selected' : ''}>Basic (39€)</option>
@@ -92,10 +101,10 @@
                         </select>
                     </td>
                     <td>
-                        <input type="number" id="max-${p.id}" value="${p.max_distributeurs || 3}" style="width: 60px;">
+                        <input type="number" id="max-${p.id}" value="${p.max_distributeurs || 3}" style="width: 70px;">
                     </td>
                     <td>
-                        <button class="btn-save" onclick="sauvegarderClient('${p.id}')">Enregistrer</button>
+                        <button class="btn-save" onclick="sauvegarderClient('${p.id}')">Mettre à jour</button>
                     </td>
                 </tr>
             `;
@@ -111,8 +120,12 @@
             max_distributeurs: max 
         }).eq('id', id);
 
-        if(!error) { alert("✅ Client mis à jour avec succès !"); }
-        else { alert("Erreur lors de la mise à jour."); }
+        if(!error) { 
+            alert("✅ Modification enregistrée avec succès !");
+            chargerClients();
+        } else { 
+            alert("Erreur technique : la mise à jour a échoué."); 
+        }
     }
 
     initAdmin();
