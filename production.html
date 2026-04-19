@@ -621,10 +621,16 @@
             // Enregistrement historique
             await supabaseClient.from('historique').insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
 
-            // Remise à zéro
-            cloudPrefs.matrice = {};
+            // Remise à zéro UNIQUEMENT des stocks (on garde les objectifs en mémoire)
+            for (let distId in cloudPrefs.matrice) {
+                for (let nomPizza in cloudPrefs.matrice[distId]) {
+                    cloudPrefs.matrice[distId][nomPizza].stock = "";
+                }
+            }
             triggerSave();
-            document.querySelectorAll('.calc-val').forEach(input => input.value = "");
+            
+            // Vider seulement les inputs de type "stock" à l'écran
+            document.querySelectorAll('input[data-type="stock"]').forEach(input => input.value = "");
             calculerBesoins();
 
             if (abonnementClient !== "Basic") {
