@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+import os
+
+# Contenu du fichier CGV avec le design "Pimpé"
+cgv_html_content = """<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -197,10 +200,9 @@
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
 </script>
 
+<div class="action-area">
+        <a href="/connexion" class="btn-retour">← Retour à l'application</a>
+</div>
+
 </body>
-</html>"""
-
-with open("cgv.html", "w", encoding="utf-8") as f:
-    f.write(cgv_html_content)
-
-print("Fichier cgv.html généré avec succès.")
+</html>
