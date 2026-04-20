@@ -532,15 +532,40 @@
 
         for (let [n, q] of Object.entries(ing)) {
             if (q <= 0) continue;
-            let displayQ = q >= 1000 ? (q/1000).toFixed(2) + " Kg" : q;
-            if(!n.includes("unités") && !n.includes("Disque") && !displayQ.toString().includes("Kg")) displayQ += " g";
+            
+            // --- NETTOYAGE DES NOMS ET UNITÉS ---
+            let cleanName = n;
+            let displayQ = q;
+            
+            // On sépare le nom de l'unité entre parenthèses (ex: "Merguez (rondelles)")
+            const match = n.match(/(.*)\s*\((.*?)\)$/);
+            
+            if (match) {
+                cleanName = match[1].trim(); // Nom propre (ex: "Merguez")
+                const baseUnit = match[2].trim(); // Unité de base (ex: "rondelles", "g")
+                
+                // Gestion intelligente des Grammes vs Kilos
+                if (baseUnit === "g") {
+                    if (q >= 1000) {
+                        displayQ = (q / 1000).toFixed(2) + " Kg";
+                    } else {
+                        displayQ = q + " g";
+                    }
+                } else {
+                    // Pour les autres (rondelles, tranches, unités...) on rajoute simplement l'unité à la fin
+                    displayQ = q + " " + baseUnit;
+                }
+            } else {
+                // Pour "Disque tomaté" ou "Disque crémé" (sans parenthèses)
+                displayQ = q;
+            }
 
-            let htmlEcran = `<div class="checklist-item"><input type="checkbox"> <span>${n} : <span class="highlight">${displayQ}</span></span></div>`;
-            let htmlPrint = `<li><span>${n}</span> <span class="print-bold">${displayQ}</span></li>`;
+            let htmlEcran = `<div class="checklist-item"><input type="checkbox"> <span>${cleanName} : <span class="highlight">${displayQ}</span></span></div>`;
+            let htmlPrint = `<li><span>${cleanName}</span> <span class="print-bold">${displayQ}</span></li>`;
             
             if (n.includes("Disque")) { catUi["🍕 Disques"].push(htmlEcran); catPrint["Disques"].push(htmlPrint); }
             else if (n.toLowerCase().match(/boeuf|poulet|jambon|merguez|kebab/)) { catUi["🥩 Viandes"].push(htmlEcran); catPrint["Viandes"].push(htmlPrint); }
-            else if (n.toLowerCase().match(/mozzarella|chèvre|emmental|scalarella|roquefort|boursin/)) { catUi["🧀 Fromages"].push(htmlEcran); catPrint["Fromages"].push(htmlPrint); }
+            else if (n.toLowerCase().match(/mozzarella|chèvre|emmental|scalarella|roquefort|boursin|camembert|reblochon/)) { catUi["🧀 Fromages"].push(htmlEcran); catPrint["Fromages"].push(htmlPrint); }
             else { catUi["🧅 Autres"].push(htmlEcran); catPrint["Autres"].push(htmlPrint); }
         }
 
