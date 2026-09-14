@@ -7,45 +7,64 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
 
-    <nav class="bg-red-600 text-white p-4 shadow-md">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">🍕 Gang of Pizza - Suivi des Ventes</h1>
-            <div class="space-x-4">
-                <a href="/production" class="hover:underline">Production</a>
-                <a href="/stocks" class="hover:underline">Stocks</a>
-                <a href="/ventes" class="font-bold underline">Ventes</a>
-                <a href="/distributeurs" class="hover:underline">Distributeurs</a>
+    <!-- Navbar unifiée avec les autres pages -->
+    <header class="bg-red-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
+                <span>🍕</span> Gang of Pizza
+            </h1>
+            <nav class="flex items-center space-x-6 text-sm font-medium">
+                <a href="/production" class="hover:text-red-100 transition-colors">Production</a>
+                <a href="/stocks" class="hover:text-red-100 transition-colors">Stocks</a>
+                <a href="/ventes" class="bg-red-700 px-3 py-1.5 rounded-md text-white font-semibold shadow-inner">Ventes</a>
+                <a href="/distributeurs" class="hover:text-red-100 transition-colors">Distributeurs</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenu principal aligné et épuré -->
+    <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
+        
+        <!-- En-tête de section -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">Classement des Ventes</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Analyse des volumes de pizzas écoulées par période calendaire</p>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
+                <div class="inline-flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                    <button onclick="filtrerJours(2)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="2">2 jours</button>
+                    <button onclick="filtrerJours(3)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="3">3 jours</button>
+                    <button onclick="filtrerJours(5)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="5">5 jours</button>
+                    <button onclick="filtrerJours(7)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre bg-white text-slate-900 shadow-sm" data-jours="7">7 jours</button>
+                </div>
+                <button onclick="syncVentes()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
+                    <span>🔄</span> Synchro Ventes
+                </button>
             </div>
         </div>
-    </nav>
 
-    <main class="max-w-7xl mx-auto p-6 mt-6">
-        <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-            <h2 class="text-2xl font-extrabold text-gray-900">Analyse des Ventes</h2>
-            <div class="flex gap-2 flex-wrap">
-                <button onclick="filtrerJours(2)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre text-gray-800" data-jours="2">2 jours</button>
-                <button onclick="filtrerJours(3)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre text-gray-800" data-jours="3">3 jours</button>
-                <button onclick="filtrerJours(5)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre text-gray-800" data-jours="5">5 jours</button>
-                <button onclick="filtrerJours(7)" class="px-4 py-2 bg-red-600 text-white border border-red-600 rounded shadow font-bold btn-filtre" data-jours="7">7 jours</button>
-                <button onclick="syncVentes()" class="ml-4 px-4 py-2 bg-gray-800 text-white rounded shadow font-bold hover:bg-gray-700">🔄 Synchro Ventes</button>
+        <!-- Tableau au design standardisé -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
+                            <th class="py-3.5 px-4 w-28">Classement</th>
+                            <th class="py-3.5 px-4">Nom de la Pizza</th>
+                            <th class="py-3.5 px-4 text-right">Quantité Vendue</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableau-ventes" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="3" class="p-8 text-center text-slate-400 text-sm">Chargement des ventes...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-            <table class="w-full border-collapse text-left">
-                <thead>
-                    <tr class="bg-gray-100 border-b text-gray-600 uppercase text-xs tracking-wider">
-                        <th class="p-4 font-bold">Classement</th>
-                        <th class="p-4 font-bold">Nom de la Pizza</th>
-                        <th class="p-4 font-bold text-right">Quantité Vendue</th>
-                    </tr>
-                </thead>
-                <tbody id="tableau-ventes" class="divide-y divide-gray-200">
-                    <tr><td colspan="3" class="p-6 text-center text-gray-500">Chargement des ventes...</td></tr>
-                </tbody>
-            </table>
         </div>
     </main>
 
@@ -59,12 +78,12 @@
         async function chargerVentes(jours = 7) {
             joursActuels = jours;
             
-            // Mise à jour visuelle des boutons de filtre
+            // Mise à jour visuelle des boutons de filtre (style unifié)
             document.querySelectorAll('.btn-filtre').forEach(btn => {
                 if(parseInt(btn.dataset.jours) === jours) {
-                    btn.className = "px-4 py-2 bg-red-600 text-white border border-red-600 rounded shadow font-bold btn-filtre";
+                    btn.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre bg-white text-slate-900 shadow-sm";
                 } else {
-                    btn.className = "px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre text-gray-800";
+                    btn.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900";
                 }
             });
 
@@ -81,12 +100,12 @@
 
             if (error) {
                 console.error("Erreur Supabase:", error);
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500">Erreur de chargement : ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500 text-sm font-medium">Erreur de chargement : ${error.message}</td></tr>`;
                 return;
             }
 
             if (!ventes || ventes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500 italic">Aucune vente enregistrée sur ces ${jours} derniers jours. Cliquez sur "Synchro Ventes".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400 text-sm italic">Aucune vente enregistrée sur ces ${jours} derniers jours. Cliquez sur "Synchro Ventes".</td></tr>`;
                 return;
             }
 
@@ -94,7 +113,6 @@
             const aggregation = {};
             ventes.forEach(v => {
                 const nom = v.nom_pizza || "Inconnue";
-                // On ignore les lignes de secours "Vente Standard" pour ne garder que les vraies pizzas
                 if (!nom.includes("Vente Standard")) {
                     aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
                 }
@@ -105,16 +123,16 @@
 
             tbody.innerHTML = "";
             classement.forEach(([pizza, qte], index) => {
-                let badgeRank = `<span class="px-2 py-1 bg-gray-200 rounded text-xs font-bold text-gray-700">#${index + 1}</span>`;
-                if(index === 0) badgeRank = `<span class="px-2 py-1 bg-yellow-400 rounded text-xs font-bold text-white shadow">🏆 #1</span>`;
-                else if(index === 1) badgeRank = `<span class="px-2 py-1 bg-gray-300 rounded text-xs font-bold text-gray-800">🥈 #2</span>`;
-                else if(index === 2) badgeRank = `<span class="px-2 py-1 bg-amber-600 rounded text-xs font-bold text-white">🥉 #3</span>`;
+                let badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700">#${index + 1}</span>`;
+                if(index === 0) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">🏆 #1</span>`;
+                else if(index === 1) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-slate-200 text-slate-800">🥈 #2</span>`;
+                else if(index === 2) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800">🥉 #3</span>`;
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="p-4 w-24">${badgeRank}</td>
-                        <td class="p-4 font-semibold text-gray-900">${pizza}</td>
-                        <td class="p-4 text-right font-extrabold text-red-600 text-lg">${qte}</td>
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3.5 px-4">${badgeRank}</td>
+                        <td class="py-3.5 px-4 font-medium text-slate-800">${pizza}</td>
+                        <td class="py-3.5 px-4 text-right font-bold text-red-600">${qte}</td>
                     </tr>
                 `;
             });
@@ -127,20 +145,29 @@
         async function syncVentes() {
             try {
                 const btn = event.target;
-                btn.innerText = "⏳ Synchro...";
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "<span>⏳</span> Synchro...";
+                btn.disabled = true;
+
                 const res = await fetch("https://rantwcxfgosrhgdepjxb.supabase.co/functions/v1/sync-ventes", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
                 });
                 const data = await res.json();
-                btn.innerText = "🔄 Synchro Ventes";
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
                 if(!res.ok) throw new Error(data.error);
-                alert("Succès : " + data.message);
+                
                 chargerVentes(joursActuels);
             } catch(err) {
                 alert("Erreur de synchronisation : " + err.message);
                 const btn = event.target;
-                if(btn) btn.innerText = "🔄 Synchro Ventes";
+                if(btn) {
+                    btn.innerHTML = "<span>🔄</span> Synchro Ventes";
+                    btn.disabled = false;
+                }
             }
         }
 
