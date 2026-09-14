@@ -105,6 +105,25 @@
             </div>
             <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%;">✅ Enregistrer le lot dans la base</button>
         </div>
+        <!-- Historique récent -->
+        <div style="margin-top: 30px;">
+            <h3 style="color: var(--primary); margin-bottom: 15px;">Derniers lots enregistrés</h3>
+            <div style="overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: var(--th-bg); color: var(--primary); font-size: 0.9rem; text-transform: uppercase;">
+                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Date</th>
+                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Produit</th>
+                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Lot</th>
+                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">DLC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="traca-historique">
+                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- 2. Températures -->
@@ -155,7 +174,7 @@
     
     // On lance la vérification au chargement
     verifierConnexion();
-    
+
     // --- GESTION DU THÈME ---
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
     function toggleTheme() {
@@ -282,6 +301,46 @@
             btn.disabled = false;
         }
     }
+
+    async function chargerHistoriqueTracabilite() {
+        if (!currentUser) return;
+
+        const { data, error } = await supabaseClient
+            .from('haccp_tracabilite')
+            .select('*')
+            .order('date_reception', { ascending: false })
+            .limit(10);
+
+        const tbody = document.getElementById('traca-historique');
+
+        if (error) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #e74c3c;">Erreur : ${error.message}</td></tr>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #888; font-style: italic;">Aucun lot enregistré pour le moment.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(row => {
+            const dateRec = new Date(row.date_reception).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const dlc = new Date(row.dlc).toLocaleDateString('fr-FR');
+            
+            // On met la DLC en rouge si elle est dépassée ou très proche
+            const isExpired = new Date(row.dlc) < new Date() ? 'color: #e74c3c; font-weight: bold;' : '';
+
+            return `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px 15px; font-size: 0.9rem; color: #888;">${dateRec}</td>
+                    <td style="padding: 12px 15px; font-weight: bold;">${row.nom_produit}</td>
+                    <td style="padding: 12px 15px; font-family: monospace;">${row.num_lot}</td>
+                    <td style="padding: 12px 15px; ${isExpired}">${dlc}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
     // --- LISTE DES INGRÉDIENTS POUR AUTOCOMPLÉTION ---
     const catalogueIngredients = [
         "Aiguillettes de poulet", "Allumettes fumées", "Bleu d'Auvergne", "Boursin",
