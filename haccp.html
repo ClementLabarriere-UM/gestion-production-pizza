@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HACCP - Gang of Pizza</title>
@@ -39,7 +38,6 @@
     <div class="header">
         <div class="logo-area">
             <h1>Espace Sanitaire by</h1>
-            <!-- Ajoute tes logos ici -->
         </div>
         <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
             <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
@@ -67,61 +65,83 @@
 
     <!-- CONTENUS DES ONGLETS -->
     
-    <!-- 1. Traçabilité (Scan & Photos) -->
+    <!-- 1. Traçabilité (Photos & Lots) -->
     <div id="tracabilite" class="tab-content active">
-        <h2 style="color: var(--primary); margin-top: 0;">Traçabilité des produits</h2>
-        <p style="color: #888; margin-bottom: 20px;">Flashez un code-barres pour enregistrer un lot et sa DLC.</p>
-        
-        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button onclick="startScanner()" class="btn-action" style="background: #3498db; color: white;">📷 Allumer la caméra</button>
-            <button onclick="stopScanner()" id="btn-stop-scan" class="btn-action" style="background: #95a5a6; color: white; display: none;">Arrêter la caméra</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <div>
+                <h2 style="color: var(--primary); margin-top: 0; margin-bottom: 5px;">Traçabilité des produits</h2>
+                <p style="color: #888; margin: 0;">Prenez l'étiquette en photo et indiquez le produit.</p>
+            </div>
+            <button onclick="ouvrirGalerie()" class="btn-action" style="background: #3498db; color: white;">🖼️ Galerie Photos</button>
         </div>
-        
-        <!-- Conteneur de la caméra -->
-        <div id="reader" style="width: 100%; max-width: 500px; margin-bottom: 20px; border-radius: 12px; overflow: hidden; display: none; border: 2px solid var(--primary);"></div>
 
         <!-- Formulaire de saisie -->
         <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            
+            <!-- Bouton d'appareil photo natif iPad -->
+            <div style="margin-bottom: 20px; text-align: center; border: 2px dashed #3498db; padding: 20px; border-radius: 12px; background: rgba(52, 152, 219, 0.05);">
+                <label for="traca-photo" style="display: block; cursor: pointer;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📸</div>
+                    <div style="color: #3498db; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Prendre l'étiquette en photo *</div>
+                    <div id="nom-fichier-photo" style="color: #888; font-size: 0.85rem;">Aucune photo sélectionnée</div>
+                </label>
+                <!-- capture="environment" force l'ouverture de la caméra arrière sur iPad/iPhone -->
+                <input type="file" id="traca-photo" accept="image/*" capture="environment" style="display: none;" onchange="afficherNomPhoto()">
+            </div>
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Code-barres (auto)</label>
-                    <input type="text" id="traca-code" placeholder="Scannez pour remplir" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
-                </div>
-                <div>
                     <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Nom du produit *</label>
-                    <!-- Correction Safari : Retrait de autocomplete="off" -->
                     <input type="text" id="traca-nom" list="liste-ingredients" placeholder="Choisir ou taper un nom..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                     <datalist id="liste-ingredients"></datalist>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Numéro de Lot *</label>
-                    <input type="text" id="traca-lot" placeholder="Ex: L-20240914" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Numéro de Lot (Optionnel)</label>
+                    <input type="text" id="traca-lot" placeholder="Saisie manuelle" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">DLC (Date limite) *</label>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">DLC (Optionnelle)</label>
                     <input type="date" id="traca-dlc" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                 </div>
             </div>
-            <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%;">✅ Enregistrer le lot dans la base</button>
+            <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.1rem;">✅ Enregistrer la traçabilité</button>
         </div>
         
         <!-- Historique récent -->
         <div style="margin-top: 30px;">
-            <h3 style="color: var(--primary); margin-bottom: 15px;">Derniers lots enregistrés</h3>
+            <h3 style="color: var(--primary); margin-bottom: 15px;">Derniers enregistrements</h3>
             <div style="overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
                         <tr style="background: var(--th-bg); color: var(--primary); font-size: 0.9rem; text-transform: uppercase;">
                             <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Date</th>
+                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Photo</th>
                             <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Produit</th>
-                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Lot</th>
-                            <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">DLC</th>
                         </tr>
                     </thead>
                     <tbody id="traca-historique">
-                        <tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
+                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE GALERIE PHOTOS -->
+    <div id="modal-galerie" style="display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);">
+        <div style="background: var(--card-bg); margin: 5vh auto; padding: 25px; border: 1px solid var(--border); width: 95%; max-width: 900px; border-radius: 16px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #3498db; margin: 0;">🖼️ Galerie de Traçabilité</h2>
+                <span onclick="fermerGalerie()" style="color: var(--text); font-size: 30px; font-weight: bold; cursor: pointer;">&times;</span>
+            </div>
+            
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                <label style="font-weight: bold; color: var(--text);">Afficher les photos du :</label>
+                <input type="date" id="date-galerie" onchange="chargerGalerie()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>
+
+            <div id="grille-photos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                <!-- Les photos apparaîtront ici -->
             </div>
         </div>
     </div>
@@ -171,11 +191,9 @@
         }
         currentUser = session.user;
         
-        // C'est ici, une fois l'utilisateur authentifié, qu'on charge le tableau
         chargerHistoriqueTracabilite();
     }
     
-    // On lance la vérification au chargement
     verifierConnexion();
 
     // --- GESTION DU THÈME ---
@@ -194,111 +212,87 @@
         document.getElementById(tabId).classList.add('active');
     }
 
-    // --- GESTION DU SCANNER CODE-BARRES (VERSION DIRECTE) ---
-    let html5QrCode = null;
-
-    function startScanner() {
-        const reader = document.getElementById('reader');
-        reader.style.display = 'block';
-        document.getElementById('btn-stop-scan').style.display = 'inline-block';
-        
-        if (!html5QrCode) {
-            html5QrCode = new Html5Qrcode("reader");
-        }
-
-        // On force le démarrage direct sur la caméra arrière (environment)
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 150 } },
-            onScanSuccess,
-            onScanFailure
-        ).catch((err) => {
-            console.error("Erreur de lancement de la caméra:", err);
-            alert("Impossible de lancer la caméra. Vérifiez qu'aucune autre application ne l'utilise.");
-            stopScanner();
-        });
-    }
-
-    function stopScanner() {
-        if (html5QrCode && html5QrCode.isScanning) {
-            html5QrCode.stop().then(() => {
-                cacherScannerUI();
-            }).catch((err) => {
-                console.error("Erreur lors de l'arrêt de la caméra:", err);
-                cacherScannerUI();
-            });
+    // --- GESTION PHOTO ET FORMULAIRE ---
+    function afficherNomPhoto() {
+        const input = document.getElementById('traca-photo');
+        const label = document.getElementById('nom-fichier-photo');
+        if (input.files && input.files[0]) {
+            label.innerText = "✅ Image prête (" + input.files[0].name + ")";
+            label.style.color = "#2ecc71";
         } else {
-            cacherScannerUI();
+            label.innerText = "Aucune photo sélectionnée";
+            label.style.color = "#888";
         }
     }
 
-    function cacherScannerUI() {
-        document.getElementById('reader').style.display = 'none';
-        document.getElementById('btn-stop-scan').style.display = 'none';
-    }
-
-    function onScanSuccess(decodedText, decodedResult) {
-        document.getElementById('traca-code').value = decodedText;
-        if ('vibrate' in navigator) navigator.vibrate(200);
-        stopScanner();
-        document.getElementById('traca-nom').focus();
-    }
-
-    function onScanFailure(error) {
-        // Ignoré silencieusement
-    }
-
-    // --- ENREGISTREMENT SUPABASE ---
     async function enregistrerTracabilite() {
-        const code = document.getElementById('traca-code').value;
+        const photoFile = document.getElementById('traca-photo').files[0];
         const nom = document.getElementById('traca-nom').value;
-        const lot = document.getElementById('traca-lot').value;
-        const dlc = document.getElementById('traca-dlc').value;
+        const lot = document.getElementById('traca-lot').value || 'Non renseigné';
+        const dlc = document.getElementById('traca-dlc').value || null;
 
-        if (!nom || !lot || !dlc) {
-            alert("Veuillez remplir le nom du produit, le lot et la DLC.");
+        if (!nom || !photoFile) {
+            alert("⚠️ La photo de l'étiquette et le nom du produit sont OBLIGATOIRES.");
             return;
         }
 
         const btn = event.target;
-        btn.innerText = "⏳ Enregistrement...";
+        btn.innerText = "⏳ Envoi de la photo...";
         btn.disabled = true;
 
         try {
-            const { error } = await supabaseClient
+            // 1. Upload de l'image dans Supabase Storage
+            const fileExt = photoFile.name.split('.').pop();
+            const fileName = `${Date.now()}_${nom.replace(/\s+/g, '_')}.${fileExt}`;
+            const filePath = `${currentUser.id}/${fileName}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+                .from('haccp_photos')
+                .upload(filePath, photoFile);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Récupération de l'URL publique de l'image
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('haccp_photos')
+                .getPublicUrl(filePath);
+            const photoUrl = publicUrlData.publicUrl;
+
+            // 3. Enregistrement dans la base de données
+            btn.innerText = "⏳ Sauvegarde...";
+            const { error: dbError } = await supabaseClient
                 .from('haccp_tracabilite')
                 .insert([{
                     user_id: currentUser.id,
                     nom_produit: nom,
-                    code_barres: code,
                     num_lot: lot,
-                    dlc: dlc
+                    dlc: dlc,
+                    photo_url: photoUrl
                 }]);
 
-            if (error) throw error;
+            if (dbError) throw dbError;
 
             alert("✅ Traçabilité enregistrée avec succès !");
             
-            // Vider le formulaire pour le prochain scan
-            document.getElementById('traca-code').value = "";
+            // Vider le formulaire
+            document.getElementById('traca-photo').value = "";
+            afficherNomPhoto();
             document.getElementById('traca-nom').value = "";
             document.getElementById('traca-lot').value = "";
             document.getElementById('traca-dlc').value = "";
 
-            // On rafraîchit le tableau d'historique directement après le succès !
             chargerHistoriqueTracabilite();
 
         } catch (error) {
-            alert("Erreur lors de l'enregistrement : " + error.message);
+            alert("Erreur : " + error.message);
         } finally {
-            btn.innerText = "✅ Enregistrer le lot dans la base";
+            btn.innerText = "✅ Enregistrer la traçabilité";
             btn.disabled = false;
         }
     }
 
     async function chargerHistoriqueTracabilite() {
         if (!currentUser) return;
-
         const { data, error } = await supabaseClient
             .from('haccp_tracabilite')
             .select('*')
@@ -306,31 +300,68 @@
             .limit(10);
 
         const tbody = document.getElementById('traca-historique');
-
-        if (error) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #e74c3c;">Erreur : ${error.message}</td></tr>`;
-            return;
-        }
-
-        if (!data || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #888; font-style: italic;">Aucun lot enregistré pour le moment.</td></tr>`;
-            return;
-        }
+        if (error) { tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #e74c3c; padding: 20px;">Erreur : ${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">Aucun enregistrement.</td></tr>`; return; }
 
         tbody.innerHTML = data.map(row => {
             const dateRec = new Date(row.date_reception).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-            const dlc = new Date(row.dlc).toLocaleDateString('fr-FR');
-            
-            // On met la DLC en rouge si elle est dépassée ou très proche
-            const isExpired = new Date(row.dlc) < new Date() ? 'color: #e74c3c; font-weight: bold;' : '';
-
+            const vignette = row.photo_url ? `<a href="${row.photo_url}" target="_blank"><img src="${row.photo_url}" style="height: 40px; width: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);"></a>` : 'Pas de photo';
             return `
                 <tr style="border-bottom: 1px solid var(--border);">
                     <td style="padding: 12px 15px; font-size: 0.9rem; color: #888;">${dateRec}</td>
-                    <td style="padding: 12px 15px; font-weight: bold;">${row.nom_produit}</td>
-                    <td style="padding: 12px 15px; font-family: monospace;">${row.num_lot}</td>
-                    <td style="padding: 12px 15px; ${isExpired}">${dlc}</td>
+                    <td style="padding: 12px 15px;">${vignette}</td>
+                    <td style="padding: 12px 15px; font-weight: bold; color: var(--text);">${row.nom_produit}</td>
                 </tr>
+            `;
+        }).join('');
+    }
+
+    // --- LOGIQUE GALERIE PHOTOS ---
+    function ouvrirGalerie() {
+        document.getElementById('modal-galerie').style.display = 'block';
+        document.getElementById('date-galerie').valueAsDate = new Date();
+        chargerGalerie();
+    }
+    
+    function fermerGalerie() {
+        document.getElementById('modal-galerie').style.display = 'none';
+    }
+
+    async function chargerGalerie() {
+        const dateChoisie = document.getElementById('date-galerie').value;
+        if (!dateChoisie) return;
+
+        const container = document.getElementById('grille-photos');
+        container.innerHTML = '<p style="color:#888;">Recherche des photos...</p>';
+
+        const startOfDay = new Date(dateChoisie + 'T00:00:00.000Z').toISOString();
+        const endOfDay = new Date(dateChoisie + 'T23:59:59.999Z').toISOString();
+
+        const { data, error } = await supabaseClient
+            .from('haccp_tracabilite')
+            .select('*')
+            .gte('date_reception', startOfDay)
+            .lte('date_reception', endOfDay)
+            .not('photo_url', 'is', null)
+            .order('date_reception', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Aucune photo trouvée pour cette date.</div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(row => {
+            const heure = new Date(row.date_reception).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div style="background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+                    <a href="${row.photo_url}" target="_blank">
+                        <img src="${row.photo_url}" style="width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid var(--border);">
+                    </a>
+                    <div style="padding: 10px;">
+                        <strong style="color: var(--text); display: block; font-size: 0.95rem;">${row.nom_produit}</strong>
+                        <span style="color: #888; font-size: 0.85rem;">🕒 ${heure}</span>
+                    </div>
+                </div>
             `;
         }).join('');
     }
@@ -356,7 +387,6 @@
         "Viande kebab"
     ];
 
-    // Correction Safari : On injecte les ingrédients d'un coup via innerHTML
     const dataList = document.getElementById('liste-ingredients');
     if (dataList) {
         const optionsHtml = catalogueIngredients.sort().map(ing => `<option value="${ing}">`).join('');
