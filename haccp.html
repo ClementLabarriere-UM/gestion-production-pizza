@@ -266,11 +266,62 @@
         </div>
     </div>
 
-    <!-- 4. Décongélation -->
+    <!-- 4. Décongélation & Ouverture -->
     <div id="decongelation" class="tab-content">
-        <h2 style="color: var(--primary); margin-top: 0;">Registre de Décongélation</h2>
-        <p style="color: #888;">Calcul automatique des DLC secondaires.</p>
-        <!-- Formulaire à venir -->
+        <h2 style="color: var(--primary); margin-top: 0; margin-bottom: 5px;">Décongélation & Ouverture Produit</h2>
+        <p style="color: #888; margin-bottom: 20px;">Calcul automatique des DLC secondaires selon la réglementation interne.</p>
+
+        <!-- Formulaire de saisie -->
+        <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Action *</label>
+                    <select id="ouverture-type" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="Décongélation">❄️ Mise en décongélation</option>
+                        <option value="Ouverture">✂️ Ouverture produit frais/ambiant</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Produit *</label>
+                    <input type="text" id="ouverture-produit" list="liste-dlc-secondaires" onchange="calculerDLCAutomatique()" placeholder="Choisir un produit..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <datalist id="liste-dlc-secondaires"></datalist>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Fait par (Salarié) *</label>
+                    <select id="ouverture-employe" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: var(--primary); margin-bottom: 5px; font-weight: bold;">Nouvelle DLC (Automatique) *</label>
+                    <input type="date" id="ouverture-dlc" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--primary); background: rgba(231, 76, 60, 0.05); color: var(--text); font-weight: bold;">
+                </div>
+                
+            </div>
+            <button onclick="enregistrerOuverture()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.1rem;">📝 Enregistrer et générer l'étiquette</button>
+        </div>
+
+        <!-- Historique -->
+        <h3 style="color: var(--primary); margin-bottom: 15px;">Dernières opérations</h3>
+        <div style="overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: var(--th-bg); color: var(--primary); font-size: 0.9rem; text-transform: uppercase;">
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Date</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Produit</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Nouvelle DLC</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Employé</th>
+                    </tr>
+                </thead>
+                <tbody id="ouverture-historique">
+                    <tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- 5. Non-Conformités -->
@@ -551,6 +602,9 @@
             
         if (selectTemp) selectTemp.innerHTML = optionsHtml;
         if (selectNettoyage) selectNettoyage.innerHTML = optionsHtml;
+
+        const selectOuverture = document.getElementById('ouverture-employe'); 
+        if(selectOuverture) selectOuverture.innerHTML = optionsHtml;
     }
 
     // 4. Enregistrer une température
@@ -745,6 +799,131 @@
             `;
         }).join('');
     }
+    // --- GESTION DÉCONGÉLATION / OUVERTURE ---
+
+    // Base de données interne des DLC secondaires issues du protocole
+    const reglesDLC = [
+        { nom: "Mozzarella rapée", jours: 2 },
+        { nom: "Jambon cuit sup.", jours: 2 },
+        { nom: "Pastrami", jours: 2 },
+        { nom: "Effiloché canard", jours: 3 },
+        { nom: "PDT Slice", jours: 2 },
+        { nom: "Guacamole", jours: 2 },
+        { nom: "Emmental rapé", jours: 2 },
+        { nom: "Cheddar rapé", jours: 2 },
+        { nom: "Saumon fumé", jours: 2 },
+        { nom: "Boursin Cuisine", jours: 2 },
+        { nom: "Sauce fromagère", jours: 5 },
+        { nom: "Sauce blanche", jours: 6 },
+        { nom: "Sauce Algérienne", jours: 6 },
+        { nom: "Sauce Samouraï", jours: 6 },
+        { nom: "Sauce Poivre", jours: 6 },
+        { nom: "Sauce Moutarde Miel", jours: 6 },
+        { nom: "Epice Kebab", jours: 30 },
+        { nom: "Epice Curry", jours: 30 },
+        { nom: "Miel en squeeze", jours: 30 },
+        { nom: "M&M's", jours: 30 }
+    ];
+
+    // Injection de la liste au démarrage
+    const dataListDLC = document.getElementById('liste-dlc-secondaires');
+    if (dataListDLC) {
+        dataListDLC.innerHTML = reglesDLC.sort((a,b) => a.nom.localeCompare(b.nom))
+                                         .map(p => `<option value="${p.nom}">`).join('');
+    }
+
+    // Le moteur de calcul automatique
+    function calculerDLCAutomatique() {
+        const produitSaisi = document.getElementById('ouverture-produit').value;
+        const inputDLC = document.getElementById('ouverture-dlc');
+        
+        const regle = reglesDLC.find(p => p.nom === produitSaisi);
+        
+        if (regle !== undefined) {
+            const date = new Date();
+            date.setDate(date.getDate() + regle.jours); // On ajoute le nombre de jours J+X
+            inputDLC.value = date.toISOString().split('T')[0];
+            inputDLC.style.borderColor = "#2ecc71"; // Devient vert pour valider le calcul
+        } else {
+            inputDLC.value = ""; // Si produit inconnu, on laisse vide pour saisie manuelle
+            inputDLC.style.borderColor = "var(--primary)";
+        }
+    }
+
+    async function enregistrerOuverture() {
+        const type = document.getElementById('ouverture-type').value;
+        const produit = document.getElementById('ouverture-produit').value;
+        const employe = document.getElementById('ouverture-employe').value;
+        const dlcSecondaire = document.getElementById('ouverture-dlc').value;
+
+        if (!produit || !employe || !dlcSecondaire) {
+            alert("Veuillez remplir le produit, l'employé et la DLC secondaire.");
+            return;
+        }
+
+        const btn = event.target;
+        btn.innerText = "⏳ Enregistrement...";
+        btn.disabled = true;
+
+        try {
+            const { error } = await supabaseClient
+                .from('haccp_decongelation')
+                .insert([{
+                    user_id: currentUser.id,
+                    type_action: type,
+                    produit: produit,
+                    quantite: 1, // Valeur par défaut pour respecter ta structure de BDD
+                    employe: employe,
+                    dlc_secondaire: dlcSecondaire
+                }]);
+
+            if (error) throw error;
+
+            document.getElementById('ouverture-produit').value = "";
+            document.getElementById('ouverture-dlc').value = "";
+            document.getElementById('ouverture-dlc').style.borderColor = "var(--primary)";
+            chargerHistoriqueOuvertures();
+
+        } catch (error) {
+            alert("Erreur : " + error.message);
+        } finally {
+            btn.innerText = "📝 Enregistrer et générer l'étiquette";
+            btn.disabled = false;
+        }
+    }
+
+    async function chargerHistoriqueOuvertures() {
+        if (!currentUser) return;
+
+        const { data, error } = await supabaseClient
+            .from('haccp_decongelation')
+            .select('*')
+            .order('date_mise_decongelation', { ascending: false })
+            .limit(15);
+
+        const tbody = document.getElementById('ouverture-historique');
+        if (error) { tbody.innerHTML = `<tr><td colspan="4">Erreur</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 20px;">Aucune opération récente.</td></tr>`; return; }
+
+        tbody.innerHTML = data.map(row => {
+            const dateOp = new Date(row.date_mise_decongelation).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const dlcStr = new Date(row.dlc_secondaire).toLocaleDateString('fr-FR');
+            
+            // On met en valeur la DLC si elle approche
+            const isExpired = new Date(row.dlc_secondaire) < new Date() ? 'color: white; background: #e74c3c; padding: 2px 6px; border-radius: 4px; font-weight: bold;' : 'font-weight: bold; color: #3498db;';
+            const icon = row.type_action === 'Ouverture' ? '✂️' : '❄️';
+
+            return `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px 15px; font-size: 0.9rem; color: #888;">${dateOp}</td>
+                    <td style="padding: 12px 15px; color: var(--text);">${icon} ${row.produit}</td>
+                    <td style="padding: 12px 15px;"><span style="${isExpired}">${dlcStr}</span></td>
+                    <td style="padding: 12px 15px; color: var(--text);">${row.employe || 'N/A'}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
 </script>
 </body>
 </html>
