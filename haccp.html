@@ -153,30 +153,50 @@
         document.getElementById(tabId).classList.add('active');
     }
     // --- GESTION DU SCANNER CODE-BARRES ---
-    let html5QrcodeScanner = null;
+    // --- GESTION DU SCANNER CODE-BARRES (VERSION DIRECTE) ---
+    let html5QrCode = null;
 
     function startScanner() {
-        document.getElementById('reader').style.display = 'block';
+        const reader = document.getElementById('reader');
+        reader.style.display = 'block';
         document.getElementById('btn-stop-scan').style.display = 'inline-block';
         
-        if (!html5QrcodeScanner) {
-            // Initialisation de la caméra (cherche les codes barres classiques EAN/UPC et les QR codes)
-            html5QrcodeScanner = new Html5QrcodeScanner(
-                "reader", 
-                { fps: 10, qrbox: {width: 250, height: 150} }, 
-                false
-            );
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
         }
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // On force le démarrage direct sur la caméra arrière (environment)
+        html5QrCode.start(
+            { facingMode: "environment" },
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 150 }
+            },
+            onScanSuccess,
+            onScanFailure
+        ).catch((err) => {
+            console.error("Erreur de lancement de la caméra:", err);
+            alert("Impossible de lancer la caméra. Vérifiez qu'aucune autre application ne l'utilise.");
+            stopScanner();
+        });
     }
 
     function stopScanner() {
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().then(() => {
-                document.getElementById('reader').style.display = 'none';
-                document.getElementById('btn-stop-scan').style.display = 'none';
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => {
+                cacherScannerUI();
+            }).catch((err) => {
+                console.error("Erreur lors de l'arrêt de la caméra:", err);
+                cacherScannerUI();
             });
+        } else {
+            cacherScannerUI();
         }
+    }
+
+    function cacherScannerUI() {
+        document.getElementById('reader').style.display = 'none';
+        document.getElementById('btn-stop-scan').style.display = 'none';
     }
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -194,7 +214,7 @@
     }
 
     function onScanFailure(error) {
-        // Le scanner scanne en continu, on ignore les "échecs" de lecture normaux quand rien n'est devant
+        // Ignoré silencieusement car il se déclenche à chaque frame où il ne trouve pas de code
     }
 
     // --- ENREGISTREMENT SUPABASE ---
