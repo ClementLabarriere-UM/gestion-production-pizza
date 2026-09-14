@@ -2,177 +2,252 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ventes - Gang of Pizza</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
-
-    <!-- Navbar unifiée avec les autres pages -->
-    <header class="bg-red-600 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-extrabold tracking-tight flex items-center gap-2">
-                <span>🍕</span> Gang of Pizza
-            </h1>
-            <nav class="flex items-center space-x-6 text-sm font-medium">
-                <a href="/production" class="hover:text-red-100 transition-colors">Production</a>
-                <a href="/stocks" class="hover:text-red-100 transition-colors">Stocks</a>
-                <a href="/ventes" class="bg-red-700 px-3 py-1.5 rounded-md text-white font-semibold shadow-inner">Ventes</a>
-                <a href="/distributeurs" class="hover:text-red-100 transition-colors">Distributeurs</a>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Contenu principal aligné et épuré -->
-    <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow">
+    <style>
+        /* --- MODE SOMBRE ET CLAIR --- */
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; --hover-row: rgba(255,255,255,0.03); }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; --hover-row: rgba(0,0,0,0.03); }
         
-        <!-- En-tête de section -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        
+        /* HEADER */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area img { height: 60px; }
+        .logo-light { display: none; }
+        body.light-mode .logo-dark { display: none; }
+        body.light-mode .logo-light { display: block; }
+        .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+
+        .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-menu a { text-decoration: none; padding: 12px 18px; background: var(--card-bg); color: var(--text); border-radius: 8px; font-weight: bold; border: 1px solid var(--border); transition: 0.2s; }
+        .nav-menu a.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
+        .btn-action:active { transform: scale(0.95); }
+
+        /* TABLEAU DES VENTES */
+        .prod-table-container { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .prod-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .prod-table tbody tr { transition: background 0.2s; }
+        .prod-table tbody tr:hover { background: var(--hover-row); }
+        .prod-table th, .prod-table td { padding: 15px 15px; text-align: left; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+        
+        .prod-table th { background: var(--th-bg); color: var(--primary); text-transform: uppercase; font-size: 0.95rem; position: sticky; top: 0; z-index: 4; }
+        .prod-table th:last-child, .prod-table td:last-child { text-align: right; border-right: none; }
+
+        #sync-status { font-size: 0.85em; color: #888; text-align: right; margin-top: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="app-screen" class="container">
+    <div class="header">
+        <div class="logo-area">
+            <h1>Espace Ventes by</h1>
+            <img src="logo.png" alt="Logo" class="logo-dark" onerror="this.style.display='none'">
+            <img src="logo-clair.png" alt="Logo" class="logo-light" onerror="this.style.display='none'">
+        </div>
+        <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
             <div>
-                <h2 class="text-xl font-bold text-slate-800">Classement des Ventes</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Analyse des volumes de pizzas écoulées par période calendaire</p>
+                <div id="user-email" style="font-size: 0.85em; color: #888; margin-bottom: 5px;"></div>
+                <div id="sync-status">☁️ Synchronisé</div>
             </div>
-            
-            <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
-                <div class="inline-flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-                    <button onclick="filtrerJours(2)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="2">2 jours</button>
-                    <button onclick="filtrerJours(3)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="3">3 jours</button>
-                    <button onclick="filtrerJours(5)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900" data-jours="5">5 jours</button>
-                    <button onclick="filtrerJours(7)" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre bg-white text-slate-900 shadow-sm" data-jours="7">7 jours</button>
-                </div>
-                <button onclick="syncVentes()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
-                    <span>🔄</span> Synchro Ventes
-                </button>
-            </div>
+            <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
+            <button onclick="seDeconnecter()" class="btn-action" style="background: #e74c3c; color: white;">Déconnexion</button>
         </div>
+    </div>
 
-        <!-- Tableau au design standardisé -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-left text-sm">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
-                            <th class="py-3.5 px-4 w-28">Classement</th>
-                            <th class="py-3.5 px-4">Nom de la Pizza</th>
-                            <th class="py-3.5 px-4 text-right">Quantité Vendue</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableau-ventes" class="divide-y divide-slate-100">
-                        <tr>
-                            <td colspan="3" class="p-8 text-center text-slate-400 text-sm">Chargement des ventes...</td>
-                        </tr>
-                    </tbody>
-                </table>
+   <div class="nav-menu">
+        <a href="/production">Production</a>
+        <a href="/stocks" id="nav-stocks">Stocks</a>
+        <a href="/distributeurs">Distributeurs</a>
+        <a href="/pointeuse">Pointeuse</a>
+        <a href="/historique">Historique</a>
+        <a href="/ventes" class="active">Ventes</a>
+    </div>
+
+    <!-- EN-TÊTE SECTION VENTES -->
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-4" style="border-top: 2px solid var(--border); padding-top: 20px;">
+        <h2 style="margin: 0; color: var(--primary);">Analyse des Ventes</h2>
+        <div class="flex gap-2 flex-wrap items-center">
+            <div style="display: inline-flex; background: var(--input-bg); padding: 4px; border-radius: 8px; border: 1px solid var(--border);">
+                <button onclick="filtrerJours(2)" class="btn-action btn-filtre" data-jours="2" style="background: transparent; color: var(--text); padding: 8px 14px; font-size: 0.9rem;">2 jours</button>
+                <button onclick="filtrerJours(3)" class="btn-action btn-filtre" data-jours="3" style="background: transparent; color: var(--text); padding: 8px 14px; font-size: 0.9rem;">3 jours</button>
+                <button onclick="filtrerJours(5)" class="btn-action btn-filtre" data-jours="5" style="background: transparent; color: var(--text); padding: 8px 14px; font-size: 0.9rem;">5 jours</button>
+                <button onclick="filtrerJours(7)" class="btn-action btn-filtre" data-jours="7" style="background: var(--primary); color: white; padding: 8px 14px; font-size: 0.9rem;">7 jours</button>
             </div>
+            <button onclick="syncVentes()" id="btn-sync-ventes" class="btn-action" style="background: #8e44ad; color: white;">
+                🔄 Synchro Ventes
+            </button>
         </div>
-    </main>
+    </div>
 
-    <script>
-        const SUPABASE_URL = 'https://rantwcxfgosrhgdepjxb.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v'; 
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- TABLEAU CLASSEMENT DES VENTES -->
+    <div class="prod-table-container">
+        <table class="prod-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Classement</th>
+                    <th>Nom de la Pizza</th>
+                    <th style="text-align: right; width: 180px;">Quantité Vendue</th>
+                </tr>
+            </thead>
+            <tbody id="tableau-ventes">
+                <tr><td colspan="3" style="text-align: center; color: #888; padding: 30px;">Chargement des ventes...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        let joursActuels = 7;
+<script>
+    // --- THÈME ---
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
 
-        async function chargerVentes(jours = 7) {
-            joursActuels = jours;
-            
-            // Mise à jour visuelle des boutons de filtre (style unifié)
-            document.querySelectorAll('.btn-filtre').forEach(btn => {
-                if(parseInt(btn.dataset.jours) === jours) {
-                    btn.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre bg-white text-slate-900 shadow-sm";
-                } else {
-                    btn.className = "px-3 py-1.5 text-xs font-semibold rounded-md transition-all btn-filtre text-slate-600 hover:text-slate-900";
-                }
-            });
+    // --- INITIALISATION SUPABASE ---
+    const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+    const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            const dateLimite = new Date();
-            dateLimite.setDate(dateLimite.getDate() - (jours - 1)); // -1 pour inclure la journée entière en cours
-            dateLimite.setHours(0, 0, 0, 0); // Remet à minuit pile
+    let currentUser = null;
+    let abonnementClient = "Basic";
+    let joursActuels = 7;
 
-            const { data: ventes, error } = await db
-                .from('machine_ventes')
-                .select('*')
-                .gte('date_vente', dateLimite.toISOString());
+    async function verifierConnexion() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { window.location.href = "/connexion"; return; }
+        currentUser = session.user;
+        document.getElementById('user-email').innerText = currentUser.email;
+        initApp();
+    }
 
-            const tbody = document.getElementById('tableau-ventes');
-
-            if (error) {
-                console.error("Erreur Supabase:", error);
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500 text-sm font-medium">Erreur de chargement : ${error.message}</td></tr>`;
-                return;
-            }
-
-            if (!ventes || ventes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400 text-sm italic">Aucune vente enregistrée sur ces ${jours} derniers jours. Cliquez sur "Synchro Ventes".</td></tr>`;
-                return;
-            }
-
-            // Agréger les ventes par nom de pizza en filtrant les "Vente Standard"
-            const aggregation = {};
-            ventes.forEach(v => {
-                const nom = v.nom_pizza || "Inconnue";
-                if (!nom.includes("Vente Standard")) {
-                    aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
-                }
-            });
-
-            // Trier par ordre décroissant
-            const classement = Object.entries(aggregation).sort((a, b) => b[1] - a[1]);
-
-            tbody.innerHTML = "";
-            classement.forEach(([pizza, qte], index) => {
-                let badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700">#${index + 1}</span>`;
-                if(index === 0) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">🏆 #1</span>`;
-                else if(index === 1) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-slate-200 text-slate-800">🥈 #2</span>`;
-                else if(index === 2) badgeRank = `<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800">🥉 #3</span>`;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="py-3.5 px-4">${badgeRank}</td>
-                        <td class="py-3.5 px-4 font-medium text-slate-800">${pizza}</td>
-                        <td class="py-3.5 px-4 text-right font-bold text-red-600">${qte}</td>
-                    </tr>
-                `;
-            });
+    async function initApp() {
+        const { data: profil } = await supabaseClient.from('profiles').select('type_abonnement').eq('id', currentUser.id).single();
+        if (profil) {
+            abonnementClient = profil.type_abonnement || "Basic";
         }
 
-        function filtrerJours(j) {
-            chargerVentes(j);
+        // --- BLOCAGE PLAN BASIC ---
+        if (abonnementClient === "Basic") {
+            const navStocks = document.getElementById('nav-stocks');
+            if (navStocks) navStocks.style.display = 'none';
         }
 
-        async function syncVentes() {
-            try {
-                const btn = event.target;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = "<span>⏳</span> Synchro...";
-                btn.disabled = true;
-
-                const res = await fetch("https://rantwcxfgosrhgdepjxb.supabase.co/functions/v1/sync-ventes", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                const data = await res.json();
-                
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-
-                if(!res.ok) throw new Error(data.error);
-                
-                chargerVentes(joursActuels);
-            } catch(err) {
-                alert("Erreur de synchronisation : " + err.message);
-                const btn = event.target;
-                if(btn) {
-                    btn.innerHTML = "<span>🔄</span> Synchro Ventes";
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        // Chargement par défaut sur 7 jours au démarrage
         chargerVentes(7);
-    </script>
+    }
+
+    async function chargerVentes(jours = 7) {
+        joursActuels = jours;
+        
+        // Mise à jour visuelle des boutons de filtre
+        document.querySelectorAll('.btn-filtre').forEach(btn => {
+            if(parseInt(btn.dataset.jours) === jours) {
+                btn.style.background = 'var(--primary)';
+                btn.style.color = 'white';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text)';
+            }
+        });
+
+        const dateLimite = new Date();
+        dateLimite.setDate(dateLimite.getDate() - (jours - 1)); 
+        dateLimite.setHours(0, 0, 0, 0);
+
+        const { data: ventes, error } = await supabaseClient
+            .from('machine_ventes')
+            .select('*')
+            .gte('date_vente', dateLimite.toISOString());
+
+        const tbody = document.getElementById('tableau-ventes');
+
+        if (error) {
+            console.error("Erreur Supabase:", error);
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #e74c3c; padding: 30px;">Erreur de chargement : ${error.message}</td></tr>`;
+            return;
+        }
+
+        if (!ventes || ventes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888; font-style: italic; padding: 30px;">Aucune vente enregistrée sur cette période. Cliquez sur "Synchro Ventes".</td></tr>`;
+            return;
+        }
+
+        // Agréger les ventes par nom de pizza en filtrant les "Vente Standard"
+        const aggregation = {};
+        ventes.forEach(v => {
+            const nom = v.nom_pizza || "Inconnue";
+            if (!nom.includes("Vente Standard")) {
+                aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
+            }
+        });
+
+        // Trier par ordre décroissant
+        const classement = Object.entries(aggregation).sort((a, b) => b[1] - a[1]);
+
+        tbody.innerHTML = "";
+        classement.forEach(([pizza, qte], index) => {
+            let badgeRank = `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; background: var(--input-bg); color: var(--text);">#${index + 1}</span>`;
+            if(index === 0) badgeRank = `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; background: #f1c40f; color: #000; box-shadow: 0 2px 6px rgba(241,196,15,0.4);">🏆 #1</span>`;
+            else if(index === 1) badgeRank = `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; background: #bdc3c7; color: #2c3e50;">🥈 #2</span>`;
+            else if(index === 2) badgeRank = `<span style="padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; background: #e67e22; color: white;">🥉 #3</span>`;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="width: 120px;">${badgeRank}</td>
+                    <td style="font-weight: 600; color: var(--text);">${pizza}</td>
+                    <td style="text-align: right; font-weight: bold; color: var(--primary); font-size: 1.1rem; width: 180px;">${qte}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function filtrerJours(j) {
+        chargerVentes(j);
+    }
+
+    async function syncVentes() {
+        const btn = document.getElementById('btn-sync-ventes');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = "⏳ Synchro...";
+        btn.disabled = true;
+        
+        document.getElementById('sync-status').innerText = "⏳ Synchro...";
+        document.getElementById('sync-status').style.color = "#f39c12";
+
+        try {
+            const res = await fetch("https://rantwcxfgosrhgdepjxb.supabase.co/functions/v1/sync-ventes", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` }
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.error);
+            
+            alert("Succès ! " + data.message);
+            document.getElementById('sync-status').innerText = "☁️ Synchronisé";
+            document.getElementById('sync-status').style.color = "#2ecc71";
+            
+            chargerVentes(joursActuels);
+        } catch(err) {
+            alert("Erreur de synchronisation : " + err.message);
+            document.getElementById('sync-status').innerText = "❌ Erreur";
+            document.getElementById('sync-status').style.color = "#e74c3c";
+        } finally {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
+    }
+
+    async function seDeconnecter() { await supabaseClient.auth.signOut(); window.location.href = "/connexion"; }
+
+    verifierConnexion();
+</script>
 </body>
 </html>
