@@ -148,9 +148,65 @@
 
     <!-- 2. Températures -->
     <div id="temperatures" class="tab-content">
-        <h2 style="color: var(--primary); margin-top: 0;">Relevés de Températures</h2>
-        <p style="color: #888;">Saisie quotidienne (Matin / Soir).</p>
-        <!-- Formulaire à venir -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <div>
+                <h2 style="color: var(--primary); margin-top: 0; margin-bottom: 5px;">Relevés de Températures</h2>
+                <p style="color: #888; margin: 0;">Date et heure enregistrées automatiquement.</p>
+            </div>
+            <button onclick="ajouterEquipement()" class="btn-action" style="background: #9b59b6; color: white;">➕ Ajouter un Frigo/Congélateur</button>
+        </div>
+
+        <!-- Formulaire de saisie -->
+        <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Équipement *</label>
+                    <select id="temp-equipement" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Température relevée (°C) *</label>
+                    <input type="number" id="temp-valeur" step="0.1" placeholder="Ex: 3.5" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Fait par (Salarié) *</label>
+                    <select id="temp-employe" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                
+            </div>
+            <button onclick="enregistrerTemperature()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.1rem;">📝 Enregistrer le relevé</button>
+        </div>
+
+        <!-- Historique des relevés avec filtre par date -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="color: var(--primary); margin: 0;">Historique des relevés</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label style="font-weight: bold; color: var(--text);">Voir la date du :</label>
+                <input type="date" id="temp-date-filtre" onchange="chargerHistoriqueTemperatures()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>
+        </div>
+        
+        <div style="overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: var(--th-bg); color: var(--primary); font-size: 0.9rem; text-transform: uppercase;">
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Heure</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Équipement</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Salarié</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Température</th>
+                    </tr>
+                </thead>
+                <tbody id="temp-historique">
+                    <tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- 3. Nettoyage -->
@@ -192,6 +248,11 @@
         currentUser = session.user;
         
         chargerHistoriqueTracabilite();
+        
+        // Ajoute ces 3 lignes :
+        chargerEquipements();
+        chargerEmployes();
+        chargerHistoriqueTemperatures(); 
     }
     
     verifierConnexion();
@@ -393,6 +454,147 @@
     if (dataList) {
         const optionsHtml = catalogueIngredients.sort().map(ing => `<option value="${ing}">`).join('');
         dataList.innerHTML = optionsHtml;
+    }
+
+    // --- GESTION DES TEMPÉRATURES ET FRIGOS ---
+
+    // 1. Ajouter un nouveau frigo/congélo à la base
+    async function ajouterEquipement() {
+        const nom = prompt("Nom de l'équipement (ex: Frigo Boissons, Congélateur Principal) :");
+        if (!nom || !nom.trim()) return;
+
+        const { error } = await supabaseClient
+            .from('haccp_equipements')
+            .insert([{ user_id: currentUser.id, nom: nom.trim() }]);
+
+        if (error) {
+            alert("Erreur lors de l'ajout : " + error.message);
+        } else {
+            chargerEquipements(); // On rafraîchit la liste déroulante
+        }
+    }
+
+    // 2. Charger la liste des équipements dans le formulaire
+    async function chargerEquipements() {
+        const { data, error } = await supabaseClient.from('haccp_equipements').select('nom').order('nom');
+        const select = document.getElementById('temp-equipement');
+        if (error || !data) return;
+        select.innerHTML = '<option value="">Sélectionner...</option>' + data.map(eq => `<option value="${eq.nom}">${eq.nom}</option>`).join('');
+    }
+
+    // 3. Charger les salariés de la pointeuse
+    async function chargerEmployes() {
+        // Connexion directe à ta table de pointeuse
+        const { data, error } = await supabaseClient
+            .from('pointeuse_employes')
+            .select('name')
+            .order('name');
+            
+        const select = document.getElementById('temp-employe');
+        
+        if (error || !data) {
+            select.innerHTML = '<option value="">Erreur chargement salariés</option>';
+            return;
+        }
+        
+        select.innerHTML = '<option value="">Sélectionner...</option>' + 
+            data.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+    }
+
+    // 4. Enregistrer une température
+    async function enregistrerTemperature() {
+        const equipement = document.getElementById('temp-equipement').value;
+        const temperature = parseFloat(document.getElementById('temp-valeur').value);
+        const employe = document.getElementById('temp-employe').value;
+
+        if (!equipement || isNaN(temperature) || !employe) {
+            alert("Veuillez remplir l'équipement, la température et le salarié.");
+            return;
+        }
+
+        const btn = event.target;
+        btn.innerText = "⏳ Enregistrement...";
+        btn.disabled = true;
+
+        try {
+            const { error } = await supabaseClient
+                .from('haccp_temperatures')
+                .insert([{
+                    user_id: currentUser.id,
+                    equipement: equipement,
+                    temperature: temperature,
+                    employe: employe,
+                    date_releve: new Date().toISOString().split('T')[0] // Date du jour
+                }]);
+
+            if (error) throw error;
+
+            document.getElementById('temp-valeur').value = "";
+            chargerHistoriqueTemperatures(); // Rafraîchit le tableau
+
+        } catch (error) {
+            alert("Erreur lors de l'enregistrement : " + error.message);
+        } finally {
+            btn.innerText = "📝 Enregistrer le relevé";
+            btn.disabled = false;
+        }
+    }
+
+    // 5. Charger l'historique avec filtre par date
+    async function chargerHistoriqueTemperatures() {
+        if (!currentUser) return;
+        
+        let dateFiltre = document.getElementById('temp-date-filtre').value;
+        if (!dateFiltre) {
+            // Si aucune date n'est choisie, on met la date d'aujourd'hui par défaut
+            const today = new Date();
+            // Format YYYY-MM-DD avec prise en compte du fuseau horaire local
+            dateFiltre = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('temp-date-filtre').value = dateFiltre;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('haccp_temperatures')
+            .select('*')
+            .eq('date_releve', dateFiltre)
+            .order('created_at', { ascending: false });
+
+        const tbody = document.getElementById('temp-historique');
+
+        if (error) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #e74c3c; padding: 20px;">Erreur : ${error.message}</td></tr>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 20px;">Aucun relevé pour le ${new Date(dateFiltre).toLocaleDateString('fr-FR')}.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(row => {
+            const heureStr = new Date(row.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            // Code couleur dynamique : rouge si > 5°C (frigo) ou > -15°C (congélateur)
+            let isWarning = false;
+            const nomEq = row.equipement.toLowerCase();
+            if (nomEq.includes('congel') || nomEq.includes('négative') || nomEq.includes('negatif')) {
+                if (row.temperature > -15) isWarning = true;
+            } else {
+                if (row.temperature > 5) isWarning = true;
+            }
+
+            const styleTemp = isWarning ? 'color: #e74c3c; font-weight: bold; background: rgba(231, 76, 60, 0.1); padding: 4px 8px; border-radius: 4px;' : 'color: #2ecc71; font-weight: bold;';
+            const iconAlerte = isWarning ? ' ⚠️' : '';
+
+            return `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px 15px; font-size: 0.9rem; color: #888;">${heureStr}</td>
+                    <td style="padding: 12px 15px; font-weight: 500; color: var(--text);">${row.equipement}</td>
+                    <td style="padding: 12px 15px; color: var(--text);">${row.employe}</td>
+                    <td style="padding: 12px 15px;"><span style="${styleTemp}">${row.temperature} °C${iconAlerte}</span></td>
+                </tr>
+            `;
+        }).join('');
     }
 </script>
 </body>
