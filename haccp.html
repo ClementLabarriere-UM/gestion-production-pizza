@@ -243,7 +243,9 @@
         try {
             // 1. Upload de l'image dans Supabase Storage
             const fileExt = photoFile.name.split('.').pop();
-            const fileName = `${Date.now()}_${nom.replace(/\s+/g, '_')}.${fileExt}`;
+            // Nettoyage des accents et caractères spéciaux pour Supabase
+            const nomPropre = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "_");
+            const fileName = `${Date.now()}_${nomPropre}.${fileExt}`;
             const filePath = `${currentUser.id}/${fileName}`;
 
             const { error: uploadError } = await supabaseClient.storage
