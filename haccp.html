@@ -89,9 +89,8 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Nom du produit *</label>
-                    <!-- On ajoute l'attribut list="liste-ingredients" -->
-                    <input type="text" id="traca-nom" list="liste-ingredients" placeholder="Rechercher un ingrédient..." autocomplete="off" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
-                    <!-- Le conteneur invisible des suggestions -->
+                    <!-- Correction Safari : Retrait de autocomplete="off" -->
+                    <input type="text" id="traca-nom" list="liste-ingredients" placeholder="Choisir ou taper un nom..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                     <datalist id="liste-ingredients"></datalist>
                 </div>
                 <div>
@@ -105,6 +104,7 @@
             </div>
             <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%;">✅ Enregistrer le lot dans la base</button>
         </div>
+        
         <!-- Historique récent -->
         <div style="margin-top: 30px;">
             <h3 style="color: var(--primary); margin-bottom: 15px;">Derniers lots enregistrés</h3>
@@ -170,9 +170,10 @@
             return; 
         }
         currentUser = session.user;
+        
+        // C'est ici, une fois l'utilisateur authentifié, qu'on charge le tableau
         chargerHistoriqueTracabilite();
     }
-    
     
     // On lance la vérification au chargement
     verifierConnexion();
@@ -186,15 +187,13 @@
 
     // --- NAVIGATION DES ONGLETS ---
     function switchTab(tabId) {
-        // Retirer la classe active de tous les boutons et contenus
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
         
-        // Ajouter la classe active à l'élément cliqué
         document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
         document.getElementById(tabId).classList.add('active');
     }
-    // --- GESTION DU SCANNER CODE-BARRES ---
+
     // --- GESTION DU SCANNER CODE-BARRES (VERSION DIRECTE) ---
     let html5QrCode = null;
 
@@ -210,10 +209,7 @@
         // On force le démarrage direct sur la caméra arrière (environment)
         html5QrCode.start(
             { facingMode: "environment" },
-            {
-                fps: 10,
-                qrbox: { width: 250, height: 150 }
-            },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
             onScanSuccess,
             onScanFailure
         ).catch((err) => {
@@ -242,21 +238,14 @@
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        // 1. On remplit le champ avec le code détecté
         document.getElementById('traca-code').value = decodedText;
-        
-        // 2. Petit retour haptique si sur mobile (vibration)
         if ('vibrate' in navigator) navigator.vibrate(200);
-        
-        // 3. On coupe la caméra
         stopScanner();
-        
-        // 4. On place le curseur sur le nom du produit
         document.getElementById('traca-nom').focus();
     }
 
     function onScanFailure(error) {
-        // Ignoré silencieusement car il se déclenche à chaque frame où il ne trouve pas de code
+        // Ignoré silencieusement
     }
 
     // --- ENREGISTREMENT SUPABASE ---
@@ -279,7 +268,7 @@
             const { error } = await supabaseClient
                 .from('haccp_tracabilite')
                 .insert([{
-                    user_id: currentUser.id, // Variable issue de ton check Auth Supabase
+                    user_id: currentUser.id,
                     nom_produit: nom,
                     code_barres: code,
                     num_lot: lot,
@@ -296,13 +285,15 @@
             document.getElementById('traca-lot').value = "";
             document.getElementById('traca-dlc').value = "";
 
+            // On rafraîchit le tableau d'historique directement après le succès !
+            chargerHistoriqueTracabilite();
+
         } catch (error) {
             alert("Erreur lors de l'enregistrement : " + error.message);
         } finally {
             btn.innerText = "✅ Enregistrer le lot dans la base";
             btn.disabled = false;
         }
-        chargerHistoriqueTracabilite();
     }
 
     async function chargerHistoriqueTracabilite() {
@@ -365,15 +356,11 @@
         "Viande kebab"
     ];
 
-    // On injecte les ingrédients dans la datalist au chargement de la page
+    // Correction Safari : On injecte les ingrédients d'un coup via innerHTML
     const dataList = document.getElementById('liste-ingredients');
     if (dataList) {
-        // On trie par ordre alphabétique pour que ce soit plus propre
-        catalogueIngredients.sort().forEach(ing => {
-            const option = document.createElement('option');
-            option.value = ing;
-            dataList.appendChild(option);
-        });
+        const optionsHtml = catalogueIngredients.sort().map(ing => `<option value="${ing}">`).join('');
+        dataList.innerHTML = optionsHtml;
     }
 </script>
 </body>
