@@ -152,6 +152,95 @@
         document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
         document.getElementById(tabId).classList.add('active');
     }
+    // --- GESTION DU SCANNER CODE-BARRES ---
+    let html5QrcodeScanner = null;
+
+    function startScanner() {
+        document.getElementById('reader').style.display = 'block';
+        document.getElementById('btn-stop-scan').style.display = 'inline-block';
+        
+        if (!html5QrcodeScanner) {
+            // Initialisation de la caméra (cherche les codes barres classiques EAN/UPC et les QR codes)
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", 
+                { fps: 10, qrbox: {width: 250, height: 150} }, 
+                false
+            );
+        }
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function stopScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(() => {
+                document.getElementById('reader').style.display = 'none';
+                document.getElementById('btn-stop-scan').style.display = 'none';
+            });
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // 1. On remplit le champ avec le code détecté
+        document.getElementById('traca-code').value = decodedText;
+        
+        // 2. Petit retour haptique si sur mobile (vibration)
+        if ('vibrate' in navigator) navigator.vibrate(200);
+        
+        // 3. On coupe la caméra
+        stopScanner();
+        
+        // 4. On place le curseur sur le nom du produit
+        document.getElementById('traca-nom').focus();
+    }
+
+    function onScanFailure(error) {
+        // Le scanner scanne en continu, on ignore les "échecs" de lecture normaux quand rien n'est devant
+    }
+
+    // --- ENREGISTREMENT SUPABASE ---
+    async function enregistrerTracabilite() {
+        const code = document.getElementById('traca-code').value;
+        const nom = document.getElementById('traca-nom').value;
+        const lot = document.getElementById('traca-lot').value;
+        const dlc = document.getElementById('traca-dlc').value;
+
+        if (!nom || !lot || !dlc) {
+            alert("Veuillez remplir le nom du produit, le lot et la DLC.");
+            return;
+        }
+
+        const btn = event.target;
+        btn.innerText = "⏳ Enregistrement...";
+        btn.disabled = true;
+
+        try {
+            const { error } = await supabaseClient
+                .from('haccp_tracabilite')
+                .insert([{
+                    user_id: currentUser.id, // Variable issue de ton check Auth Supabase
+                    nom_produit: nom,
+                    code_barres: code,
+                    num_lot: lot,
+                    dlc: dlc
+                }]);
+
+            if (error) throw error;
+
+            alert("✅ Traçabilité enregistrée avec succès !");
+            
+            // Vider le formulaire pour le prochain scan
+            document.getElementById('traca-code').value = "";
+            document.getElementById('traca-nom').value = "";
+            document.getElementById('traca-lot').value = "";
+            document.getElementById('traca-dlc').value = "";
+
+        } catch (error) {
+            alert("Erreur lors de l'enregistrement : " + error.message);
+        } finally {
+            btn.innerText = "✅ Enregistrer le lot dans la base";
+            btn.disabled = false;
+        }
+    }
 </script>
 </body>
 </html>
