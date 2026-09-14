@@ -89,7 +89,10 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Nom du produit *</label>
-                    <input type="text" id="traca-nom" placeholder="Ex: Farine T55 25kg" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <!-- On ajoute l'attribut list="liste-ingredients" -->
+                    <input type="text" id="traca-nom" list="liste-ingredients" placeholder="Rechercher un ingrédient..." autocomplete="off" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <!-- Le conteneur invisible des suggestions -->
+                    <datalist id="liste-ingredients"></datalist>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Numéro de Lot *</label>
@@ -135,6 +138,24 @@
 </div>
 
 <script>
+    // --- INITIALISATION SUPABASE & AUTHENTIFICATION ---
+    const supabaseUrl = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+    const supabaseKey = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+    let currentUser = null;
+
+    async function verifierConnexion() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { 
+            window.location.href = "/connexion"; 
+            return; 
+        }
+        currentUser = session.user;
+    }
+    
+    // On lance la vérification au chargement
+    verifierConnexion();
+    
     // --- GESTION DU THÈME ---
     if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
     function toggleTheme() {
@@ -260,6 +281,37 @@
             btn.innerText = "✅ Enregistrer le lot dans la base";
             btn.disabled = false;
         }
+    }
+    // --- LISTE DES INGRÉDIENTS POUR AUTOCOMPLÉTION ---
+    const catalogueIngredients = [
+        "Aiguillettes de poulet", "Allumettes fumées", "Bleu d'Auvergne", "Boursin",
+        "Bœuf chili", "Camembert", "Chèvre", "Chorizo", "Comté", "Cornichons",
+        "Crispy bacon", "Disque crémé", "Disque tomaté", "Doritos nature",
+        "Effiloché de porc", "Effiloché de poulet", "Égrené au bœuf", "Emmental râpé",
+        "Épice BBQ", "Épice curry", "Épice mexicaine", "Épice orientale",
+        "Frites au four", "Goujon de poulet", "Guacamole", "Herbes de Provence",
+        "Jambon blanc", "M&M's", "Maroilles", "Merguez", "Merguez Halal", "Miel",
+        "Moutarde ancienne", "Moutarde forte", "Munster", "Nutella", "Oignons crispy",
+        "Oignons pré-frits", "Oignons rouges", "Olives noires", "Origan", "Pastrami de bœuf",
+        "Pepperoni", "Pesto", "Piment d'Espelette", "Poivrons grillés", "Pommes de terre",
+        "Poulet rôti", "Poulet rôti halal", "Raclette", "Reblochon", "Roquefort",
+        "Sauce aigre douce", "Sauce algérienne", "Sauce au poivre", "Sauce blanche",
+        "Sauce burger", "Sauce cheddar", "Sauce curry", "Sauce fromagère", "Sauce hot BBQ",
+        "Sauce marocaine", "Sauce miel moutarde", "Sauce salsa", "Sauce samouraï",
+        "Saucisses fumées", "Saumon fumé", "Scalarella", "Scalarella + Cheddar",
+        "Scalarella + Emmental", "Scalarella + Mix fondue", "Tabasco rouge", "Tomates confites",
+        "Viande kebab"
+    ];
+
+    // On injecte les ingrédients dans la datalist au chargement de la page
+    const dataList = document.getElementById('liste-ingredients');
+    if (dataList) {
+        // On trie par ordre alphabétique pour que ce soit plus propre
+        catalogueIngredients.sort().forEach(ing => {
+            const option = document.createElement('option');
+            option.value = ing;
+            dataList.appendChild(option);
+        });
     }
 </script>
 </body>
