@@ -69,7 +69,8 @@
             });
 
             const dateLimite = new Date();
-            dateLimite.setDate(dateLimite.getDate() - jours);
+            dateLimite.setDate(dateLimite.getDate() - (jours - 1)); // -1 pour inclure la journée entière en cours
+            dateLimite.setHours(0, 0, 0, 0); // Remet à minuit pile
 
             const { data: ventes, error } = await db
                 .from('machine_ventes')
