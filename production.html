@@ -129,7 +129,25 @@
         <a href="/historique">Historique</a>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <!-- NOUVELLE SECTION : ÉTAT DES MACHINES EN DIRECT -->
+    <div style="margin-bottom: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h2 style="margin: 0; color: var(--primary);">🤖 État des Distributeurs (Adial)</h2>
+                <p style="color:#888; font-size: 0.9rem; margin-top: 5px;">Pizzas actuellement en machine (Temps réel)</p>
+            </div>
+            <button onclick="runStocksSync()" id="btn-sync-stocks" class="btn-action" style="background: #8e44ad; color: white;">
+                🔄 Synchroniser Adial
+            </button>
+        </div>
+        
+        <div id="machines-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+            <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Chargement des machines...</div>
+        </div>
+    </div>
+    <!-- FIN NOUVELLE SECTION -->
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
         <h2 style="margin: 0; color: var(--primary);">Tableau de Production</h2>
         <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #3498db; color: white; font-size: 1.1rem;">⚙️ Gérer la Carte</button>
     </div>
@@ -804,6 +822,88 @@
 
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
+        loadMachineStocks(); // Charge les stocks réels d'Adial !
+    }
+
+    // --- CHARGEMENT DES MACHINES ADIAL ---
+    async function loadMachineStocks() {
+        const container = document.getElementById('machines-container');
+        const { data: stocks, error } = await supabaseClient.from('machine_stocks').select('*');
+
+        if (error || !stocks || stocks.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser Adial".</div>`;
+            return;
+        }
+
+        const machinesDict = {};
+        stocks.forEach(slot => {
+            if (!machinesDict[slot.machine_id]) {
+                machinesDict[slot.machine_id] = { total: 0, occ: 0, pizzas: {} };
+            }
+            let m = machinesDict[slot.machine_id];
+            m.total++;
+            if (slot.est_occupe) {
+                m.occ++;
+                const nom = slot.nom_pizza || "Inconnue";
+                m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
+            }
+        });
+
+        container.innerHTML = '';
+        let idx = 1;
+        for (const [mId, stats] of Object.entries(machinesDict)) {
+            const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
+            let listeHtml = inventaireTrie.map(([nom, q]) => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:4px;">
+                    <span style="font-size:0.95rem; color:var(--text);">${nom}</span>
+                    <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
+                </div>
+            `).join('');
+            
+            if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
+            
+            const pct = Math.round((stats.occ / stats.total) * 100);
+            const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
+
+            container.innerHTML += `
+                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                        <h4 style="margin:0; color: var(--text);">Distributeur ${idx}</h4>
+                        <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${mId.substring(0,5)}</span>
+                    </div>
+                    <div style="padding: 15px; flex-grow: 1; max-height: 250px; overflow-y: auto;">
+                        ${listeHtml}
+                    </div>
+                    <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">Remplissage</span>
+                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.occ} / ${stats.total}</strong>
+                    </div>
+                </div>
+            `;
+            idx++;
+        }
+    }
+
+    async function runStocksSync() {
+        const btn = document.getElementById('btn-sync-stocks');
+        const oldText = btn.innerHTML;
+        btn.innerHTML = "⏳ Synchro...";
+        btn.disabled = true;
+        try {
+            const res = await fetch("https://rantwcxfgosrhgdepjxb.supabase.co/functions/v1/sync-stocks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseKey}` }
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.error);
+            alert("Succès ! " + data.message);
+            loadMachineStocks();
+        } catch(err) {
+            alert("Erreur : " + err.message);
+        } finally {
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+        }
     }
 
     // --- GESTION DES MODALES ---
@@ -844,7 +944,6 @@
         if(cibles.length === 0) { alert("Veuillez cocher au moins un distributeur."); return; }
 
         cloudPrefs.carte.forEach(nomPizza => {
-            // On récupère l'objectif du distributeur source
             const sourceObj = cloudPrefs.matrice[sourceId]?.[nomPizza]?.obj || "";
             
             cibles.forEach(targetId => {
@@ -853,7 +952,6 @@
                 
                 cloudPrefs.matrice[targetId][nomPizza].obj = sourceObj;
                 
-                // Maj de l'interface visuelle
                 const inputUI = document.querySelector(`input[data-dist="${targetId}"][data-pizza="${nomPizza}"][data-type="obj"]`);
                 if(inputUI) inputUI.value = sourceObj;
             });
@@ -890,15 +988,13 @@
     function majMatriceCloud(distId, nomPizza) {
         if (!cloudPrefs.matrice[distId]) cloudPrefs.matrice[distId] = {};
         
-        // On récupère les valeurs actuelles des champs à l'écran
         const stock = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="stock"]`).value;
         const obj = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="obj"]`).value;
         
-        // On enregistre le couple Stock/Objectif dans notre mémoire locale
         cloudPrefs.matrice[distId][nomPizza] = { stock: stock, obj: obj };
         
         calculerBesoins();
-        triggerSave(); // Envoi immédiat vers Supabase
+        triggerSave(); 
     }
 
     // --- RENDU DU GRAND TABLEAU ---
@@ -918,7 +1014,6 @@
 
         let html = `<div class="prod-table-container"><table class="prod-table"><thead><tr><th class="col-fixe">🍕 Pizzas</th>`;
         
-        // En-têtes Distributeurs avec jauge et bouton Copier
         listeDistributeurs.forEach(dist => { 
             html += `<th>
                         <div style="font-size: 1.1rem; margin-bottom: 5px;">${dist.nom}</div>
@@ -928,7 +1023,6 @@
         });
         html += `<th class="col-total">Total à faire</th></tr></thead><tbody>`;
 
-        // Lignes du tableau
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
@@ -993,10 +1087,8 @@
                     
                     let aProduire = Math.max(0, obj - stock);
                     
-                    // Calcul du volume final prévu dans ce distributeur (Stock actuel + ce qu'on va produire)
                     distCapacities[dist.id] += stock + aProduire;
                     
-                    // Màj visuelle de la bulle 'À Produire'
                     const badge = document.getElementById(`res-${dist.id}-${safeId}`);
                     badge.innerText = '+' + aProduire;
                     if(aProduire > 0) badge.classList.add('positive');
@@ -1010,7 +1102,6 @@
                 }
             });
             
-            // Mise à jour visuelle de la Jauge de Capacité du distributeur (Max 70)
             const capaBadge = document.getElementById(`capa-${dist.id}`);
             if (capaBadge) {
                 const capa = distCapacities[dist.id];
@@ -1023,7 +1114,6 @@
                 }
             }
 
-            // HTML Répartition
             if(listePizzasDist.length > 0) {
                 let detailsUi = listePizzasDist.map(p => `<li style="margin-bottom:5px;"><span>${p.nom}</span> <strong style="color:var(--primary); float:right; font-size:1.1rem;">${p.qte}</strong></li>`).join('');
                 let detailsPrint = listePizzasDist.map(p => `<li><span>${p.nom}</span> <span class="print-bold">${p.qte}</span></li>`).join('');
@@ -1035,7 +1125,6 @@
 
         document.getElementById('repartition-ecran').innerHTML = ecranRepartition || '<p style="color:#888; font-style:italic;">Aucune pizza à répartir.</p>';
 
-        // Mise à jour de la colonne Totaux et HTML Impression Pizzas
         let printPizzasTotal = '';
         let nbPizzasGlobal = 0;
         selection.forEach(nomPizza => {
@@ -1049,7 +1138,6 @@
             }
         });
 
-        // Calcul des Ingrédients
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0 && recettes[nomPizza]) {
                 for (let [ing, q] of Object.entries(recettes[nomPizza])) {
@@ -1074,18 +1162,15 @@
         for (let [n, q] of Object.entries(ing)) {
             if (q <= 0) continue;
             
-            // --- NETTOYAGE DES NOMS ET UNITÉS ---
             let cleanName = n;
             let displayQ = q;
             
-            // On sépare le nom de l'unité entre parenthèses (ex: "Merguez (rondelles)")
             const match = n.match(/(.*)\s*\((.*?)\)$/);
             
             if (match) {
-                cleanName = match[1].trim(); // Nom propre (ex: "Merguez")
-                const baseUnit = match[2].trim(); // Unité de base (ex: "rondelles", "g")
+                cleanName = match[1].trim();
+                const baseUnit = match[2].trim();
                 
-                // Gestion intelligente des Grammes vs Kilos
                 if (baseUnit === "g") {
                     if (q >= 1000) {
                         displayQ = (q / 1000).toFixed(2) + " Kg";
@@ -1093,11 +1178,9 @@
                         displayQ = q + " g";
                     }
                 } else {
-                    // Pour les autres (rondelles, tranches, unités...) on rajoute simplement l'unité à la fin
                     displayQ = q + " " + baseUnit;
                 }
             } else {
-                // Pour "Disque tomaté" ou "Disque crémé" (sans parenthèses)
                 displayQ = q;
             }
 
@@ -1110,12 +1193,10 @@
             else { catUi["🧅 Autres"].push(htmlEcran); catPrint["Autres"].push(htmlPrint); }
         }
 
-        // Rendu Écran
         for (let [title, items] of Object.entries(catUi)) {
             if (items.length) container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
         }
 
-        // GÉNÉRATION DE LA FEUILLE D'IMPRESSION
         let htmlPrintIng = '';
         for (let [title, items] of Object.entries(catPrint)) {
             if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list">${items.join("")}</ul></div>`;
@@ -1176,7 +1257,6 @@
         if (totalPizzas === 0) { alert("Rien à produire !"); return; }
 
         try {
-            // Déduction en base de données SEULEMENT si l'abonnement n'est pas "Basic"
             if (abonnementClient !== "Basic") {
                 for (let [ingredient, quantiteRequise] of Object.entries(besoins)) {
                     const { data: stockExistant } = await supabaseClient.from('stocks').select('*').eq('nom_ingredient', ingredient).single();
@@ -1188,10 +1268,8 @@
                 }
             }
 
-            // Enregistrement historique
             await supabaseClient.from('historique').insert([{ user_id: currentUser.id, resume_pizzas: pizzasProduites.join(' | ') }]);
 
-            // Remise à zéro UNIQUEMENT des stocks (on garde les objectifs en mémoire)
             for (let distId in cloudPrefs.matrice) {
                 for (let nomPizza in cloudPrefs.matrice[distId]) {
                     cloudPrefs.matrice[distId][nomPizza].stock = "";
@@ -1199,7 +1277,6 @@
             }
             triggerSave();
             
-            // Vider seulement les inputs de type "stock" à l'écran
             document.querySelectorAll('input[data-type="stock"]').forEach(input => input.value = "");
             calculerBesoins();
 
