@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HACCP - Gang of Pizza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- MODE SOMBRE ET CLAIR --- */
+        :root { --primary: #e74c3c; --bg: #121212; --card-bg: #1e1e1e; --text: #e0e0e0; --border: #333; --input-bg: #2a2a2a; --th-bg: #222; }
+        body.light-mode { --bg: #f4f4f9; --card-bg: #ffffff; --text: #333333; --border: #dddddd; --input-bg: #eeeeee; --th-bg: #e8e8e8; }
+        
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; transition: 0.3s; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area h1 { margin: 0; font-size: 1.4rem; color: var(--primary); }
+
+        .nav-menu { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav-menu a { text-decoration: none; padding: 12px 18px; background: var(--card-bg); color: var(--text); border-radius: 8px; font-weight: bold; border: 1px solid var(--border); transition: 0.2s; }
+        .nav-menu a.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .btn-action { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 1rem; }
+        
+        /* SYSTÈME D'ONGLETS HACCP */
+        .haccp-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+        .tab-btn { background: transparent; color: var(--text); border: none; padding: 10px 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+        .tab-content { display: none; background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo-area">
+            <h1>Espace Sanitaire by</h1>
+            <!-- Ajoute tes logos ici -->
+        </div>
+        <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
+            <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
+            <button onclick="window.location.href='/connexion'" class="btn-action" style="background: #e74c3c; color: white;">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- Navigation Principale -->
+    <div class="nav-menu">
+        <a href="/production">Production</a>
+        <a href="/stocks">Stocks</a>
+        <a href="/distributeurs">Distributeurs</a>
+        <a href="/ventes">Ventes</a>
+        <a href="/haccp" class="active">HACCP 🛡️</a>
+    </div>
+
+    <!-- Onglets HACCP -->
+    <div class="haccp-tabs">
+        <button class="tab-btn active" onclick="switchTab('tracabilite')">📸 Traçabilité & Lots</button>
+        <button class="tab-btn" onclick="switchTab('temperatures')">🌡️ Températures</button>
+        <button class="tab-btn" onclick="switchTab('nettoyage')">🧼 Plan de Nettoyage</button>
+        <button class="tab-btn" onclick="switchTab('decongelation')">❄️ Décongélation</button>
+        <button class="tab-btn" onclick="switchTab('non-conformite')">⚠️ Non-Conformités</button>
+    </div>
+
+    <!-- CONTENUS DES ONGLETS -->
+    
+    <!-- 1. Traçabilité (Scan & Photos) -->
+    <div id="tracabilite" class="tab-content active">
+        <h2 style="color: var(--primary); margin-top: 0;">Traçabilité des produits</h2>
+        <p style="color: #888; margin-bottom: 20px;">Flashez un code-barres ou prenez en photo l'étiquette fournisseur.</p>
+        
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button class="btn-action" style="background: #3498db; color: white;">📷 Scanner un Code-Barres</button>
+            <button class="btn-action" style="background: #2ecc71; color: white;">📸 Prendre l'étiquette en photo</button>
+        </div>
+        
+        <div style="padding: 30px; border: 2px dashed var(--border); text-align: center; border-radius: 8px;">
+            <p style="color: var(--text);">Zone d'aperçu de la caméra viendra ici...</p>
+        </div>
+    </div>
+
+    <!-- 2. Températures -->
+    <div id="temperatures" class="tab-content">
+        <h2 style="color: var(--primary); margin-top: 0;">Relevés de Températures</h2>
+        <p style="color: #888;">Saisie quotidienne (Matin / Soir).</p>
+        <!-- Formulaire à venir -->
+    </div>
+
+    <!-- 3. Nettoyage -->
+    <div id="nettoyage" class="tab-content">
+        <h2 style="color: var(--primary); margin-top: 0;">Plan de Nettoyage</h2>
+        <p style="color: #888;">Validation des tâches par pièce.</p>
+        <!-- Liste à cocher à venir -->
+    </div>
+
+    <!-- 4. Décongélation -->
+    <div id="decongelation" class="tab-content">
+        <h2 style="color: var(--primary); margin-top: 0;">Registre de Décongélation</h2>
+        <p style="color: #888;">Calcul automatique des DLC secondaires.</p>
+        <!-- Formulaire à venir -->
+    </div>
+
+    <!-- 5. Non-Conformités -->
+    <div id="non-conformite" class="tab-content">
+        <h2 style="color: var(--primary); margin-top: 0;">Gestion des Non-Conformités</h2>
+        <p style="color: #888;">Déclarer un problème (produit, matériel, chaîne du froid).</p>
+        <!-- Formulaire à venir -->
+    </div>
+
+</div>
+
+<script>
+    // --- GESTION DU THÈME ---
+    if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    }
+
+    // --- NAVIGATION DES ONGLETS ---
+    function switchTab(tabId) {
+        // Retirer la classe active de tous les boutons et contenus
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Ajouter la classe active à l'élément cliqué
+        document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+</body>
+</html>
