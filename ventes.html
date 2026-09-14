@@ -89,11 +89,14 @@
                 return;
             }
 
-            // Agréger les ventes par nom de pizza
+            // Agréger les ventes par nom de pizza en filtrant les "Vente Standard"
             const aggregation = {};
             ventes.forEach(v => {
                 const nom = v.nom_pizza || "Inconnue";
-                aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
+                // On ignore les lignes de secours "Vente Standard" pour ne garder que les vraies pizzas
+                if (!nom.includes("Vente Standard")) {
+                    aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
+                }
             });
 
             // Trier par ordre décroissant
