@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventes - Gang of Pizza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <nav class="bg-red-600 text-white p-4 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">🍕 Gang of Pizza - Suivi des Ventes</h1>
+            <div class="space-x-4">
+                <a href="production.html" class="hover:underline">Production</a>
+                <a href="stocks.html" class="hover:underline">Stocks</a>
+                <a href="ventes.html" class="font-bold underline">Ventes</a>
+                <a href="distributeurs.html" class="hover:underline">Distributeurs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6 mt-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-extrabold text-gray-900">Analyse des Ventes</h2>
+            <div class="flex gap-2">
+                <button onclick="filtrerJours(2)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre" data-jours="2">2 jours</button>
+                <button onclick="filtrerJours(3)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre" data-jours="3">3 jours</button>
+                <button onclick="filtrerJours(5)" class="px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre" data-jours="5">5 jours</button>
+                <button onclick="filtrerJours(7)" class="px-4 py-2 bg-red-600 text-white border border-red-600 rounded shadow font-bold btn-filtre" data-jours="7">7 jours</button>
+                <button onclick="syncVentes()" class="ml-4 px-4 py-2 bg-gray-800 text-white rounded shadow font-bold">🔄 Synchro Ventes</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="bg-gray-100 border-b text-gray-600 uppercase text-xs tracking-wider">
+                        <th class="p-4 font-bold">Classement</th>
+                        <th class="p-4 font-bold">Nom de la Pizza</th>
+                        <th class="p-4 font-bold text-right">Quantité Vendue</th>
+                    </tr>
+                </thead>
+                <tbody id="tableau-ventes" class="divide-y divide-gray-200">
+                    <tr><td colspan="3" class="p-6 text-center text-gray-500">Chargement des ventes...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://rantwcxfgosrhgdepjxb.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_nt49Vf58IiqAfQ8Wtsb5Gw_qLB5Of-v'; 
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let joursActuels = 7;
+
+        async function chargerVentes(jours = 7) {
+            joursActuels = jours;
+            
+            // Mise à jour visuelle des boutons
+            document.querySelectorAll('.btn-filtre').forEach(btn => {
+                if(parseInt(btn.dataset.jours) === jours) {
+                    btn.className = "px-4 py-2 bg-red-600 text-white border border-red-600 rounded shadow font-bold btn-filtre";
+                } else {
+                    btn.className = "px-4 py-2 bg-white border rounded shadow hover:bg-gray-100 font-bold btn-filtre text-gray-800";
+                }
+            });
+
+            const dateLimite = new Date();
+            dateLimite.setDate(dateLimite.getDate() - jours);
+
+            const { data: ventes, error } = await db
+                .from('machine_ventes')
+                .select('*')
+                .gte('date_vente', dateLimite.toISOString());
+
+            const tbody = document.getElementById('tableau-ventes');
+
+            if (error || !ventes || ventes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500 italic">Aucune vente enregistrée sur ces ${jours derniers} jours. Cliquez sur "Synchro Ventes".</td></tr>`;
+                return;
+            }
+
+            // Agréger les ventes par nom de pizza
+            const aggregation = {};
+            ventes.forEach(v => {
+                const nom = v.nom_pizza || "Inconnue";
+                aggregation[nom] = (aggregation[nom] || 0) + (v.quantite || 1);
+            });
+
+            // Trier par ordre décroissant (les plus vendues en premier)
+            const classement = Object.entries(aggregation).sort((a, b) => b[1] - a[1]);
+
+            tbody.innerHTML = "";
+            classement.forEach(([pizza, qte], index) => {
+                let badgeRank = `<span class="px-2 py-1 bg-gray-200 rounded text-xs font-bold text-gray-700">#${index + 1}</span>`;
+                if(index === 0) badgeRank = `<span class="px-2 py-1 bg-yellow-400 rounded text-xs font-bold text-white shadow">🏆 #1</span>`;
+                else if(index === 1) badgeRank = `<span class="px-2 py-1 bg-gray-300 rounded text-xs font-bold text-gray-800">🥈 #2</span>`;
+                else if(index === 2) badgeRank = `<span class="px-2 py-1 bg-amber-600 rounded text-xs font-bold text-white">🥉 #3</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-4 w-24">${badgeRank}</td>
+                        <td class="p-4 font-semibold text-gray-900">${pizza}</td>
+                        <td class="p-4 text-right font-extrabold text-red-600 text-lg">${qte}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filtrerJours(j) {
+            chargerVentes(j);
+        }
+
+        async function syncVentes() {
+            try {
+                const res = await fetch("https://rantwcxfgosrhgdepjxb.supabase.co/functions/v1/sync-ventes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error);
+                alert("Succès : " + data.message);
+                chargerVentes(joursActuels);
+            } catch(err) {
+                alert("Erreur de synchronisation : " + err.message);
+            }
+        }
+
+        // Chargement par défaut sur 7 jours
+        chargerVentes(7);
+    </script>
+</body>
+</html>
