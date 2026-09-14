@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HACCP - Gang of Pizza</title>
@@ -69,15 +70,37 @@
     <!-- 1. Traçabilité (Scan & Photos) -->
     <div id="tracabilite" class="tab-content active">
         <h2 style="color: var(--primary); margin-top: 0;">Traçabilité des produits</h2>
-        <p style="color: #888; margin-bottom: 20px;">Flashez un code-barres ou prenez en photo l'étiquette fournisseur.</p>
+        <p style="color: #888; margin-bottom: 20px;">Flashez un code-barres pour enregistrer un lot et sa DLC.</p>
         
-        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-            <button class="btn-action" style="background: #3498db; color: white;">📷 Scanner un Code-Barres</button>
-            <button class="btn-action" style="background: #2ecc71; color: white;">📸 Prendre l'étiquette en photo</button>
+        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+            <button onclick="startScanner()" class="btn-action" style="background: #3498db; color: white;">📷 Allumer la caméra</button>
+            <button onclick="stopScanner()" id="btn-stop-scan" class="btn-action" style="background: #95a5a6; color: white; display: none;">Arrêter la caméra</button>
         </div>
         
-        <div style="padding: 30px; border: 2px dashed var(--border); text-align: center; border-radius: 8px;">
-            <p style="color: var(--text);">Zone d'aperçu de la caméra viendra ici...</p>
+        <!-- Conteneur de la caméra -->
+        <div id="reader" style="width: 100%; max-width: 500px; margin-bottom: 20px; border-radius: 12px; overflow: hidden; display: none; border: 2px solid var(--primary);"></div>
+
+        <!-- Formulaire de saisie -->
+        <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Code-barres (auto)</label>
+                    <input type="text" id="traca-code" placeholder="Scannez pour remplir" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Nom du produit *</label>
+                    <input type="text" id="traca-nom" placeholder="Ex: Farine T55 25kg" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Numéro de Lot *</label>
+                    <input type="text" id="traca-lot" placeholder="Ex: L-20240914" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">DLC (Date limite) *</label>
+                    <input type="date" id="traca-dlc" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+            </div>
+            <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%;">✅ Enregistrer le lot dans la base</button>
         </div>
     </div>
 
