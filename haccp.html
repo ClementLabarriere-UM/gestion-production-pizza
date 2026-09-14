@@ -997,20 +997,22 @@
 
     let listePhotosNC = []; // Tableau qui va accumuler les photos une par une
 
+    let listePhotosNC = [];
+
     function ajouterPhotoNC(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        // On ajoute la photo à notre tableau
         listePhotosNC.push(file);
         afficherMiniaturesNC();
         
-        // On vide l'input pour que l'iPad accepte de prendre une nouvelle photo juste après
-        event.target.value = "";
+        // On met un petit délai avant de vider le champ pour ne pas court-circuiter Safari
+        setTimeout(() => {
+            event.target.value = "";
+        }, 500);
     }
 
     function supprimerPhotoNC(index) {
-        // Retire une photo si on s'est trompé
         listePhotosNC.splice(index, 1);
         afficherMiniaturesNC();
     }
@@ -1020,13 +1022,17 @@
         container.innerHTML = "";
         
         listePhotosNC.forEach((file, index) => {
-            const url = URL.createObjectURL(file);
-            container.innerHTML += `
-                <div style="position: relative; width: 80px; height: 80px;">
-                    <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
-                    <div onclick="supprimerPhotoNC(${index})" style="position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 12px;">X</div>
-                </div>
-            `;
+            // Le FileReader est beaucoup plus robuste sur iPad pour générer une miniature
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                container.innerHTML += `
+                    <div style="position: relative; width: 80px; height: 80px; display: inline-block; margin-right: 10px; margin-bottom: 10px;">
+                        <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
+                        <div onclick="supprimerPhotoNC(${index})" style="position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">X</div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
         });
     }
 
