@@ -170,7 +170,9 @@
             return; 
         }
         currentUser = session.user;
+        chargerHistoriqueTracabilite();
     }
+    
     
     // On lance la vérification au chargement
     verifierConnexion();
@@ -300,6 +302,7 @@
             btn.innerText = "✅ Enregistrer le lot dans la base";
             btn.disabled = false;
         }
+        chargerHistoriqueTracabilite();
     }
 
     async function chargerHistoriqueTracabilite() {
@@ -340,7 +343,7 @@
             `;
         }).join('');
     }
-    
+
     // --- LISTE DES INGRÉDIENTS POUR AUTOCOMPLÉTION ---
     const catalogueIngredients = [
         "Aiguillettes de poulet", "Allumettes fumées", "Bleu d'Auvergne", "Boursin",
