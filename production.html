@@ -209,23 +209,511 @@
         { id: 'viking', nom: 'Viking' }
     ];
 
-    const recettes = {
-        "4 Fromages Rouge": {"Disque tomaté": 1, "Roquefort (g)": 15, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Chèvre (tranches)": 6, "Olives noires (unités)": 3},
-        "Burger": {"Disque tomaté": 1, "Oignons pré-frits (g)": 20, "Egrené au boeuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (rondelles)": 7, "Scalarella + Cheddar (g)": 110},
-        "Camembert Rôti": {"Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60},
-        "Cannibale": {"Disque tomaté": 1, "Merguez (rondelles)": 15, "Poulet rôti (g)": 30, "Egrené au boeuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110},
-        "Chèvre Miel": {"Disque crémé": 1, "Scalarella (g)": 120, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3},
-        "Croq'": {"Disque crémé": 1, "Jambon (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30},
-        "Extrême Nutella": {"Disque crémé": 1, "Nutella (g)": 90, "M&M's (unités)": 8},
-        "Franc Comtoise": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3},
-        "Indiana": {"Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3},
-        "Margarita": {"Disque tomaté": 1, "Emmental râpé (g)": 20, "Scalarella (g)": 70},
-        "Maxi Kebab": {"Disque crémé": 1, "Epices kebab (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3},
-        "Reine": {"Disque tomaté": 1, "Jambon (g)": 60, "Emmental râpé (g)": 30, "Scalarella (g)": 80, "Olives noires (unités)": 3},
-        "Savoyarde": {"Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (tranches)": 5},
-        "Ultimatum": {"Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Egrené au boeuf (g)": 50, "Scalarella (g)": 90, "Tomates confites (demi-tomates)": 3},
-        "Viking": {"Disque tomaté": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110}
-    };
+    const recettes = {  
+    // --- LES ROUGES ---
+    "Reine": {
+        "Disque tomaté": 1, 
+        "Jambon blanc (g)": 60, 
+        "Scalarella (g)": 110, 
+        "Emmental râpé (g)": 30, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Cannibale": {
+        "Disque tomaté": 1, 
+        "Merguez (unités)": 15, 
+        "Poulet rôti (g)": 30, 
+        "Égrené au bœuf (g)": 40, 
+        "Sauce hot BBQ (g)": 18, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "4 Fromages": {
+        "Disque tomaté": 1, 
+        "Roquefort (g)": 15, 
+        "Scalarella (g)": 110, 
+        "Emmental râpé (g)": 30, 
+        "Chèvre (tranches)": 6, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Burger": {
+        "Disque tomaté": 1, 
+        "Oignons rouges (g)": 20, 
+        "Égrené au bœuf (g)": 70, 
+        "Sauce burger (g)": 25, 
+        "Cornichons (unités)": 7, 
+        "Scalarella + Cheddar (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Maxi Burger": {
+        "Disque tomaté": 1, 
+        "Oignons rouges (g)": 30, 
+        "Égrené au bœuf (g)": 100, 
+        "Sauce burger (g)": 30, 
+        "Cornichons (unités)": 12, 
+        "Scalarella + Cheddar (g)": 130, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Orientale": {
+        "Disque tomaté": 1, 
+        "Merguez Halal (g)": 30, 
+        "Poulet rôti halal (g)": 40, 
+        "Poivrons grillés (g)": 30, 
+        "Sauce marocaine (g)": 20, 
+        "Scalarella (g)": 90, 
+        "Origan (g)": 0.5
+    },
+    "Raclette": {
+        "Disque tomaté": 1, 
+        "Jambon blanc (g)": 40, 
+        "Pommes de terre (g)": 55, 
+        "Allumettes fumées (g)": 40, 
+        "Scalarella (g)": 90, 
+        "Raclette (tranches)": 4, 
+        "Origan (g)": 0.5
+    },
+    "Arizona": {
+        "Disque tomaté": 1, 
+        "Effiloché de porc (g)": 80, 
+        "Poivrons grillés (g)": 30, 
+        "Oignons rouges (g)": 15, 
+        "Sauce Hot BBQ (g)": 20, 
+        "Scalarella (g)": 80
+    },
+    "Pepperoni": {
+        "Disque tomaté": 1, 
+        "Pepperoni (tranches)": 12, 
+        "Scalarella + Cheddar (g)": 120, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Margarita": {
+        "Disque tomaté": 1, 
+        "Scalarella + Emmental (g)": 90
+    },
+    "Andalouse": {
+        "Disque tomaté": 1, 
+        "Chorizo (tranches)": 6, 
+        "Merguez (unités)": 20, 
+        "Poivrons grillés (g)": 30, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Cheesy Hot": {
+        "Disque tomaté": 1, 
+        "Bœuf chili (g)": 70, 
+        "Sauce hot BBQ (g)": 20, 
+        "Sauce algérienne (g)": 20, 
+        "Scalarella + Cheddar (g)": 100, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "TNT": {
+        "Disque tomaté": 1, 
+        "Chorizo (tranches)": 9, 
+        "Merguez (unités)": 20, 
+        "Sauce samouraï (g)": 25, 
+        "Scalarella + Cheddar (g)": 90, 
+        "Origan (g)": 0.5
+    },
+    "Dallas": {
+        "Disque tomaté": 1, 
+        "Oignons rouges (g)": 20, 
+        "Allumettes fumées (g)": 40, 
+        "Égrené au bœuf (g)": 50, 
+        "Sauce samouraï (g)": 20, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Texan BBQ": {
+        "Disque tomaté": 1, 
+        "Jambon blanc (g)": 40, 
+        "Oignons rouges (g)": 15, 
+        "Allumettes fumées (g)": 30, 
+        "Égrené au bœuf (g)": 40, 
+        "Sauce hot BBQ (g)": 25, 
+        "Scalarella (g)": 90, 
+        "Origan (g)": 0.5
+    },
+    "Chicken BBQ": {
+        "Disque tomaté": 1, 
+        "Epice BBQ (pincées)": 3, 
+        "Poulet rôti halal (g)": 70, 
+        "Sauce hot BBQ (g)": 15, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Cordon Bleu": {
+        "Disque tomaté": 1, 
+        "Jambon blanc (g)": 30, 
+        "Goujon de poulet (g)": 80, 
+        "Scalarella (g)": 100, 
+        "Sauce fromagère (g)": 30, 
+        "Origan (g)": 0.5
+    },
+    "Tenders": {
+        "Disque tomaté": 1, 
+        "Pommes de terre (g)": 60, 
+        "Goujon de poulet (g)": 80, 
+        "Sauce cheddar (g)": 30, 
+        "Scalarella (g)": 90, 
+        "Origan (g)": 0.5
+    },
+    "Flambée": {
+        "Disque tomaté": 1, 
+        "Oignons rouges (g)": 25, 
+        "Allumettes fumées (g)": 50, 
+        "Emmental râpé (g)": 40, 
+        "Scalarella (g)": 50
+    },
+    "Basquaise": {
+        "Disque tomaté": 1, 
+        "Sauce salsa (g)": 60, 
+        "Poulet rôti halal (g)": 70, 
+        "Poivrons grillés (g)": 20, 
+        "Scalarella (g)": 90, 
+        "Piment d'Espelette (g)": 0.5, 
+        "Origan (g)": 0.5
+    },
+    "Dolce Vita Rouge": {
+        "Disque tomaté": 1, 
+        "Jambon blanc (g)": 45, 
+        "Scalarella (g)": 90, 
+        "Miel (g)": 15, 
+        "Chèvre (tranches)": 6, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Sinaloa Poulet": {
+        "Disque tomaté": 1, 
+        "Epice mexicaine": 1, 
+        "Guacamole (g)": 30, 
+        "Oignons rouges (g)": 20, 
+        "Poulet rôti halal (g)": 50, 
+        "Scalarella + Cheddar (g)": 100, 
+        "Poivrons grillés (g)": 20, 
+        "Tabasco rouge (g)": 2, 
+        "Olives noires (unités)": 3
+    },
+    "Sinaloa Bœuf": {
+        "Disque tomaté": 1, 
+        "Epice mexicaine": 1, 
+        "Guacamole (g)": 30, 
+        "Oignons rouges (g)": 20, 
+        "Égrené au bœuf (g)": 50, 
+        "Scalarella + Cheddar (g)": 100, 
+        "Poivrons grillés (g)": 20, 
+        "Tabasco rouge (g)": 2, 
+        "Olives noires (unités)": 3
+    },
+    "Furiosa": {
+        "Disque tomaté": 1, 
+        "Chorizo (g)": 60, 
+        "Crispy bacon (g)": 35, 
+        "Sauce hot BBQ (g)": 15, 
+        "Sauce samouraï (g)": 20, 
+        "Scalarella + Cheddar (g)": 90, 
+        "Origan (g)": 0.5
+    },
+
+    // --- LES BLANCHES ---
+    "Chèvre Miel": {
+        "Disque crémé": 1, 
+        "Scalarella (g)": 100, 
+        "Miel (g)": 20, 
+        "Chèvre (tranches)": 8, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Savoyarde": {
+        "Disque crémé": 1, 
+        "Pommes de terre (g)": 60, 
+        "Oignons pré-frits (g)": 20, 
+        "Allumettes fumées (g)": 50, 
+        "Scalarella (g)": 90, 
+        "Reblochon (demi-tranches)": 5, 
+        "Origan (g)": 0.5
+    },
+    "Indiana": {
+        "Disque crémé": 1, 
+        "Epices curry (g)": 3, 
+        "Poulet rôti (g)": 80, 
+        "Sauce curry (g)": 15, 
+        "Poivrons grillés (g)": 30, 
+        "Scalarella (g)": 110, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Spicy Kebab": {
+        "Disque crémé": 1, 
+        "Epice orientale (g)": 2, 
+        "Viande kebab (g)": 80, 
+        "Sauce blanche (g)": 20, 
+        "Scalarella (g)": 100, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Maxi Kebab": {
+        "Disque crémé": 1, 
+        "Epice orientale (g)": 2, 
+        "Viande kebab (g)": 120, 
+        "Sauce blanche (g)": 25, 
+        "Scalarella (g)": 120, 
+        "Tomates confites (demi-tomates)": 5, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Reine Blanche": {
+        "Disque crémé": 1, 
+        "Jambon blanc (g)": 60, 
+        "Scalarella + Emmental (g)": 110, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Boursin": {
+        "Disque crémé": 1, 
+        "Boursin (g)": 40, 
+        "Poulet rôti halal (g)": 80, 
+        "Scalarella + Emmental (g)": 120, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "B&B": {
+        "Disque crémé": 1, 
+        "Boursin (g)": 40, 
+        "Oignons pré-frits (g)": 30, 
+        "Égrené de bœuf (g)": 70, 
+        "Scalarella (g)": 100, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "BBQ": {
+        "Disque crémé": 1, 
+        "Merguez halal (g)": 30, 
+        "Allumettes fumées (g)": 40, 
+        "Poulet rôti halal (g)": 40, 
+        "Sauce hot BBQ (g)": 15, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Dolce Vita": {
+        "Disque crémé": 1, 
+        "Jambon blanc (g)": 45, 
+        "Scalarella (g)": 90, 
+        "Miel (g)": 15, 
+        "Chèvre (tranches)": 6, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Loki": {
+        "Disque crémé": 1, 
+        "Saumon fumé (g)": 70, 
+        "Scalarella (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Viking": {
+        "Disque crémé": 1, 
+        "Boursin (g)": 40, 
+        "Saumon fumé (g)": 70, 
+        "Scalarella (g)": 110, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Mexicaine": {
+        "Disque crémé": 1, 
+        "Guacamole (g)": 70, 
+        "Poulet rôti halal (g)": 80, 
+        "Poivrons grillés (g)": 30, 
+        "Scalarella (g)": 70, 
+        "Doritos nature (unités)": 4, 
+        "Epice mexicaine (g)": 0.5
+    },
+    "Flamm": {
+        "Disque crémé": 1, 
+        "Jambon blanc (g)": 45, 
+        "Oignons rouges (g)": 25, 
+        "Allumettes fumées (g)": 30, 
+        "Scalarella (g)": 70
+    },
+    "Mercenaire": {
+        "Disque crémé": 1, 
+        "Oignons pré-frits (g)": 20, 
+        "Allumettes fumées (g)": 40, 
+        "Poulet rôti halal (g)": 50, 
+        "Sauce hot BBQ (g)": 25, 
+        "Scalarella (g)": 100, 
+        "Origan (g)": 0.5
+    },
+    "Suprême Maroilles": {
+        "Disque crémé": 1, 
+        "Scalarella (g)": 90, 
+        "Chorizo (g)": 30, 
+        "Maroilles (g)": 65, 
+        "Tomates confites (demi-tomates)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Sweet Raclette": {
+        "Disque crémé": 1, 
+        "Oignons pré-frits (g)": 20, 
+        "Égrené au bœuf (g)": 60, 
+        "Sauce miel moutarde (g)": 20, 
+        "Scalarella (g)": 90, 
+        "Raclette (tranches)": 4
+    },
+    "Munster": {
+        "Disque crémé": 1, 
+        "Oignons pré-frits (g)": 30, 
+        "Allumettes fumées (g)": 70, 
+        "Emmental râpé (g)": 60, 
+        "Munster (tranches)": 5
+    },
+    "Croq'": {
+        "Disque crémé": 1, 
+        "Jambon blanc (g)": 60, 
+        "Sauce fromagère (g)": 25, 
+        "Scalarella (g)": 60, 
+        "Emmental râpé (g)": 30
+    },
+    "Camembert Rôti": {
+        "Disque crémé": 1, 
+        "Camembert (demi)": 1, 
+        "Allumettes fumées (g)": 40, 
+        "Scalarella (g)": 60, 
+        "Herbes de Provence (g)": 0.5
+    },
+    "Alsacienne": {
+        "Disque crémé": 1, 
+        "Allumettes fumées (g)": 70, 
+        "Oignons pré-frits (g)": 30, 
+        "Emmental râpé (g)": 50, 
+        "Scalarella (g)": 40
+    },
+    "Auvergnate": {
+        "Disque crémé": 1, 
+        "Poulet rôti halal (g)": 70, 
+        "Bleu d'Auvergne (g)": 40, 
+        "Scalarella + Emmental (g)": 120, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Fondue Originale": {
+        "Disque crémé": 1, 
+        "Allumettes fumées (g)": 50, 
+        "Scalarella + Mix fondue (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Boisée": {
+        "Disque crémé": 1, 
+        "Poulet rôti (g)": 80, 
+        "Poivrons grillés (g)": 30, 
+        "Sauce fromagère (g)": 25, 
+        "Scalarella + Emmental (g)": 110, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Franc Comtoise": {
+        "Disque crémé": 1, 
+        "Pommes de terre (g)": 60, 
+        "Saucisses fumées (g)": 50, 
+        "Allumettes fumées (g)": 20, 
+        "Oignons pré-frits (g)": 15, 
+        "Comté râpé (g)": 30, 
+        "Scalarella (g)": 90, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Colonel": {
+        "Disque crémé": 1, 
+        "Moutarde forte (g)": 20, 
+        "Moutarde ancienne (g)": 20, 
+        "Pommes de terre (g)": 70, 
+        "Poulet rôti halal (g)": 40, 
+        "Allumettes fumées (g)": 30, 
+        "Scalarella + Emmental (g)": 100
+    },
+    "Don Pesto": {
+        "Disque crémé": 1, 
+        "Poulet rôti halal (g)": 80, 
+        "Pesto (g)": 10, 
+        "Scalarella (g)": 90, 
+        "Tomates confites (demi-tomates)": 3
+    },
+    "Ultimatum": {
+        "Disque crémé": 1, 
+        "Pommes de terre (g)": 70, 
+        "Roquefort (g)": 15, 
+        "Égrené au bœuf (g)": 50, 
+        "Scalarella (g)": 90
+    },
+    "Street K.": {
+        "Disque crémé": 1, 
+        "Epice orientale (g)": 2, 
+        "Effiloché de poulet (g)": 65, 
+        "Sauce blanche (g)": 20, 
+        "Scalarella (g)": 100, 
+        "Tomates confites (demi-tomates)": 5, 
+        "Origan (g)": 0.5
+    },
+    "4 Fromages Blanche": {
+        "Disque crémé": 1, 
+        "Roquefort (g)": 15, 
+        "Scalarella + Emmental (g)": 110, 
+        "Chèvre (tranches)": 6, 
+        "Olives noires (unités)": 3, 
+        "Origan (g)": 0.5
+    },
+    "Frite Cheddar Bacon": {
+        "Disque crémé": 1, 
+        "Allumettes fumées (g)": 25, 
+        "Oignons rouges (g)": 15, 
+        "Scalarella + Cheddar (g)": 110, 
+        "Frites au four (g)": 80, 
+        "Sauce cheddar (g)": 30, 
+        "Crispy bacon (g)": 25
+    },
+    "Burger Pepper": {
+        "Disque crémé": 1, 
+        "Pastrami de bœuf (g)": 30, 
+        "Oignons pré-frits (g)": 20, 
+        "Égrené au bœuf (g)": 50, 
+        "Sauce au poivre (g)": 20, 
+        "Scalarella + Emmental (g)": 110, 
+        "Origan (g)": 0.5
+    },
+    "Crousty": {
+        "Disque crémé": 1, 
+        "Oignons crispy (g)": 10, 
+        "Sauce aigre douce (g)": 40, 
+        "Scalarella (g)": 90, 
+        "Aiguillettes de poulet (g)": 80, 
+        "Origan (g)": 0.5
+    },
+    "Chick'n Raclette": {
+        "Disque crémé": 1, 
+        "Poulet rôti halal (g)": 50, 
+        "Crispy bacon (g)": 30, 
+        "Scalarella (g)": 90, 
+        "Raclette (tranches)": 4, 
+        "Origan (g)": 0.5
+    },
+    "Cordon Bleu Crème": {
+        "Disque crémé": 1, 
+        "Jambon blanc (g)": 30, 
+        "Goujon de poulet (g)": 80, 
+        "Sauce fromagère (g)": 30, 
+        "Scalarella (g)": 100, 
+        "Origan (g)": 0.5
+    },
+    "Extrême Nutella": {
+        "Disque crémé": 1, 
+        "Nutella (g)": 90, 
+        "M&M's (g)": 20
+    }
+};
 
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
