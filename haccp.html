@@ -76,35 +76,44 @@
         </div>
 
         <!-- Formulaire de saisie -->
-        <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+        <div class="no-print" style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px;">
             
-            <!-- Bouton d'appareil photo natif iPad -->
-            <div style="margin-bottom: 20px; text-align: center; border: 2px dashed #3498db; padding: 20px; border-radius: 12px; background: rgba(52, 152, 219, 0.05);">
-                <label for="traca-photo" style="display: block; cursor: pointer;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📸</div>
-                    <div style="color: #3498db; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Prendre l'étiquette en photo *</div>
-                    <div id="nom-fichier-photo" style="color: #888; font-size: 0.85rem;">Aucune photo sélectionnée</div>
-                </label>
-                <!-- capture="environment" force l'ouverture de la caméra arrière sur iPad/iPhone -->
-                <input type="file" id="traca-photo" accept="image/*" capture="environment" style="display: none;" onchange="afficherNomPhoto()">
+            <!-- Bouton Multi-Photos (Adapté iPad) -->
+            <div style="margin-bottom: 20px;">
+                <div style="text-align: center; border: 2px dashed #e74c3c; padding: 20px; border-radius: 12px; background: rgba(231, 76, 60, 0.05);">
+                    <label for="nc-photos" style="display: block; cursor: pointer;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📸</div>
+                        <div style="color: #e74c3c; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Prendre une photo</div>
+                        <div style="color: #888; font-size: 0.85rem;">(Répétez l'opération pour en ajouter plusieurs)</div>
+                    </label>
+                    <input type="file" id="nc-photos" accept="image/*" style="display: none;" onchange="ajouterPhotoNC(event)">
+                </div>
+                
+                <!-- Zone où les miniatures vont s'afficher -->
+                <div id="nc-miniatures" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;"></div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Nom du produit *</label>
-                    <input type="text" id="traca-nom" list="liste-ingredients" placeholder="Choisir ou taper un nom..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
-                    <datalist id="liste-ingredients"></datalist>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Date de livraison *</label>
+                    <input type="date" id="nc-date" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Numéro de Lot (Optionnel)</label>
-                    <input type="text" id="traca-lot" placeholder="Saisie manuelle" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Produits touchés (Optionnel)</label>
+                    <input type="text" id="nc-produits" placeholder="Ex: Mozzarella, Farine..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">DLC (Optionnelle)</label>
-                    <input type="date" id="traca-dlc" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Quantité (Optionnel)</label>
+                    <input type="number" id="nc-quantite" placeholder="Ex: 3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
                 </div>
             </div>
-            <button onclick="enregistrerTracabilite()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.1rem;">✅ Enregistrer la traçabilité</button>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Description du problème (Optionnel)</label>
+                <textarea id="nc-description" rows="3" placeholder="Carton percé, température à 12°C au lieu de 4°C..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);"></textarea>
+            </div>
+
+            <button onclick="enregistrerNC()" class="btn-action" style="background: #e74c3c; color: white; width: 100%; font-size: 1.1rem;">⚠️ Enregistrer la Non-Conformité</button>
         </div>
         
         <!-- Historique récent -->
@@ -984,46 +993,66 @@
 
     // --- GESTION DES NON-CONFORMITÉS ---
 
-    // 1. Afficher le nombre de photos sélectionnées
-    function afficherNomsPhotosNC() {
-        const input = document.getElementById('nc-photos');
-        const label = document.getElementById('nc-photos-label');
-        if (input.files && input.files.length > 0) {
-            label.innerText = `✅ ${input.files.length} photo(s) prête(s)`;
-            label.style.color = "#2ecc71";
-            label.style.fontWeight = "bold";
-        } else {
-            label.innerText = "Aucune photo sélectionnée";
-            label.style.color = "#888";
-            label.style.fontWeight = "normal";
-        }
+    // --- GESTION DES NON-CONFORMITÉS ---
+
+    let listePhotosNC = []; // Tableau qui va accumuler les photos une par une
+
+    function ajouterPhotoNC(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // On ajoute la photo à notre tableau
+        listePhotosNC.push(file);
+        afficherMiniaturesNC();
+        
+        // On vide l'input pour que l'iPad accepte de prendre une nouvelle photo juste après
+        event.target.value = "";
     }
 
-    // 2. Enregistrer la Non-Conformité (avec upload multiple)
+    function supprimerPhotoNC(index) {
+        // Retire une photo si on s'est trompé
+        listePhotosNC.splice(index, 1);
+        afficherMiniaturesNC();
+    }
+
+    function afficherMiniaturesNC() {
+        const container = document.getElementById('nc-miniatures');
+        container.innerHTML = "";
+        
+        listePhotosNC.forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+            container.innerHTML += `
+                <div style="position: relative; width: 80px; height: 80px;">
+                    <img src="${url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
+                    <div onclick="supprimerPhotoNC(${index})" style="position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; font-size: 12px;">X</div>
+                </div>
+            `;
+        });
+    }
+
     async function enregistrerNC() {
         const dateLivraison = document.getElementById('nc-date').value;
         const produits = document.getElementById('nc-produits').value;
         const quantite = document.getElementById('nc-quantite').value;
         const description = document.getElementById('nc-description').value;
-        const files = document.getElementById('nc-photos').files;
 
-        if (!dateLivraison || files.length === 0) {
+        if (!dateLivraison || listePhotosNC.length === 0) {
             alert("⚠️ La date de livraison et au moins une photo sont OBLIGATOIRES.");
             return;
         }
 
         const btn = event.target;
-        btn.innerText = `⏳ Envoi de ${files.length} photo(s)...`;
+        btn.innerText = `⏳ Envoi de ${listePhotosNC.length} photo(s)...`;
         btn.disabled = true;
 
         try {
             let uploadedUrls = [];
 
-            // Boucle d'upload pour toutes les photos sélectionnées
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const fileExt = file.name.split('.').pop();
-                // Nom unique propre pour chaque photo
+            for (let i = 0; i < listePhotosNC.length; i++) {
+                const file = listePhotosNC[i];
+                
+                // Correction anti "Load failed" : on force une extension si l'iPad n'en donne pas
+                let fileExt = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
                 const fileName = `NC_${Date.now()}_${i}.${fileExt}`;
                 const filePath = `${currentUser.id}/${fileName}`;
 
@@ -1031,7 +1060,7 @@
                     .from('haccp_photos')
                     .upload(filePath, file);
 
-                if (uploadError) throw uploadError;
+                if (uploadError) throw new Error("Impossible d'envoyer l'image " + (i+1));
 
                 const { data: publicUrlData } = supabaseClient.storage
                     .from('haccp_photos')
@@ -1042,7 +1071,6 @@
 
             btn.innerText = "⏳ Sauvegarde du rapport...";
 
-            // Enregistrement dans la table
             const { error: dbError } = await supabaseClient
                 .from('haccp_non_conformites')
                 .insert([{
@@ -1058,13 +1086,13 @@
 
             alert("✅ Rapport de non-conformité enregistré avec succès !");
             
-            // Réinitialisation du formulaire
+            // Réinitialisation de tout le formulaire
             document.getElementById('nc-date').value = "";
             document.getElementById('nc-produits').value = "";
             document.getElementById('nc-quantite').value = "";
             document.getElementById('nc-description').value = "";
-            document.getElementById('nc-photos').value = "";
-            afficherNomsPhotosNC();
+            listePhotosNC = [];
+            afficherMiniaturesNC();
 
         } catch (error) {
             alert("Erreur lors de l'enregistrement : " + error.message);
