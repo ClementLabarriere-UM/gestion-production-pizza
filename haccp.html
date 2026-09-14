@@ -211,9 +211,59 @@
 
     <!-- 3. Nettoyage -->
     <div id="nettoyage" class="tab-content">
-        <h2 style="color: var(--primary); margin-top: 0;">Plan de Nettoyage</h2>
-        <p style="color: #888;">Validation des tâches par pièce.</p>
-        <!-- Liste à cocher à venir -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            <div>
+                <h2 style="color: var(--primary); margin-top: 0; margin-bottom: 5px;">Plan de Nettoyage</h2>
+                <p style="color: #888; margin: 0;">Validation des zones nettoyées.</p>
+            </div>
+            <button onclick="ajouterZone()" class="btn-action" style="background: #9b59b6; color: white;">➕ Ajouter une Zone</button>
+        </div>
+
+        <!-- Formulaire de saisie -->
+        <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Zone nettoyée *</label>
+                    <select id="nettoyage-zone" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Fait par (Salarié) *</label>
+                    <select id="nettoyage-employe" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                
+            </div>
+            <button onclick="enregistrerNettoyage()" class="btn-action" style="background: #2ecc71; color: white; width: 100%; font-size: 1.1rem;">✅ Valider le nettoyage</button>
+        </div>
+
+        <!-- Historique des relevés avec filtre par date -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="color: var(--primary); margin: 0;">Historique des nettoyages</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label style="font-weight: bold; color: var(--text);">Voir la date du :</label>
+                <input type="date" id="nettoyage-date-filtre" onchange="chargerHistoriqueNettoyage()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>
+        </div>
+        
+        <div style="overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: var(--th-bg); color: var(--primary); font-size: 0.9rem; text-transform: uppercase;">
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Heure</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Zone</th>
+                        <th style="padding: 12px 15px; border-bottom: 1px solid var(--border);">Salarié</th>
+                    </tr>
+                </thead>
+                <tbody id="nettoyage-historique">
+                    <tr><td colspan="3" style="text-align: center; padding: 20px; color: #888;">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- 4. Décongélation -->
@@ -249,10 +299,12 @@
         
         chargerHistoriqueTracabilite();
         
-        // Ajoute ces 3 lignes :
         chargerEquipements();
         chargerEmployes();
         chargerHistoriqueTemperatures(); 
+
+        chargerZones();
+        chargerHistoriqueNettoyage();
     }
     
     verifierConnexion();
@@ -484,21 +536,21 @@
 
     // 3. Charger les salariés de la pointeuse
     async function chargerEmployes() {
-        // Connexion directe à ta table de pointeuse
         const { data, error } = await supabaseClient
             .from('pointeuse_employes')
             .select('name')
             .order('name');
             
-        const select = document.getElementById('temp-employe');
+        const selectTemp = document.getElementById('temp-employe');
+        const selectNettoyage = document.getElementById('nettoyage-employe'); // On cible aussi le nettoyage
         
-        if (error || !data) {
-            select.innerHTML = '<option value="">Erreur chargement salariés</option>';
-            return;
-        }
+        if (error || !data) return;
         
-        select.innerHTML = '<option value="">Sélectionner...</option>' + 
+        const optionsHtml = '<option value="">Sélectionner...</option>' + 
             data.map(emp => `<option value="${emp.name}">${emp.name}</option>`).join('');
+            
+        if (selectTemp) selectTemp.innerHTML = optionsHtml;
+        if (selectNettoyage) selectNettoyage.innerHTML = optionsHtml;
     }
 
     // 4. Enregistrer une température
@@ -592,6 +644,103 @@
                     <td style="padding: 12px 15px; font-weight: 500; color: var(--text);">${row.equipement}</td>
                     <td style="padding: 12px 15px; color: var(--text);">${row.employe}</td>
                     <td style="padding: 12px 15px;"><span style="${styleTemp}">${row.temperature} °C${iconAlerte}</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+    // --- GESTION DU NETTOYAGE ---
+
+    // 1. Ajouter une zone
+    async function ajouterZone() {
+        const nom = prompt("Nom de la zone (ex: Laboratoire, Plonge, Chambre Froide) :");
+        if (!nom || !nom.trim()) return;
+
+        const { error } = await supabaseClient
+            .from('haccp_zones_nettoyage')
+            .insert([{ user_id: currentUser.id, nom: nom.trim() }]);
+
+        if (error) {
+            alert("Erreur lors de l'ajout : " + error.message);
+        } else {
+            chargerZones(); // On rafraîchit
+        }
+    }
+
+    // 2. Charger les zones
+    async function chargerZones() {
+        const { data, error } = await supabaseClient.from('haccp_zones_nettoyage').select('nom').order('nom');
+        const select = document.getElementById('nettoyage-zone');
+        if (error || !data) return;
+        select.innerHTML = '<option value="">Sélectionner...</option>' + data.map(z => `<option value="${z.nom}">${z.nom}</option>`).join('');
+    }
+
+    // 3. Enregistrer un nettoyage
+    async function enregistrerNettoyage() {
+        const zone = document.getElementById('nettoyage-zone').value;
+        const employe = document.getElementById('nettoyage-employe').value;
+
+        if (!zone || !employe) {
+            alert("Veuillez sélectionner la zone et le salarié.");
+            return;
+        }
+
+        const btn = event.target;
+        btn.innerText = "⏳ Enregistrement...";
+        btn.disabled = true;
+
+        try {
+            const { error } = await supabaseClient
+                .from('haccp_nettoyage')
+                .insert([{
+                    user_id: currentUser.id,
+                    zone: zone,
+                    employe: employe,
+                    date_releve: new Date().toISOString().split('T')[0]
+                }]);
+
+            if (error) throw error;
+
+            // On vide seulement la zone, l'employé reste affiché pour enchaîner plus vite
+            document.getElementById('nettoyage-zone').value = "";
+            chargerHistoriqueNettoyage();
+
+        } catch (error) {
+            alert("Erreur : " + error.message);
+        } finally {
+            btn.innerText = "✅ Valider le nettoyage";
+            btn.disabled = false;
+        }
+    }
+
+    // 4. Charger l'historique filtré
+    async function chargerHistoriqueNettoyage() {
+        if (!currentUser) return;
+        
+        let dateFiltre = document.getElementById('nettoyage-date-filtre').value;
+        if (!dateFiltre) {
+            const today = new Date();
+            dateFiltre = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            document.getElementById('nettoyage-date-filtre').value = dateFiltre;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('haccp_nettoyage')
+            .select('*')
+            .eq('date_releve', dateFiltre)
+            .order('date_validation', { ascending: false });
+
+        const tbody = document.getElementById('nettoyage-historique');
+
+        if (error) { tbody.innerHTML = `<tr><td colspan="3">Erreur : ${error.message}</td></tr>`; return; }
+        if (!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">Aucun nettoyage validé ce jour.</td></tr>`; return; }
+
+        tbody.innerHTML = data.map(row => {
+            const heureStr = new Date(row.date_validation).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 12px 15px; font-size: 0.9rem; color: #888;">${heureStr}</td>
+                    <td style="padding: 12px 15px; font-weight: bold; color: var(--text);">${row.zone}</td>
+                    <td style="padding: 12px 15px; color: var(--text);">${row.employe}</td>
                 </tr>
             `;
         }).join('');
