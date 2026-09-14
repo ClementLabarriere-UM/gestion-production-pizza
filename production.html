@@ -827,6 +827,7 @@
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
     // --- CHARGEMENT DES MACHINES ADIAL ---
+    // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
         const { data: stocks, error } = await supabaseClient.from('machine_stocks').select('*');
@@ -836,36 +837,50 @@
             return;
         }
 
+        // Dictionnaire exact déduit de ton fichier Excel
+        const NOMS_MACHINES = {
+            "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
+            "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
+            "aeAObNXHeI5CMVry9dNhC0q0W39QTujsDYmitn6HqUo": "MELOX",
+            "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
+        };
+
         const machinesDict = {};
         const now = new Date();
 
         stocks.forEach(slot => {
             if (!machinesDict[slot.machine_id]) {
-                machinesDict[slot.machine_id] = { total: 0, occ_valide: 0, occ_perimee: 0, pizzas: {}, perimees: {} };
+                // Initialisation des compteurs pour séparer le bon du mauvais
+                machinesDict[slot.machine_id] = { total: 0, valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
             }
             let m = machinesDict[slot.machine_id];
             m.total++;
             
             if (slot.est_occupe) {
-                // Vérification stricte de la date de péremption
-                const peremption = slot.date_peremption ? new Date(slot.date_peremption) : null;
-                const estPerimee = peremption && peremption < now;
                 const nom = slot.nom_pizza || "Inconnue";
+                // Vérification stricte de la DLC
+                const datePeremption = slot.date_peremption ? new Date(slot.date_peremption) : null;
+                const estPerimee = datePeremption && datePeremption < now;
 
                 if (estPerimee) {
-                    m.occ_perimee++;
-                    m.perimees[nom] = (m.perimees[nom] || 0) + 1;
+                    m.perimees++;
+                    m.liste_perimees[nom] = (m.liste_perimees[nom] || 0) + 1;
                 } else {
-                    m.occ_valide++;
+                    m.valides++;
                     m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
                 }
             }
         });
 
         container.innerHTML = '';
-        let idx = 1;
-        for (const [mId, stats] of Object.entries(machinesDict)) {
-            
+        
+        // On ordonne pour avoir toujours le même affichage
+        const idsTries = Object.keys(machinesDict).sort();
+
+        for (const mId of idsTries) {
+            const stats = machinesDict[mId];
+            const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
+
             // 1. Liste des Pizzas VALIDES
             const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
             let listeHtml = inventaireTrie.map(([nom, q]) => `
@@ -874,13 +889,13 @@
                     <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
                 </div>
             `).join('');
-            
-            // 2. Liste des Pizzas PÉRIMÉES (ajoutées à la fin en rouge)
-            if (stats.occ_perimee > 0) {
-                const perimeesTrie = Object.entries(stats.perimees).sort((a, b) => b[1] - a[1]);
+
+            // 2. Liste des Pizzas PÉRIMÉES (ajoutées en rouge à la fin de la liste)
+            if (stats.perimees > 0) {
+                const perimeesTrie = Object.entries(stats.liste_perimees).sort((a, b) => b[1] - a[1]);
                 listeHtml += perimeesTrie.map(([nom, q]) => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed rgba(231, 76, 60, 0.3); padding-bottom:4px; background: rgba(231, 76, 60, 0.05); padding: 4px; border-radius: 4px;">
-                        <span style="font-size:0.95rem; color:#e74c3c;">⚠️ ${nom} <span style="font-size:0.75rem">(Périmée)</span></span>
+                    <div style="display:flex; justify-content:space-between; margin-top: 10px; margin-bottom:8px; padding: 6px; background: rgba(231, 76, 60, 0.05); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 6px;">
+                        <span style="font-size:0.90rem; color:#e74c3c; font-weight: bold;">⚠️ ${nom} <span style="font-size:0.75rem; font-weight: normal;">(Périmée)</span></span>
                         <strong style="color:#e74c3c; font-size: 1.1rem;">${q}</strong>
                     </div>
                 `).join('');
@@ -888,26 +903,25 @@
             
             if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
             
-            // Le taux de remplissage ne prend en compte QUE ce qui est vendable
-            const pct = Math.round((stats.occ_valide / stats.total) * 100);
+            // Le taux de remplissage prend UNIQUEMENT en compte les pizzas vendables
+            const pct = Math.round((stats.valides / stats.total) * 100);
             const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
             container.innerHTML += `
                 <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
                     <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-                        <h4 style="margin:0; color: var(--text);">Distributeur ${idx}</h4>
-                        <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${mId.substring(0,5)}</span>
+                        <h4 style="margin:0; color: var(--text);">${nomVille}</h4>
+                        <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${stats.valides} OK</span>
                     </div>
-                    <div style="padding: 15px; flex-grow: 1; max-height: 250px; overflow-y: auto;">
+                    <div style="padding: 15px; flex-grow: 1; max-height: 280px; overflow-y: auto;">
                         ${listeHtml}
                     </div>
                     <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">Vendables</span>
-                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.occ_valide} / ${stats.total}</strong>
+                        <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
+                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / ${stats.total}</strong>
                     </div>
                 </div>
             `;
-            idx++;
         }
     }
 
