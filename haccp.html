@@ -326,9 +326,65 @@
 
     <!-- 5. Non-Conformités -->
     <div id="non-conformite" class="tab-content">
-        <h2 style="color: var(--primary); margin-top: 0;">Gestion des Non-Conformités</h2>
-        <p style="color: #888;">Déclarer un problème (produit, matériel, chaîne du froid).</p>
-        <!-- Formulaire à venir -->
+        <h2 style="color: var(--primary); margin-top: 0; margin-bottom: 5px;">Gestion des Non-Conformités</h2>
+        <p style="color: #888; margin-bottom: 20px;">Déclarez un problème (DLC dépassée à la livraison, carton abîmé, chaîne du froid...).</p>
+
+        <!-- Formulaire de saisie -->
+        <div class="no-print" style="background: var(--input-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 30px;">
+            
+            <!-- Bouton Multi-Photos -->
+            <div style="margin-bottom: 20px; text-align: center; border: 2px dashed #e74c3c; padding: 20px; border-radius: 12px; background: rgba(231, 76, 60, 0.05);">
+                <label for="nc-photos" style="display: block; cursor: pointer;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">📸</div>
+                    <div style="color: #e74c3c; font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Ajouter une ou plusieurs photos *</div>
+                    <div id="nc-photos-label" style="color: #888; font-size: 0.85rem;">Aucune photo sélectionnée</div>
+                </label>
+                <!-- L'attribut 'multiple' permet de choisir ou prendre plusieurs photos -->
+                <input type="file" id="nc-photos" accept="image/*" multiple style="display: none;" onchange="afficherNomsPhotosNC()">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Date de livraison *</label>
+                    <input type="date" id="nc-date" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Produits touchés (Optionnel)</label>
+                    <input type="text" id="nc-produits" placeholder="Ex: Mozzarella, Farine..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Quantité (Optionnel)</label>
+                    <input type="number" id="nc-quantite" placeholder="Ex: 3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Description du problème (Optionnel)</label>
+                <textarea id="nc-description" rows="3" placeholder="Carton percé, température à 12°C au lieu de 4°C..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);"></textarea>
+            </div>
+
+            <button onclick="enregistrerNC()" class="btn-action" style="background: #e74c3c; color: white; width: 100%; font-size: 1.1rem;">⚠️ Enregistrer la Non-Conformité</button>
+        </div>
+
+        <!-- Générateur de Rapport -->
+        <h3 style="color: var(--primary); margin-bottom: 15px;">Générer un Rapport</h3>
+        <div class="no-print" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px;">
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Du :</label>
+                <input type="date" id="rapport-debut" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 5px; font-weight: bold;">Au :</label>
+                <input type="date" id="rapport-fin" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text);">
+            </div>
+            <button onclick="genererRapportNC()" class="btn-action" style="background: #3498db; color: white;">🔍 Afficher le rapport</button>
+            <button onclick="window.print()" class="btn-action" style="background: #95a5a6; color: white;">🖨️ Imprimer / PDF</button>
+        </div>
+
+        <!-- Zone d'affichage du rapport -->
+        <div id="zone-rapport-nc" style="display: flex; flex-direction: column; gap: 20px;">
+            <p style="text-align: center; color: #888; padding: 20px;">Sélectionnez des dates pour afficher les rapports.</p>
+        </div>
     </div>
 
 </div>
@@ -356,6 +412,8 @@
 
         chargerZones();
         chargerHistoriqueNettoyage();
+
+        chargerHistoriqueOuvertures();
     }
     
     verifierConnexion();
@@ -920,6 +978,168 @@
                     <td style="padding: 12px 15px;"><span style="${isExpired}">${dlcStr}</span></td>
                     <td style="padding: 12px 15px; color: var(--text);">${row.employe || 'N/A'}</td>
                 </tr>
+            `;
+        }).join('');
+    }
+
+    // --- GESTION DES NON-CONFORMITÉS ---
+
+    // 1. Afficher le nombre de photos sélectionnées
+    function afficherNomsPhotosNC() {
+        const input = document.getElementById('nc-photos');
+        const label = document.getElementById('nc-photos-label');
+        if (input.files && input.files.length > 0) {
+            label.innerText = `✅ ${input.files.length} photo(s) prête(s)`;
+            label.style.color = "#2ecc71";
+            label.style.fontWeight = "bold";
+        } else {
+            label.innerText = "Aucune photo sélectionnée";
+            label.style.color = "#888";
+            label.style.fontWeight = "normal";
+        }
+    }
+
+    // 2. Enregistrer la Non-Conformité (avec upload multiple)
+    async function enregistrerNC() {
+        const dateLivraison = document.getElementById('nc-date').value;
+        const produits = document.getElementById('nc-produits').value;
+        const quantite = document.getElementById('nc-quantite').value;
+        const description = document.getElementById('nc-description').value;
+        const files = document.getElementById('nc-photos').files;
+
+        if (!dateLivraison || files.length === 0) {
+            alert("⚠️ La date de livraison et au moins une photo sont OBLIGATOIRES.");
+            return;
+        }
+
+        const btn = event.target;
+        btn.innerText = `⏳ Envoi de ${files.length} photo(s)...`;
+        btn.disabled = true;
+
+        try {
+            let uploadedUrls = [];
+
+            // Boucle d'upload pour toutes les photos sélectionnées
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                // Nom unique propre pour chaque photo
+                const fileName = `NC_${Date.now()}_${i}.${fileExt}`;
+                const filePath = `${currentUser.id}/${fileName}`;
+
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('haccp_photos')
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from('haccp_photos')
+                    .getPublicUrl(filePath);
+                
+                uploadedUrls.push(publicUrlData.publicUrl);
+            }
+
+            btn.innerText = "⏳ Sauvegarde du rapport...";
+
+            // Enregistrement dans la table
+            const { error: dbError } = await supabaseClient
+                .from('haccp_non_conformites')
+                .insert([{
+                    user_id: currentUser.id,
+                    date_livraison: dateLivraison,
+                    produits: produits || 'Non précisé',
+                    quantite: quantite ? parseInt(quantite) : null,
+                    description: description || 'Aucune description',
+                    photos: uploadedUrls
+                }]);
+
+            if (dbError) throw dbError;
+
+            alert("✅ Rapport de non-conformité enregistré avec succès !");
+            
+            // Réinitialisation du formulaire
+            document.getElementById('nc-date').value = "";
+            document.getElementById('nc-produits').value = "";
+            document.getElementById('nc-quantite').value = "";
+            document.getElementById('nc-description').value = "";
+            document.getElementById('nc-photos').value = "";
+            afficherNomsPhotosNC();
+
+        } catch (error) {
+            alert("Erreur lors de l'enregistrement : " + error.message);
+        } finally {
+            btn.innerText = "⚠️ Enregistrer la Non-Conformité";
+            btn.disabled = false;
+        }
+    }
+
+    // 3. Générer le rapport filtré
+    async function genererRapportNC() {
+        if (!currentUser) return;
+
+        const dateDebut = document.getElementById('rapport-debut').value;
+        const dateFin = document.getElementById('rapport-fin').value;
+        const container = document.getElementById('zone-rapport-nc');
+
+        if (!dateDebut || !dateFin) {
+            alert("Veuillez sélectionner une date de début et de fin.");
+            return;
+        }
+
+        container.innerHTML = '<p style="text-align: center; color: #888;">Recherche des fiches...</p>';
+
+        const { data, error } = await supabaseClient
+            .from('haccp_non_conformites')
+            .select('*')
+            .gte('date_livraison', dateDebut)
+            .lte('date_livraison', dateFin)
+            .order('date_livraison', { ascending: false });
+
+        if (error) {
+            container.innerHTML = `<p style="color: #e74c3c;">Erreur : ${error.message}</p>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<p style="text-align: center; color: #888; padding: 20px;">Aucune non-conformité trouvée sur cette période.</p>`;
+            return;
+        }
+
+        container.innerHTML = data.map(nc => {
+            const dateStr = new Date(nc.date_livraison).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Création de la galerie de vignettes pour cette NC
+            const photosHtml = nc.photos.map(url => `
+                <a href="${url}" target="_blank">
+                    <img src="${url}" style="height: 100px; width: 100px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                </a>
+            `).join('');
+
+            return `
+                <div style="background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 10px rgba(0,0,0,0.05); page-break-inside: avoid;">
+                    <div style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0; color: #e74c3c; font-size: 1.2rem;">📅 Livraison du ${dateStr}</h4>
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 15px;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <p style="margin: 0 0 8px 0;"><strong>Produits touchés :</strong> <span style="color: var(--text);">${nc.produits}</span></p>
+                            <p style="margin: 0 0 8px 0;"><strong>Quantité affectée :</strong> <span style="color: var(--text);">${nc.quantite || 'N/A'}</span></p>
+                            <div style="background: var(--input-bg); padding: 12px; border-radius: 8px; margin-top: 10px;">
+                                <strong>Description :</strong><br>
+                                <span style="color: var(--text);">${nc.description}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong style="display: block; margin-bottom: 10px; color: #888;">Photos (Cliquez pour agrandir) :</strong>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            ${photosHtml}
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('');
     }
