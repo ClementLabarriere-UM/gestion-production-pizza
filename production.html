@@ -830,16 +830,18 @@
     }
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
+    // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
-        const { data: stocks, error } = await supabaseClient.from('machine_stocks').select('*');
+        const { data: stocks, error } = await supabaseClient
+            .from('machine_stocks')
+            .select('*');
 
         if (error || !stocks || stocks.length === 0) {
             container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser Adial".</div>`;
             return;
         }
 
-        // Dictionnaire exact déduit de ton fichier Excel
         const NOMS_MACHINES = {
             "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
             "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
@@ -850,12 +852,31 @@
         const machinesDict = {};
         const now = new Date();
 
-        stocks.forEach(slot => {
+        // 1. On trie le tableau pour avoir les données les plus récentes en PREMIER
+        stocks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // 2. On "dédoublonne" : on ne garde que l'info la plus récente pour chaque machine + slot
+        const slotsRecents = {};
+        
+        stocks.forEach(row => {
+            const cleUnique = `${row.machine_id}-${row.slot}`; // ex: ae3WE...-42
+            // Si on n'a pas encore vu cette case, c'est la plus récente (grâce au tri précédent)
+            if (!slotsRecents[cleUnique]) {
+                slotsRecents[cleUnique] = row;
+            }
+        });
+
+        // 3. On compte les vraies pizzas (seulement sur les slots récents dédoublonnés)
+        Object.values(slotsRecents).forEach(slot => {
             if (!machinesDict[slot.machine_id]) {
                 machinesDict[slot.machine_id] = { total: 0, valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
             }
             let m = machinesDict[slot.machine_id];
-            m.total++;
+            
+            // On s'assure qu'on ne compte pas plus de 70 cases physiques par machine
+            if (m.total < 70) {
+                m.total++;
+            }
             
             if (slot.est_occupe) {
                 const nom = slot.nom_pizza || "Inconnue";
@@ -902,7 +923,9 @@
             
             if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
             
-            const pct = Math.round((stats.valides / stats.total) * 100);
+            // On s'assure que le total affiché est max 70
+            const totalAffichage = Math.min(stats.total, 70); 
+            const pct = Math.round((stats.valides / totalAffichage) * 100);
             const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
             container.innerHTML += `
@@ -916,7 +939,7 @@
                     </div>
                     <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
-                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / ${stats.total}</strong>
+                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / 70</strong>
                     </div>
                 </div>
             `;
@@ -956,7 +979,7 @@
             }
         }
 
-        // C. On recalcule la page entière (badges de prod, ingrédients, impression)
+        // C. On recalcule la page entière
         calculerBesoins();
         triggerSave();
     }
