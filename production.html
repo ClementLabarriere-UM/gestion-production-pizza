@@ -860,26 +860,27 @@
             const machinesPropres = {};
             const now = new Date();
 
+            // ⚠️ CORRECTIF SPÉCIAL IPAD/SAFARI : Formatage des dates ⚠️
+            const parseSafeTime = (dateStr) => {
+                if (!dateStr) return 0;
+                // Safari a besoin du "T" entre la date et l'heure pour ne pas planter
+                return new Date(dateStr.replace(' ', 'T')).getTime();
+            };
+
             // 2. Traiter chaque machine séparément
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Trier du plus récent au plus ancien
-                lignes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                // Tri robuste 100% compatible iPad
+                lignes.sort((a, b) => parseSafeTime(b.created_at) - parseSafeTime(a.created_at));
                 
-                // On prend la date de la toute première ligne (la plus récente pour cette machine)
-                const lastDate = new Date(lignes[0].created_at);
+                // Heure exacte de la dernière synchronisation
+                const lastTime = parseSafeTime(lignes[0].created_at);
                 
-                // On ne garde QUE les lignes générées dans la même minute
+                // On ne garde QUE les lignes enregistrées lors de cette dernière synchro (marge généreuse de 15 min)
                 let batchRecent = lignes.filter(row => {
-                    const diff = lastDate - new Date(row.created_at);
-                    return diff >= 0 && diff < 60000; // 60 000 ms = 1 minute
+                    return (lastTime - parseSafeTime(row.created_at)) < 900000;
                 });
-
-                // SÉCURITÉ ANTI-DOUBLON ABSOLUE : on coupe à 70 maximum
-                if (batchRecent.length > 70) {
-                    batchRecent = batchRecent.slice(0, 70);
-                }
 
                 machinesPropres[mId] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
                 const m = machinesPropres[mId];
@@ -887,7 +888,8 @@
                 batchRecent.forEach(row => {
                     if (row.est_occupe) {
                         const nom = row.nom_pizza || "Inconnue";
-                        const datePeremption = row.date_peremption ? new Date(row.date_peremption) : null;
+                        // Correctif iPad aussi pour la date de péremption !
+                        const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
                         const estPerimee = datePeremption && datePeremption < now;
 
                         if (estPerimee) {
@@ -968,7 +970,6 @@
                 const stats = machinesPropres[mId];
                 const nomVilleAdial = NOMS_MACHINES[mId] || ""; 
                 
-                // SÉCURITÉ : on vérifie que le nom n'est pas vide avant de chercher
                 if (nomVilleAdial) {
                     const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
                     if (distApp) {
@@ -987,7 +988,6 @@
             triggerSave();
 
         } catch (globalError) {
-            // SÉCURITÉ ANTI-ÉCRAN BLANC : Si ça recrashe, l'erreur s'affichera à l'écran
             console.error(globalError);
             container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur lors du traitement : ${globalError.message}</div>`;
         }
