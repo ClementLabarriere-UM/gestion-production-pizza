@@ -830,7 +830,6 @@
     }
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
-    // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
         const { data: stocks, error } = await supabaseClient
@@ -849,38 +848,35 @@
             "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
         };
 
-        const machinesDict = {};
-        const now = new Date();
-
-        // 1. On trie le tableau pour avoir les données les plus récentes en PREMIER
-        stocks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        // 2. On "dédoublonne" : on ne garde que l'info la plus récente pour chaque machine + slot
-        const slotsRecents = {};
-        
+        // 1. Identifier l'heure exacte de la DERNIÈRE synchro pour chaque machine
+        const lastSyncTime = {};
         stocks.forEach(row => {
-            const cleUnique = `${row.machine_id}-${row.slot}`; // ex: ae3WE...-42
-            // Si on n'a pas encore vu cette case, c'est la plus récente (grâce au tri précédent)
-            if (!slotsRecents[cleUnique]) {
-                slotsRecents[cleUnique] = row;
+            const time = new Date(row.created_at).getTime();
+            if (!lastSyncTime[row.machine_id] || time > lastSyncTime[row.machine_id]) {
+                lastSyncTime[row.machine_id] = time;
             }
         });
 
-        // 3. On compte les vraies pizzas (seulement sur les slots récents dédoublonnés)
-        Object.values(slotsRecents).forEach(slot => {
-            if (!machinesDict[slot.machine_id]) {
-                machinesDict[slot.machine_id] = { total: 0, valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
+        // 2. Ne garder QUE les lignes insérées lors de cette dernière synchro (marge de 2 minutes)
+        const MARGE_MS = 2 * 60 * 1000;
+        const stocksRecents = stocks.filter(row => {
+            const time = new Date(row.created_at).getTime();
+            return (lastSyncTime[row.machine_id] - time) <= MARGE_MS;
+        });
+
+        // 3. Calculs classiques sur les données propres (sans doublons)
+        const machinesDict = {};
+        const now = new Date();
+
+        stocksRecents.forEach(row => {
+            if (!machinesDict[row.machine_id]) {
+                machinesDict[row.machine_id] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
             }
-            let m = machinesDict[slot.machine_id];
+            let m = machinesDict[row.machine_id];
             
-            // On s'assure qu'on ne compte pas plus de 70 cases physiques par machine
-            if (m.total < 70) {
-                m.total++;
-            }
-            
-            if (slot.est_occupe) {
-                const nom = slot.nom_pizza || "Inconnue";
-                const datePeremption = slot.date_peremption ? new Date(slot.date_peremption) : null;
+            if (row.est_occupe) {
+                const nom = row.nom_pizza || "Inconnue";
+                const datePeremption = row.date_peremption ? new Date(row.date_peremption) : null;
                 const estPerimee = datePeremption && datePeremption < now;
 
                 if (estPerimee) {
@@ -897,7 +893,7 @@
         const idsTries = Object.keys(machinesDict).sort();
 
         // ---------------------------------------------------------
-        // 1. AFFICHAGE DES CARTES DES DISTRIBUTEURS
+        // AFFICHAGE DES CARTES DES DISTRIBUTEURS
         // ---------------------------------------------------------
         for (const mId of idsTries) {
             const stats = machinesDict[mId];
@@ -923,9 +919,7 @@
             
             if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
             
-            // On s'assure que le total affiché est max 70
-            const totalAffichage = Math.min(stats.total, 70); 
-            const pct = Math.round((stats.valides / totalAffichage) * 100);
+            const pct = Math.round((stats.valides / 70) * 100);
             const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
             container.innerHTML += `
@@ -946,10 +940,8 @@
         }
 
         // ---------------------------------------------------------
-        // 2. AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
+        // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
         // ---------------------------------------------------------
-        
-        // A. On vide les stocks affichés pour éviter les doublons ou pizzas fantômes
         listeDistributeurs.forEach(dist => {
             if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
             cloudPrefs.carte.forEach(nomPizza => {
@@ -960,12 +952,9 @@
             });
         });
 
-        // B. On injecte les vraies quantités valides issues de l'API
         for (const mId of idsTries) {
             const stats = machinesDict[mId];
             const nomVilleAdial = NOMS_MACHINES[mId];
-            
-            // On fait le lien entre la machine Adial et ta machine dans Supabase (par son nom)
             const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
             
             if (distApp) {
@@ -979,7 +968,6 @@
             }
         }
 
-        // C. On recalcule la page entière
         calculerBesoins();
         triggerSave();
     }
