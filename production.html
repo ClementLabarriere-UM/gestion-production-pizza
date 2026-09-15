@@ -830,194 +830,158 @@
     }
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
+    // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
+        const { data: stocks, error } = await supabaseClient
+            .from('machine_stocks')
+            .select('*');
 
-        try {
-            // On utilise le VRAI nom de ta colonne : derniere_mise_a_jour
-            const { data: stocks, error } = await supabaseClient
-                .from('machine_stocks')
-                .select('*')
-                .order('derniere_mise_a_jour', { ascending: false })
-                .limit(1000);
+        if (error || !stocks || stocks.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser Adial".</div>`;
+            return;
+        }
 
-            if (error) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px;"><b>Erreur Base de données :</b> ${error.message}</div>`;
-                return;
+        const NOMS_MACHINES = {
+            "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
+            "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
+            "aeAObNXHeI5CMVry9dNhC0q0W39QTujsDYmitn6HqUo": "MELOX",
+            "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
+        };
+
+        const machinesDict = {};
+        const now = new Date();
+
+        // 1. On trie le tableau pour avoir les données les plus récentes en PREMIER
+        stocks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // 2. On "dédoublonne" : on ne garde que l'info la plus récente pour chaque machine + slot
+        const slotsRecents = {};
+        
+        stocks.forEach(row => {
+            const cleUnique = `${row.machine_id}-${row.slot}`; // ex: ae3WE...-42
+            // Si on n'a pas encore vu cette case, c'est la plus récente (grâce au tri précédent)
+            if (!slotsRecents[cleUnique]) {
+                slotsRecents[cleUnique] = row;
             }
+        });
 
-            if (!stocks || stocks.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Aucune pizza trouvée. Cliquez sur "Synchroniser".</div>`;
-                return;
+        // 3. On compte les vraies pizzas (seulement sur les slots récents dédoublonnés)
+        Object.values(slotsRecents).forEach(slot => {
+            if (!machinesDict[slot.machine_id]) {
+                machinesDict[slot.machine_id] = { total: 0, valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
             }
+            let m = machinesDict[slot.machine_id];
+            
+            // On s'assure qu'on ne compte pas plus de 70 cases physiques par machine
+            if (m.total < 70) {
+                m.total++;
+            }
+            
+            if (slot.est_occupe) {
+                const nom = slot.nom_pizza || "Inconnue";
+                const datePeremption = slot.date_peremption ? new Date(slot.date_peremption) : null;
+                const estPerimee = datePeremption && datePeremption < now;
 
-            const NOMS_MACHINES = {
-                "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
-                "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
-                "aeAObNXHeI5CMVry9dNhC0q0W39QTujsDYmitn6HqUo": "MELOX",
-                "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
-            };
-
-            const machinesDict = {};
-            stocks.forEach(row => {
-                if (!machinesDict[row.machine_id]) machinesDict[row.machine_id] = [];
-                machinesDict[row.machine_id].push(row);
-            });
-
-            const machinesPropres = {};
-            const now = new Date();
-
-            const parseSafeTime = (dateStr) => {
-                if (!dateStr) return 0;
-                let clean = dateStr.replace(' ', 'T');
-                let d = new Date(clean);
-                if (isNaN(d.getTime())) {
-                    let parts = clean.split(/[-T:.Z+]/);
-                    if (parts.length >= 6) d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]));
-                    else return 0;
+                if (estPerimee) {
+                    m.perimees++;
+                    m.liste_perimees[nom] = (m.liste_perimees[nom] || 0) + 1;
+                } else {
+                    m.valides++;
+                    m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
                 }
-                return d.getTime();
-            };
-
-            for (const mId in machinesDict) {
-                let lignes = machinesDict[mId];
-                
-                // Utilisation de derniere_mise_a_jour
-                lignes.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
-                
-                let batchRecent = [];
-                let seenSlots = new Set();
-
-                if (lignes.length > 0) {
-                    batchRecent.push(lignes[0]);
-                    let lastAcceptedTime = parseSafeTime(lignes[0].derniere_mise_a_jour);
-                    
-                    let firstSlot = lignes[0].slot || lignes[0].numero_case || lignes[0].case;
-                    if (firstSlot !== undefined) seenSlots.add(firstSlot);
-
-                    for (let i = 1; i < lignes.length; i++) {
-                        const row = lignes[i];
-                        const currentTime = parseSafeTime(row.derniere_mise_a_jour);
-                        const gap = lastAcceptedTime - currentTime;
-
-                        if (gap > 15000) break; // Coupe net si plus de 15 sec d'écart (ancienne synchro)
-
-                        let slotId = row.slot || row.numero_case || row.case;
-                        if (slotId !== undefined) {
-                            if (seenSlots.has(slotId)) continue;
-                            seenSlots.add(slotId);
-                        }
-
-                        batchRecent.push(row);
-                        lastAcceptedTime = currentTime;
-                    }
-                }
-
-                if (batchRecent.length > 70) batchRecent = batchRecent.slice(0, 70);
-
-                machinesPropres[mId] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
-                const m = machinesPropres[mId];
-
-                batchRecent.forEach(row => {
-                    if (row.est_occupe) {
-                        const nom = row.nom_pizza || "Inconnue";
-                        const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
-                        const estPerimee = datePeremption && datePeremption < now;
-
-                        if (estPerimee) {
-                            m.perimees++;
-                            m.liste_perimees[nom] = (m.liste_perimees[nom] || 0) + 1;
-                        } else {
-                            m.valides++;
-                            m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
-                        }
-                    }
-                });
             }
+        });
 
-            container.innerHTML = '';
-            const idsTries = Object.keys(machinesPropres).sort();
+        container.innerHTML = '';
+        const idsTries = Object.keys(machinesDict).sort();
 
-            for (const mId of idsTries) {
-                const stats = machinesPropres[mId];
-                const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
+        // ---------------------------------------------------------
+        // 1. AFFICHAGE DES CARTES DES DISTRIBUTEURS
+        // ---------------------------------------------------------
+        for (const mId of idsTries) {
+            const stats = machinesDict[mId];
+            const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
 
-                const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
-                let listeHtml = inventaireTrie.map(([nom, q]) => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:4px;">
-                        <span style="font-size:0.95rem; color:var(--text);">${nom}</span>
-                        <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
+            const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
+            let listeHtml = inventaireTrie.map(([nom, q]) => `
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:4px;">
+                    <span style="font-size:0.95rem; color:var(--text);">${nom}</span>
+                    <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
+                </div>
+            `).join('');
+
+            if (stats.perimees > 0) {
+                const perimeesTrie = Object.entries(stats.liste_perimees).sort((a, b) => b[1] - a[1]);
+                listeHtml += perimeesTrie.map(([nom, q]) => `
+                    <div style="display:flex; justify-content:space-between; margin-top: 10px; margin-bottom:8px; padding: 6px; background: rgba(231, 76, 60, 0.05); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 6px;">
+                        <span style="font-size:0.90rem; color:#e74c3c; font-weight: bold;">⚠️ ${nom} <span style="font-size:0.75rem; font-weight: normal;">(Périmée)</span></span>
+                        <strong style="color:#e74c3c; font-size: 1.1rem;">${q}</strong>
                     </div>
                 `).join('');
-
-                if (stats.perimees > 0) {
-                    const perimeesTrie = Object.entries(stats.liste_perimees).sort((a, b) => b[1] - a[1]);
-                    listeHtml += perimeesTrie.map(([nom, q]) => `
-                        <div style="display:flex; justify-content:space-between; margin-top: 10px; margin-bottom:8px; padding: 6px; background: rgba(231, 76, 60, 0.05); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 6px;">
-                            <span style="font-size:0.90rem; color:#e74c3c; font-weight: bold;">⚠️ ${nom} <span style="font-size:0.75rem; font-weight: normal;">(Périmée)</span></span>
-                            <strong style="color:#e74c3c; font-size: 1.1rem;">${q}</strong>
-                        </div>
-                    `).join('');
-                }
-                
-                if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
-                
-                const pct = Math.round((stats.valides / 70) * 100);
-                const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
-
-                container.innerHTML += `
-                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
-                        <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-                            <h4 style="margin:0; color: var(--text);">${nomVille}</h4>
-                            <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${stats.valides} OK</span>
-                        </div>
-                        <div style="padding: 15px; flex-grow: 1; max-height: 280px; overflow-y: auto;">
-                            ${listeHtml}
-                        </div>
-                        <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
-                            <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / 70</strong>
-                        </div>
-                    </div>
-                `;
             }
+            
+            if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
+            
+            // On s'assure que le total affiché est max 70
+            const totalAffichage = Math.min(stats.total, 70); 
+            const pct = Math.round((stats.valides / totalAffichage) * 100);
+            const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
-            listeDistributeurs.forEach(dist => {
-                if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
-                cloudPrefs.carte.forEach(nomPizza => {
-                    if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
-                    cloudPrefs.matrice[dist.id][nomPizza].stock = ""; 
-                    const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                    if (inputUi) inputUi.value = "";
-                });
+            container.innerHTML += `
+                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                        <h4 style="margin:0; color: var(--text);">${nomVille}</h4>
+                        <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${stats.valides} OK</span>
+                    </div>
+                    <div style="padding: 15px; flex-grow: 1; max-height: 280px; overflow-y: auto;">
+                        ${listeHtml}
+                    </div>
+                    <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
+                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / 70</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ---------------------------------------------------------
+        // 2. AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
+        // ---------------------------------------------------------
+        
+        // A. On vide les stocks affichés pour éviter les doublons ou pizzas fantômes
+        listeDistributeurs.forEach(dist => {
+            if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
+            cloudPrefs.carte.forEach(nomPizza => {
+                if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
+                cloudPrefs.matrice[dist.id][nomPizza].stock = ""; 
+                const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                if (inputUi) inputUi.value = "";
             });
+        });
 
-            for (const mId of idsTries) {
-                const stats = machinesPropres[mId];
-                const nomVilleAdial = NOMS_MACHINES[mId] || ""; 
-                
-                if (nomVilleAdial) {
-                    const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
-                    if (distApp) {
-                        for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
-                            if (cloudPrefs.carte.includes(nomPizza)) {
-                                cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
-                                const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                                if (inputUi) inputUi.value = qte;
-                            }
-                        }
+        // B. On injecte les vraies quantités valides issues de l'API
+        for (const mId of idsTries) {
+            const stats = machinesDict[mId];
+            const nomVilleAdial = NOMS_MACHINES[mId];
+            
+            // On fait le lien entre la machine Adial et ta machine dans Supabase (par son nom)
+            const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
+            
+            if (distApp) {
+                for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
+                    if (cloudPrefs.carte.includes(nomPizza)) {
+                        cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
+                        const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                        if (inputUi) inputUi.value = qte;
                     }
                 }
             }
-
-            calculerBesoins();
-            triggerSave();
-
-        } catch (globalError) {
-            console.error(globalError);
-            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur : ${globalError.message}</div>`;
         }
+
+        // C. On recalcule la page entière
+        calculerBesoins();
+        triggerSave();
     }
 
     async function runStocksSync() {
