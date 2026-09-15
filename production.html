@@ -860,7 +860,7 @@
             const machinesPropres = {};
             const now = new Date();
 
-            // Correctif iPad/Safari : Formatage des dates
+            // Correctif iPad/Safari : Formatage des dates pour éviter le bug d'écran blanc
             const parseSafeTime = (dateStr) => {
                 if (!dateStr) return 0;
                 return new Date(dateStr.replace(' ', 'T')).getTime();
@@ -878,18 +878,19 @@
                     batchRecent.push(lignes[0]); // On prend la toute première (la plus récente)
                     
                     for (let i = 1; i < lignes.length; i++) {
-                        // On calcule le délai entre l'insertion de chaque pizza
+                        // On calcule le délai entre l'insertion de chaque pizza dans la base de données
                         const delai = parseSafeTime(lignes[i-1].created_at) - parseSafeTime(lignes[i].created_at);
                         
-                        // Si on détecte un "trou" de plus de 60 secondes, on est sur une vieille synchro : ON COUPE !
-                        if (delai > 60000) {
+                        // LE CORRECTIF EST ICI : Si on détecte un "trou" de plus de 3 secondes, 
+                        // c'est qu'on a atteint l'ancienne synchronisation. On coupe net !
+                        if (delai > 3000) {
                             break; 
                         }
                         batchRecent.push(lignes[i]);
                     }
                 }
 
-                // Par pure sécurité, on ne garde jamais plus de 70 cases (capacité physique max)
+                // Coupe-circuit : on ne garde jamais plus de 70 cases (capacité physique max)
                 if (batchRecent.length > 70) {
                     batchRecent = batchRecent.slice(0, 70);
                 }
@@ -897,7 +898,7 @@
                 machinesPropres[mId] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
                 const m = machinesPropres[mId];
 
-                // On compte enfin les vraies pizzas du dernier lot
+                // On compte enfin les vraies pizzas isolées du tout dernier lot
                 batchRecent.forEach(row => {
                     if (row.est_occupe) {
                         const nom = row.nom_pizza || "Inconnue";
