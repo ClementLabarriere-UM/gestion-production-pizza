@@ -832,27 +832,23 @@
     // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données...</div>';
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
 
         try {
-            // Requête basique indestructible
+            // On force la lecture des données les plus récentes
             const { data: stocks, error } = await supabaseClient
                 .from('machine_stocks')
-                .select('*');
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(1000);
 
-            // AFFICHAGE DES ERREURS POUR DÉBOGAGE
             if (error) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; border: 2px dashed #e74c3c; border-radius: 8px;">
-                    <b>Erreur Base de données :</b> ${error.message}
-                </div>`;
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px;"><b>Erreur Base de données :</b> ${error.message}</div>`;
                 return;
             }
 
             if (!stocks || stocks.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">
-                    Aucune pizza trouvée dans la base de données.<br>
-                    <strong>👉 Cliquez sur le bouton rouge "Synchroniser" pour rafraîchir.</strong>
-                </div>`;
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Aucune pizza trouvée. Cliquez sur "Synchroniser".</div>`;
                 return;
             }
 
@@ -864,8 +860,6 @@
             };
 
             const machinesDict = {};
-            
-            // 1. Grouper par machine
             stocks.forEach(row => {
                 if (!machinesDict[row.machine_id]) machinesDict[row.machine_id] = [];
                 machinesDict[row.machine_id].push(row);
@@ -874,35 +868,59 @@
             const machinesPropres = {};
             const now = new Date();
 
+            // Parseur de date 100% compatible iPad/Safari
             const parseSafeTime = (dateStr) => {
                 if (!dateStr) return 0;
-                return new Date(dateStr.replace(' ', 'T')).getTime();
+                let clean = dateStr.replace(' ', 'T');
+                let d = new Date(clean);
+                if (isNaN(d.getTime())) {
+                    let parts = clean.split(/[-T:.Z+]/);
+                    if (parts.length >= 6) d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]));
+                    else return 0;
+                }
+                return d.getTime();
             };
 
-            // 2. Traitement intelligent par machine
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Tri manuel du plus récent au plus ancien (100% compatible iPad)
+                // Tri strict du plus récent au plus ancien
                 lignes.sort((a, b) => parseSafeTime(b.created_at) - parseSafeTime(a.created_at));
                 
-                const lastTime = parseSafeTime(lignes[0].created_at);
-                
-                // On récupère tout ce qui a été inséré dans un délai de 2 minutes (120 000 ms).
-                // Cela laisse le temps à ton script de tout insérer sans couper la machine en deux.
-                let batchRecent = lignes.filter(row => {
-                    return (lastTime - parseSafeTime(row.created_at)) < 120000;
-                });
+                let batchRecent = [];
+                let seenSlots = new Set(); // Anti-doublon ultime si ta base a le numéro de case
 
-                // Sécurité anti-doublon absolue : une machine = 70 places max.
-                if (batchRecent.length > 70) {
-                    batchRecent = batchRecent.slice(0, 70);
+                if (lignes.length > 0) {
+                    batchRecent.push(lignes[0]);
+                    let lastAcceptedTime = parseSafeTime(lignes[0].created_at);
+                    
+                    let firstSlot = lignes[0].slot || lignes[0].numero_case || lignes[0].case;
+                    if (firstSlot !== undefined) seenSlots.add(firstSlot);
+
+                    for (let i = 1; i < lignes.length; i++) {
+                        const row = lignes[i];
+                        const currentTime = parseSafeTime(row.created_at);
+                        const gap = lastAcceptedTime - currentTime;
+
+                        // Si plus de 15 secondes d'écart entre deux insertions en base, c'est une ancienne synchronisation ! On coupe.
+                        if (gap > 15000) break;
+
+                        let slotId = row.slot || row.numero_case || row.case;
+                        if (slotId !== undefined) {
+                            if (seenSlots.has(slotId)) continue;
+                            seenSlots.add(slotId);
+                        }
+
+                        batchRecent.push(row);
+                        lastAcceptedTime = currentTime; // On avance le chronomètre
+                    }
                 }
+
+                if (batchRecent.length > 70) batchRecent = batchRecent.slice(0, 70);
 
                 machinesPropres[mId] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
                 const m = machinesPropres[mId];
 
-                // 3. Comptage
                 batchRecent.forEach(row => {
                     if (row.est_occupe) {
                         const nom = row.nom_pizza || "Inconnue";
@@ -1006,7 +1024,7 @@
 
         } catch (globalError) {
             console.error(globalError);
-            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur inattendue : ${globalError.message}</div>`;
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur : ${globalError.message}</div>`;
         }
     }
 
