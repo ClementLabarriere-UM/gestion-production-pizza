@@ -835,11 +835,11 @@
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
 
         try {
-            // On force la lecture des données les plus récentes
+            // On utilise le VRAI nom de ta colonne : derniere_mise_a_jour
             const { data: stocks, error } = await supabaseClient
                 .from('machine_stocks')
                 .select('*')
-                .order('created_at', { ascending: false })
+                .order('derniere_mise_a_jour', { ascending: false })
                 .limit(1000);
 
             if (error) {
@@ -868,7 +868,6 @@
             const machinesPropres = {};
             const now = new Date();
 
-            // Parseur de date 100% compatible iPad/Safari
             const parseSafeTime = (dateStr) => {
                 if (!dateStr) return 0;
                 let clean = dateStr.replace(' ', 'T');
@@ -884,26 +883,25 @@
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Tri strict du plus récent au plus ancien
-                lignes.sort((a, b) => parseSafeTime(b.created_at) - parseSafeTime(a.created_at));
+                // Utilisation de derniere_mise_a_jour
+                lignes.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
                 
                 let batchRecent = [];
-                let seenSlots = new Set(); // Anti-doublon ultime si ta base a le numéro de case
+                let seenSlots = new Set();
 
                 if (lignes.length > 0) {
                     batchRecent.push(lignes[0]);
-                    let lastAcceptedTime = parseSafeTime(lignes[0].created_at);
+                    let lastAcceptedTime = parseSafeTime(lignes[0].derniere_mise_a_jour);
                     
                     let firstSlot = lignes[0].slot || lignes[0].numero_case || lignes[0].case;
                     if (firstSlot !== undefined) seenSlots.add(firstSlot);
 
                     for (let i = 1; i < lignes.length; i++) {
                         const row = lignes[i];
-                        const currentTime = parseSafeTime(row.created_at);
+                        const currentTime = parseSafeTime(row.derniere_mise_a_jour);
                         const gap = lastAcceptedTime - currentTime;
 
-                        // Si plus de 15 secondes d'écart entre deux insertions en base, c'est une ancienne synchronisation ! On coupe.
-                        if (gap > 15000) break;
+                        if (gap > 15000) break; // Coupe net si plus de 15 sec d'écart (ancienne synchro)
 
                         let slotId = row.slot || row.numero_case || row.case;
                         if (slotId !== undefined) {
@@ -912,7 +910,7 @@
                         }
 
                         batchRecent.push(row);
-                        lastAcceptedTime = currentTime; // On avance le chronomètre
+                        lastAcceptedTime = currentTime;
                     }
                 }
 
@@ -941,9 +939,6 @@
             container.innerHTML = '';
             const idsTries = Object.keys(machinesPropres).sort();
 
-            // ---------------------------------------------------------
-            // AFFICHAGE DES CARTES DES DISTRIBUTEURS
-            // ---------------------------------------------------------
             for (const mId of idsTries) {
                 const stats = machinesPropres[mId];
                 const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
@@ -988,9 +983,6 @@
                 `;
             }
 
-            // ---------------------------------------------------------
-            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
-            // ---------------------------------------------------------
             listeDistributeurs.forEach(dist => {
                 if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
                 cloudPrefs.carte.forEach(nomPizza => {
