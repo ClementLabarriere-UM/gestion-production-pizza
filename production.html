@@ -835,12 +835,13 @@
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données...</div>';
 
         try {
-            // Requête basique indestructible
+            // Requête ciblée avec le bon nom de colonne
             const { data: stocks, error } = await supabaseClient
                 .from('machine_stocks')
-                .select('*');
+                .select('*')
+                .order('derniere_mise_a_jour', { ascending: false })
+                .limit(1000);
 
-            // AFFICHAGE DES ERREURS POUR DÉBOGAGE
             if (error) {
                 container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; border: 2px dashed #e74c3c; border-radius: 8px;">
                     <b>Erreur Base de données :</b> ${error.message}
@@ -879,19 +880,18 @@
                 return new Date(dateStr.replace(' ', 'T')).getTime();
             };
 
-            // 2. Traitement intelligent par machine
+            // 2. Traitement intelligent par machine basé sur derniere_mise_a_jour
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Tri manuel du plus récent au plus ancien (100% compatible iPad)
-                lignes.sort((a, b) => parseSafeTime(b.created_at) - parseSafeTime(a.created_at));
+                // Tri strict du plus récent au plus ancien avec le bon nom de colonne
+                lignes.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
                 
-                const lastTime = parseSafeTime(lignes[0].created_at);
+                const lastTime = parseSafeTime(lignes[0].derniere_mise_a_jour);
                 
-                // On récupère tout ce qui a été inséré dans un délai de 2 minutes (120 000 ms).
-                // Cela laisse le temps à ton script de tout insérer sans couper la machine en deux.
+                // On récupère tout ce qui appartient au même lot de synchronisation (fenêtre de 2 minutes)
                 let batchRecent = lignes.filter(row => {
-                    return (lastTime - parseSafeTime(row.created_at)) < 120000;
+                    return (lastTime - parseSafeTime(row.derniere_mise_a_jour)) < 120000;
                 });
 
                 // Sécurité anti-doublon absolue : une machine = 70 places max.
