@@ -835,7 +835,7 @@
         const { data: stocks, error } = await supabaseClient.from('machine_stocks').select('*');
 
         if (error || !stocks || stocks.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser Adial".</div>`;
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser".</div>`;
             return;
         }
 
@@ -849,25 +849,8 @@
         const machinesDict = {};
         const now = new Date();
 
-        // 1. On trie par derniere_mise_a_jour pour avoir le plus récent en premier
-        stocks.sort((a, b) => new Date(b.derniere_mise_a_jour.replace(' ', 'T')) - new Date(a.derniere_mise_a_jour.replace(' ', 'T')));
-
-        // 2. On isole la dernière synchro exacte de chaque machine
-        const lastSyncTime = {};
+        // On compte simplement toutes les pizzas présentes dans la table
         stocks.forEach(row => {
-            const time = new Date(row.derniere_mise_a_jour.replace(' ', 'T')).getTime();
-            if (!lastSyncTime[row.machine_id] || time > lastSyncTime[row.machine_id]) {
-                lastSyncTime[row.machine_id] = time;
-            }
-        });
-
-        const MARGE_MS = 2 * 60 * 1000;
-        const stocksRecents = stocks.filter(row => {
-            const time = new Date(row.derniere_mise_a_jour.replace(' ', 'T')).getTime();
-            return (lastSyncTime[row.machine_id] - time) <= MARGE_MS;
-        });
-
-        stocksRecents.forEach(row => {
             if (!machinesDict[row.machine_id]) {
                 machinesDict[row.machine_id] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
             }
@@ -891,9 +874,6 @@
         container.innerHTML = '';
         const idsTries = Object.keys(machinesDict).sort();
 
-        // ---------------------------------------------------------
-        // AFFICHAGE DES CARTES DES DISTRIBUTEURS
-        // ---------------------------------------------------------
         for (const mId of idsTries) {
             const stats = machinesDict[mId];
             const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
@@ -918,6 +898,7 @@
             
             if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
             
+            const totalAffichage = Math.min(stats.valides + stats.perimees, 70);
             const pct = Math.round((stats.valides / 70) * 100);
             const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
@@ -938,9 +919,6 @@
             `;
         }
 
-        // ---------------------------------------------------------
-        // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
-        // ---------------------------------------------------------
         listeDistributeurs.forEach(dist => {
             if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
             cloudPrefs.carte.forEach(nomPizza => {
