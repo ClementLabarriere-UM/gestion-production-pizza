@@ -832,16 +832,27 @@
     // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données...</div>';
+
         try {
-            // LE CORRECTIF MAJEUR : On force la lecture des 600 données les plus récentes !
+            // Requête basique indestructible
             const { data: stocks, error } = await supabaseClient
                 .from('machine_stocks')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(600);
+                .select('*');
 
-            if (error || !stocks || stocks.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser Adial".</div>`;
+            // AFFICHAGE DES ERREURS POUR DÉBOGAGE
+            if (error) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; border: 2px dashed #e74c3c; border-radius: 8px;">
+                    <b>Erreur Base de données :</b> ${error.message}
+                </div>`;
+                return;
+            }
+
+            if (!stocks || stocks.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">
+                    Aucune pizza trouvée dans la base de données.<br>
+                    <strong>👉 Cliquez sur le bouton rouge "Synchroniser" pour rafraîchir.</strong>
+                </div>`;
                 return;
             }
 
@@ -854,7 +865,7 @@
 
             const machinesDict = {};
             
-            // 1. Regrouper par machine
+            // 1. Grouper par machine
             stocks.forEach(row => {
                 if (!machinesDict[row.machine_id]) machinesDict[row.machine_id] = [];
                 machinesDict[row.machine_id].push(row);
@@ -863,31 +874,35 @@
             const machinesPropres = {};
             const now = new Date();
 
-            // Formatage sécurisé pour l'iPad (Safari)
             const parseSafeTime = (dateStr) => {
                 if (!dateStr) return 0;
                 return new Date(dateStr.replace(' ', 'T')).getTime();
             };
 
-            // 2. Isoler la toute dernière synchronisation
+            // 2. Traitement intelligent par machine
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Tri strict du plus récent au plus ancien
+                // Tri manuel du plus récent au plus ancien (100% compatible iPad)
                 lignes.sort((a, b) => parseSafeTime(b.created_at) - parseSafeTime(a.created_at));
                 
-                // Heure de la toute dernière pizza scannée
                 const lastTime = parseSafeTime(lignes[0].created_at);
                 
-                // On garde UNIQUEMENT les pizzas enregistrées dans la même minute (isole le dernier clic)
+                // On récupère tout ce qui a été inséré dans un délai de 2 minutes (120 000 ms).
+                // Cela laisse le temps à ton script de tout insérer sans couper la machine en deux.
                 let batchRecent = lignes.filter(row => {
-                    return (lastTime - parseSafeTime(row.created_at)) < 60000;
+                    return (lastTime - parseSafeTime(row.created_at)) < 120000;
                 });
+
+                // Sécurité anti-doublon absolue : une machine = 70 places max.
+                if (batchRecent.length > 70) {
+                    batchRecent = batchRecent.slice(0, 70);
+                }
 
                 machinesPropres[mId] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
                 const m = machinesPropres[mId];
 
-                // 3. Comptage final des pizzas réelles
+                // 3. Comptage
                 batchRecent.forEach(row => {
                     if (row.est_occupe) {
                         const nom = row.nom_pizza || "Inconnue";
@@ -991,7 +1006,7 @@
 
         } catch (globalError) {
             console.error(globalError);
-            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur : ${globalError.message}</div>`;
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur inattendue : ${globalError.message}</div>`;
         }
     }
 
