@@ -59,15 +59,18 @@
 </head>
 <body>
 
-<div class="container">
+<div id="app-screen" class="container">
     <div class="header">
         <div class="logo-area">
-            <h1>Espace Production by</h1>
+            <h1>Espace stocks by</h1>
             <img src="logo.png" alt="Logo" class="logo-dark" onerror="this.style.display='none'">
             <img src="logo-clair.png" alt="Logo" class="logo-light" onerror="this.style.display='none'">
         </div>
         <div style="text-align: right; display: flex; align-items: center; gap: 15px;">
-            <div id="user-email" style="font-size: 0.85em; color: #888; font-weight: bold;"></div>
+            <div>
+                <div id="user-email" style="font-size: 0.85em; color: #888; margin-bottom: 5px;"></div>
+                <div id="sync-status">☁️ Synchronisé</div>
+            </div>
             <button onclick="toggleTheme()" class="btn-action" style="background: var(--card-bg); color: var(--text); border: 1px solid var(--border);">🌓 Thème</button>
             <button onclick="seDeconnecter()" class="btn-action" style="background: #e74c3c; color: white;">Déconnexion</button>
         </div>
