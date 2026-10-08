@@ -831,123 +831,159 @@
     }
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
+    // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
-        const { data: stocks, error } = await supabaseClient.from('machine_stocks').select('*');
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données...</div>';
 
-        if (error || !stocks || stocks.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Aucun stock machine trouvé. Cliquez sur "Synchroniser".</div>`;
-            return;
-        }
+        try {
+            // On récupère l'historique récent
+            const { data: stocks, error } = await supabaseClient
+                .from('machine_stocks')
+                .select('*')
+                .order('derniere_mise_a_jour', { ascending: false })
+                .limit(800);
 
-        const NOMS_MACHINES = {
-            "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
-            "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
-            "aeAObNXHeI5CMVry9dNhC0q0W39QTujsDYmitn6HqUo": "MELOX",
-            "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
-        };
-
-        const machinesDict = {};
-        const now = new Date();
-
-        // On compte simplement toutes les pizzas présentes dans la table
-        stocks.forEach(row => {
-            if (!machinesDict[row.machine_id]) {
-                machinesDict[row.machine_id] = { valides: 0, perimees: 0, pizzas: {}, liste_perimees: {} };
+            if (error) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; border: 2px dashed #e74c3c;"><b>Erreur Base de données :</b> ${error.message}</div>`;
+                return;
             }
-            let m = machinesDict[row.machine_id];
-            
-            if (row.est_occupe) {
-                const nom = row.nom_pizza || "Inconnue";
-                const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
-                const estPerimee = datePeremption && datePeremption < now;
 
-                if (estPerimee) {
-                    m.perimees++;
-                    m.liste_perimees[nom] = (m.liste_perimees[nom] || 0) + 1;
-                } else {
-                    m.valides++;
-                    m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
+            if (!stocks || stocks.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Aucune pizza trouvée. Cliquez sur "Synchroniser".</div>`;
+                return;
+            }
+
+            const NOMS_MACHINES = {
+                "ae3WE7D6A62VWLHJG18io5N5duSLDdYpjGlu820LFMHs": "TRICASTIN",
+                "ae60vb8BDjXPZwnlhS5cHX2zDaLNdo6zlH9smaQVOLPI": "LE TEIL",
+                "aeAObNXHeI5CMVry9dNhC0q0W39QTujsDYmitn6HqUo": "MELOX",
+                "aewuo1ajeG8f3feCbFKNtpsoXQ4j4ZRbSsr4kgqbAlXdw": "BOURG-SAINT-ANDÉOL"
+            };
+
+            const machinesDict = {};
+            stocks.forEach(row => {
+                if (!machinesDict[row.machine_id]) machinesDict[row.machine_id] = [];
+                machinesDict[row.machine_id].push(row);
+            });
+
+            const machinesPropres = {};
+            const now = new Date();
+
+            const parseSafeTime = (dateStr) => {
+                if (!dateStr) return 0;
+                return new Date(dateStr.replace(' ', 'T')).getTime();
+            };
+
+            for (const mId in machinesDict) {
+                let lignes = machinesDict[mId];
+                
+                // Tri du plus récent au plus ancien
+                lignes.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
+                
+                machinesPropres[mId] = { valides: 0, pizzas: {} };
+                const m = machinesPropres[mId];
+
+                if (lignes.length > 0) {
+                    const lastTime = parseSafeTime(lignes[0].derniere_mise_a_jour);
+                    
+                    // LE FILTRE EST DE RETOUR : on isole uniquement le lot des 2 dernières minutes !
+                    let batchRecent = lignes.filter(row => {
+                        return (lastTime - parseSafeTime(row.derniere_mise_a_jour)) < 120000;
+                    });
+
+                    // Coupe-circuit 70 emplacements physiques max
+                    if (batchRecent.length > 70) batchRecent = batchRecent.slice(0, 70);
+
+                    batchRecent.forEach(row => {
+                        if (row.est_occupe) {
+                            const nom = row.nom_pizza || "Inconnue";
+                            const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
+                            const estPerimee = datePeremption && datePeremption < now;
+
+                            // RÈGLE STRICTE : on ignore totalement les périmées
+                            if (!estPerimee) {
+                                m.valides++;
+                                m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
+                            }
+                        }
+                    });
                 }
             }
-        });
 
-        container.innerHTML = '';
-        const idsTries = Object.keys(machinesDict).sort();
+            container.innerHTML = '';
+            const idsTries = Object.keys(machinesPropres).sort();
 
-        for (const mId of idsTries) {
-            const stats = machinesDict[mId];
-            const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
+            for (const mId of idsTries) {
+                const stats = machinesPropres[mId];
+                const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
 
-            const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
-            let listeHtml = inventaireTrie.map(([nom, q]) => `
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:4px;">
-                    <span style="font-size:0.95rem; color:var(--text);">${nom}</span>
-                    <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
-                </div>
-            `).join('');
-
-            if (stats.perimees > 0) {
-                const perimeesTrie = Object.entries(stats.liste_perimees).sort((a, b) => b[1] - a[1]);
-                listeHtml += perimeesTrie.map(([nom, q]) => `
-                    <div style="display:flex; justify-content:space-between; margin-top: 10px; margin-bottom:8px; padding: 6px; background: rgba(231, 76, 60, 0.05); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 6px;">
-                        <span style="font-size:0.90rem; color:#e74c3c; font-weight: bold;">⚠️ ${nom} <span style="font-size:0.75rem; font-weight: normal;">(Périmée)</span></span>
-                        <strong style="color:#e74c3c; font-size: 1.1rem;">${q}</strong>
+                const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
+                let listeHtml = inventaireTrie.map(([nom, q]) => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px dashed var(--border); padding-bottom:4px;">
+                        <span style="font-size:0.95rem; color:var(--text);">${nom}</span>
+                        <strong style="color:var(--primary); font-size: 1.1rem;">${q}</strong>
                     </div>
                 `).join('');
+
+                if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
+                
+                const pct = Math.round((stats.valides / 70) * 100);
+                const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
+
+                container.innerHTML += `
+                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                            <h4 style="margin:0; color: var(--text);">${nomVille}</h4>
+                            <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${stats.valides} OK</span>
+                        </div>
+                        <div style="padding: 15px; flex-grow: 1; max-height: 280px; overflow-y: auto;">
+                            ${listeHtml}
+                        </div>
+                        <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
+                            <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / 70</strong>
+                        </div>
+                    </div>
+                `;
             }
-            
-            if(!listeHtml) listeHtml = `<div style="color:#888; font-style:italic; font-size:0.9rem; text-align:center;">Machine vide</div>`;
-            
-            const totalAffichage = Math.min(stats.valides + stats.perimees, 70);
-            const pct = Math.round((stats.valides / 70) * 100);
-            const color = pct < 30 ? '#e74c3c' : (pct < 70 ? '#f39c12' : '#2ecc71');
 
-            container.innerHTML += `
-                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
-                    <div style="background: var(--th-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-                        <h4 style="margin:0; color: var(--text);">${nomVille}</h4>
-                        <span style="font-size: 0.75rem; color:#888; font-family: monospace;">${stats.valides} OK</span>
-                    </div>
-                    <div style="padding: 15px; flex-grow: 1; max-height: 280px; overflow-y: auto;">
-                        ${listeHtml}
-                    </div>
-                    <div style="background: var(--input-bg); padding: 12px 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.85rem; color: #888; text-transform: uppercase; font-weight: bold;">VENDABLES</span>
-                        <strong style="color: ${color}; font-size: 1.1rem;">${stats.valides} / 70</strong>
-                    </div>
-                </div>
-            `;
-        }
-
-        listeDistributeurs.forEach(dist => {
-            if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
-            cloudPrefs.carte.forEach(nomPizza => {
-                if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
-                cloudPrefs.matrice[dist.id][nomPizza].stock = ""; 
-                const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                if (inputUi) inputUi.value = "";
+            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
+            listeDistributeurs.forEach(dist => {
+                if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
+                cloudPrefs.carte.forEach(nomPizza => {
+                    if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
+                    cloudPrefs.matrice[dist.id][nomPizza].stock = ""; 
+                    const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                    if (inputUi) inputUi.value = "";
+                });
             });
-        });
 
-        for (const mId of idsTries) {
-            const stats = machinesDict[mId];
-            const nomVilleAdial = NOMS_MACHINES[mId];
-            const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
-            
-            if (distApp) {
-                for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
-                    if (cloudPrefs.carte.includes(nomPizza)) {
-                        cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
-                        const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                        if (inputUi) inputUi.value = qte;
+            for (const mId of idsTries) {
+                const stats = machinesPropres[mId];
+                const nomVilleAdial = NOMS_MACHINES[mId];
+                
+                if (nomVilleAdial) {
+                    const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
+                    if (distApp) {
+                        for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
+                            if (cloudPrefs.carte.includes(nomPizza)) {
+                                cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
+                                const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                                if (inputUi) inputUi.value = qte;
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        calculerBesoins();
-        triggerSave();
+            calculerBesoins();
+            triggerSave();
+
+        } catch (globalError) {
+            console.error(globalError);
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; font-weight: bold;">Erreur : ${globalError.message}</div>`;
+        }
     }
 
     async function runStocksSync() {
