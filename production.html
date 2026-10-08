@@ -853,31 +853,39 @@
 
             // 1. REQUÊTE INDIVIDUELLE : on garantit la récupération de chaque machine
             for (const mId of Object.keys(NOMS_MACHINES)) {
-                const { data: stocksMachine } = await supabaseClient
+                const { data: stocksMachine, error } = await supabaseClient
                     .from('machine_stocks')
                     .select('*')
                     .eq('machine_id', mId)
                     .order('derniere_mise_a_jour', { ascending: false })
                     .limit(500); 
 
+                if (error) throw new Error(`Impossible de charger ${NOMS_MACHINES[mId]} : ${error.message}`);
+
                 machinesPropres[mId] = { valides: 0, pizzas: {} };
                 const m = machinesPropres[mId];
                 
                 if (stocksMachine && stocksMachine.length > 0) {
-                    // 2. On prend l'heure exacte du dernier signe de vie de la machine
-                    const maxTime = parseSafeTime(stocksMachine[0].derniere_mise_a_jour);
-                    
-                    // 3. On récupère TOUT le lot de synchronisation (fenêtre large de 2 minutes)
+                    // Les lignes vides envoyées par le heartbeat peuvent être plus récentes
+                    // que le dernier inventaire réel. On ancre donc le lot sur la dernière
+                    // ligne occupée au lieu de prendre aveuglément la première ligne.
+                    const derniereLigneOccupee = stocksMachine.find(row => row.est_occupe);
+                    const ancreTemps = derniereLigneOccupee
+                        ? parseSafeTime(derniereLigneOccupee.derniere_mise_a_jour)
+                        : parseSafeTime(stocksMachine[0].derniere_mise_a_jour);
+
+                    // 2. On récupère le lot de synchronisation autour de cette ancre.
                     let batchRecent = stocksMachine.filter(row => {
-                        return (maxTime - parseSafeTime(row.derniere_mise_a_jour)) <= 120000;
+                        const rowTime = parseSafeTime(row.derniere_mise_a_jour);
+                        return rowTime <= ancreTemps && (ancreTemps - rowTime) <= 120000;
                     });
 
-                    // 4. Sécurité anti-doublon (la machine physique fait max 70)
+                    // 3. Sécurité anti-doublon (la machine physique fait max 70)
                     if (batchRecent.length > 70) {
                         batchRecent = batchRecent.slice(0, 70);
                     }
 
-                    // 5. Comptage strict en ignorant les périmées
+                    // 4. Comptage strict en ignorant les périmées
                     batchRecent.forEach(row => {
                         if (row.est_occupe) {
                             const nom = row.nom_pizza || "Inconnue";
