@@ -834,15 +834,15 @@
     // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données...</div>';
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
 
         try {
-            // On récupère l'historique récent
+            // Limite augmentée à 3000 pour ne tronquer aucune machine
             const { data: stocks, error } = await supabaseClient
                 .from('machine_stocks')
                 .select('*')
                 .order('derniere_mise_a_jour', { ascending: false })
-                .limit(800);
+                .limit(3000);
 
             if (error) {
                 container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #e74c3c; padding: 20px; border: 2px dashed #e74c3c;"><b>Erreur Base de données :</b> ${error.message}</div>`;
@@ -878,7 +878,7 @@
             for (const mId in machinesDict) {
                 let lignes = machinesDict[mId];
                 
-                // Tri du plus récent au plus ancien
+                // Tri strict par date décroissante
                 lignes.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
                 
                 machinesPropres[mId] = { valides: 0, pizzas: {} };
@@ -887,12 +887,12 @@
                 if (lignes.length > 0) {
                     const lastTime = parseSafeTime(lignes[0].derniere_mise_a_jour);
                     
-                    // LE FILTRE EST DE RETOUR : on isole uniquement le lot des 2 dernières minutes !
+                    // Fenêtre de sécurité de 30 minutes pour isoler le dernier scan Adial
                     let batchRecent = lignes.filter(row => {
-                        return (lastTime - parseSafeTime(row.derniere_mise_a_jour)) < 120000;
+                        return (lastTime - parseSafeTime(row.derniere_mise_a_jour)) < 30 * 60 * 1000;
                     });
 
-                    // Coupe-circuit 70 emplacements physiques max
+                    // Limite stricte à 70 par machine pour éviter les doublons
                     if (batchRecent.length > 70) batchRecent = batchRecent.slice(0, 70);
 
                     batchRecent.forEach(row => {
@@ -901,7 +901,7 @@
                             const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
                             const estPerimee = datePeremption && datePeremption < now;
 
-                            // RÈGLE STRICTE : on ignore totalement les périmées
+                            // BLOCAGE DES PÉRIMÉES : Uniquement les valides sont comptées et affichées
                             if (!estPerimee) {
                                 m.valides++;
                                 m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
@@ -912,11 +912,12 @@
             }
 
             container.innerHTML = '';
-            const idsTries = Object.keys(machinesPropres).sort();
+            // On force l'affichage des 4 distributeurs même s'ils sont vides
+            const idsTries = Object.keys(NOMS_MACHINES); 
 
             for (const mId of idsTries) {
-                const stats = machinesPropres[mId];
-                const nomVille = NOMS_MACHINES[mId] || "Machine Inconnue";
+                const stats = machinesPropres[mId] || { valides: 0, pizzas: {} };
+                const nomVille = NOMS_MACHINES[mId];
 
                 const inventaireTrie = Object.entries(stats.pizzas).sort((a, b) => b[1] - a[1]);
                 let listeHtml = inventaireTrie.map(([nom, q]) => `
@@ -960,18 +961,16 @@
             });
 
             for (const mId of idsTries) {
-                const stats = machinesPropres[mId];
+                const stats = machinesPropres[mId] || { valides: 0, pizzas: {} };
                 const nomVilleAdial = NOMS_MACHINES[mId];
                 
-                if (nomVilleAdial) {
-                    const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
-                    if (distApp) {
-                        for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
-                            if (cloudPrefs.carte.includes(nomPizza)) {
-                                cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
-                                const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                                if (inputUi) inputUi.value = qte;
-                            }
+                const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
+                if (distApp) {
+                    for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
+                        if (cloudPrefs.carte.includes(nomPizza)) {
+                            cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
+                            const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                            if (inputUi) inputUi.value = qte;
                         }
                     }
                 }
