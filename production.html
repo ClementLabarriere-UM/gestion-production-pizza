@@ -133,7 +133,7 @@
         <a href="/distributeurs">Distributeurs</a>
     </div>
 
-    <!-- NOUVELLE SECTION : ÉTAT DES MACHINES EN DIRECT -->
+    <!-- ÉTAT DES MACHINES EN DIRECT -->
     <div style="margin-bottom: 30px; border-top: 2px solid var(--border); padding-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <div>
@@ -149,7 +149,6 @@
             <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">Chargement des machines...</div>
         </div>
     </div>
-    <!-- FIN NOUVELLE SECTION -->
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
         <h2 style="margin: 0; color: var(--primary);">Gère ta prod comme un(e) chef(fe)</h2>
@@ -222,576 +221,134 @@
     let timerSauvegarde = null;
 
     const pizzas = [
-    { id: '4_fromages_blanche', nom: '4 Fromages Blanche' },
-    { id: '4_fromages_rouge', nom: '4 Fromages Rouge' },
-    { id: 'alsacienne', nom: 'Alsacienne' },
-    { id: 'andalouse', nom: 'Andalouse' },
-    { id: 'arizona', nom: 'Arizona' },
-    { id: 'auvergnate', nom: 'Auvergnate' },
-    { id: 'b_b', nom: 'B&B' },
-    { id: 'basquaise', nom: 'Basquaise' },
-    { id: 'bbq', nom: 'BBQ' },
-    { id: 'boisee', nom: 'Boisée' },
-    { id: 'boursin', nom: 'Boursin' },
-    { id: 'burger', nom: 'Burger' },
-    { id: 'burger_pepper', nom: 'Burger Pepper' },
-    { id: 'camembert_roti', nom: 'Camembert Rôti' },
-    { id: 'cannibale', nom: 'Cannibale' },
-    { id: 'cheesy_hot', nom: 'Cheesy Hot' },
-    { id: 'chevre_miel', nom: 'Chèvre Miel' },
-    { id: 'chickn_raclette', nom: "Chick'n Raclette" },
-    { id: 'chicken_bbq', nom: 'Chicken BBQ' },
-    { id: 'colonel', nom: 'Colonel' },
-    { id: 'cordon_bleu', nom: 'Cordon Bleu' },
-    { id: 'cordon_bleu_creme', nom: 'Cordon Bleu (Crème)' },
-    { id: 'croq', nom: "Croq'" },
-    { id: 'crousty', nom: 'Crousty' },
-    { id: 'dallas', nom: 'Dallas' },
-    { id: 'dolce_vita', nom: 'Dolce Vita' },
-    { id: 'dolce_vita_rouge', nom: 'Dolce Vita Rouge' },
-    { id: 'don_pesto', nom: 'Don Pesto' },
-    { id: 'extreme_nutella', nom: 'Extrême Nutella' },
-    { id: 'flambée', nom: 'Flambée' },
-    { id: 'flamm', nom: 'Flamm' },
-    { id: 'fondue_originale', nom: 'Fondue Originale' },
-    { id: 'franc_comtoise', nom: 'Franc Comtoise' },
-    { id: 'frite_cheddar_bacon', nom: 'Frite Cheddar Bacon' },
-    { id: 'furiosa', nom: 'Furiosa' },
-    { id: 'indiana', nom: 'Indiana' },
-    { id: 'loki', nom: 'Loki' },
-    { id: 'margarita', nom: 'Margarita' },
-    { id: 'maxi_burger', nom: 'Maxi Burger' },
-    { id: 'maxi_kebab', nom: 'Maxi Kebab' },
-    { id: 'mercenaire', nom: 'Mercenaire' },
-    { id: 'mexicaine', nom: 'Mexicaine' },
-    { id: 'munster', nom: 'Munster' },
-    { id: 'orientale', nom: 'Orientale' },
-    { id: 'pepperoni', nom: 'Pepperoni' },
-    { id: 'raclette', nom: 'Raclette' },
-    { id: 'reine', nom: 'Reine' },
-    { id: 'reine_blanche', nom: 'Reine Blanche' },
-    { id: 'savoyarde', nom: 'Savoyarde' },
-    { id: 'savoyarde_blanche', nom: 'Savoyarde Blanche' },
-    { id: 'sinaloa_boeuf', nom: 'Sinaloa Bœuf' },
-    { id: 'sinaloa_poulet', nom: 'Sinaloa Poulet' },
-    { id: 'spicy_kebab', nom: 'Spicy Kebab' },
-    { id: 'street_k', nom: 'Street K.' },
-    { id: 'supreme_maroilles', nom: 'Suprême Maroilles' },
-    { id: 'sweet_raclette', nom: 'Sweet Raclette' },
-    { id: 'tenders', nom: 'Tenders' },
-    { id: 'texan_bbq', nom: 'Texan BBQ' },
-    { id: 'tnt', nom: 'TNT' },
-    { id: 'ultimatum', nom: 'Ultimatum' },
-    { id: 'viking', nom: 'Viking' }
-    { id: 'kit_de_survie', nom: 'Kit de survie' },
-    { id: 'tradi_reine', nom: "Tradi'Reine" },
-];
+        { id: '4_fromages_blanche', nom: '4 Fromages Blanche' },
+        { id: '4_fromages_rouge', nom: '4 Fromages Rouge' },
+        { id: 'alsacienne', nom: 'Alsacienne' },
+        { id: 'andalouse', nom: 'Andalouse' },
+        { id: 'arizona', nom: 'Arizona' },
+        { id: 'auvergnate', nom: 'Auvergnate' },
+        { id: 'b_b', nom: 'B&B' },
+        { id: 'basquaise', nom: 'Basquaise' },
+        { id: 'bbq', nom: 'BBQ' },
+        { id: 'boisee', nom: 'Boisée' },
+        { id: 'boursin', nom: 'Boursin' },
+        { id: 'burger', nom: 'Burger' },
+        { id: 'burger_pepper', nom: 'Burger Pepper' },
+        { id: 'camembert_roti', nom: 'Camembert Rôti' },
+        { id: 'cannibale', nom: 'Cannibale' },
+        { id: 'cheesy_hot', nom: 'Cheesy Hot' },
+        { id: 'chevre_miel', nom: 'Chèvre Miel' },
+        { id: 'chickn_raclette', nom: "Chick'n Raclette" },
+        { id: 'chicken_bbq', nom: 'Chicken BBQ' },
+        { id: 'colonel', nom: 'Colonel' },
+        { id: 'cordon_bleu', nom: 'Cordon Bleu' },
+        { id: 'cordon_bleu_creme', nom: 'Cordon Bleu (Crème)' },
+        { id: 'croq', nom: "Croq'" },
+        { id: 'crousty', nom: 'Crousty' },
+        { id: 'dallas', nom: 'Dallas' },
+        { id: 'dolce_vita', nom: 'Dolce Vita' },
+        { id: 'dolce_vita_rouge', nom: 'Dolce Vita Rouge' },
+        { id: 'don_pesto', nom: 'Don Pesto' },
+        { id: 'extreme_nutella', nom: 'Extrême Nutella' },
+        { id: 'flambée', nom: 'Flambée' },
+        { id: 'flamm', nom: 'Flamm' },
+        { id: 'fondue_originale', nom: 'Fondue Originale' },
+        { id: 'franc_comtoise', nom: 'Franc Comtoise' },
+        { id: 'frite_cheddar_bacon', nom: 'Frite Cheddar Bacon' },
+        { id: 'furiosa', nom: 'Furiosa' },
+        { id: 'indiana', nom: 'Indiana' },
+        { id: 'kit_de_survie', nom: 'Kit de survie' },
+        { id: 'loki', nom: 'Loki' },
+        { id: 'margarita', nom: 'Margarita' },
+        { id: 'maxi_burger', nom: 'Maxi Burger' },
+        { id: 'maxi_kebab', nom: 'Maxi Kebab' },
+        { id: 'mercenaire', nom: 'Mercenaire' },
+        { id: 'mexicaine', nom: 'Mexicaine' },
+        { id: 'munster', nom: 'Munster' },
+        { id: 'orientale', nom: 'Orientale' },
+        { id: 'pepperoni', nom: 'Pepperoni' },
+        { id: 'raclette', nom: 'Raclette' },
+        { id: 'reine', nom: 'Reine' },
+        { id: 'reine_blanche', nom: 'Reine Blanche' },
+        { id: 'savoyarde', nom: 'Savoyarde' },
+        { id: 'savoyarde_blanche', nom: 'Savoyarde Blanche' },
+        { id: 'sinaloa_boeuf', nom: 'Sinaloa Bœuf' },
+        { id: 'sinaloa_poulet', nom: 'Sinaloa Poulet' },
+        { id: 'spicy_kebab', nom: 'Spicy Kebab' },
+        { id: 'street_k', nom: 'Street K.' },
+        { id: 'supreme_maroilles', nom: 'Suprême Maroilles' },
+        { id: 'sweet_raclette', nom: 'Sweet Raclette' },
+        { id: 'tenders', nom: 'Tenders' },
+        { id: 'texan_bbq', nom: 'Texan BBQ' },
+        { id: 'tnt', nom: 'TNT' },
+        { id: 'tradi_reine', nom: "Tradi'Reine" },
+        { id: 'ultimatum', nom: 'Ultimatum' },
+        { id: 'viking', nom: 'Viking' }
+    ];
 
     const recettes = {  
-    // --- LES ROUGES ---
-    "Reine": {
-        "Disque tomaté": 1, 
-        "Jambon blanc (g)": 60, 
-        "Scalarella (g)": 110, 
-        "Emmental râpé (g)": 30, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Cannibale": {
-        "Disque tomaté": 1, 
-        "Merguez (unités)": 15, 
-        "Poulet rôti (g)": 30, 
-        "Égrené au bœuf (g)": 40, 
-        "Sauce hot BBQ (g)": 18, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "4 Fromages Rouge": {
-        "Disque tomaté": 1, 
-        "Roquefort (g)": 15, 
-        "Scalarella (g)": 110, 
-        "Emmental râpé (g)": 30, 
-        "Chèvre (tranches)": 6, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Burger": {
-        "Disque tomaté": 1, 
-        "Oignons rouges (g)": 20, 
-        "Égrené au bœuf (g)": 70, 
-        "Sauce burger (g)": 25, 
-        "Cornichons (unités)": 7, 
-        "Scalarella + Cheddar (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Maxi Burger": {
-        "Disque tomaté": 1, 
-        "Oignons rouges (g)": 30, 
-        "Égrené au bœuf (g)": 100, 
-        "Sauce burger (g)": 30, 
-        "Cornichons (unités)": 12, 
-        "Scalarella + Cheddar (g)": 130, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Orientale": {
-        "Disque tomaté": 1, 
-        "Merguez Halal (g)": 30, 
-        "Poulet rôti halal (g)": 40, 
-        "Poivrons grillés (g)": 30, 
-        "Sauce marocaine (g)": 20, 
-        "Scalarella (g)": 90, 
-        "Origan (g)": 0.5
-    },
-    "Raclette": {
-        "Disque tomaté": 1, 
-        "Jambon blanc (g)": 40, 
-        "Pommes de terre (g)": 55, 
-        "Allumettes fumées (g)": 40, 
-        "Scalarella (g)": 90, 
-        "Raclette (tranches)": 4, 
-        "Origan (g)": 0.5
-    },
-    "Arizona": {
-        "Disque tomaté": 1, 
-        "Effiloché de porc (g)": 80, 
-        "Poivrons grillés (g)": 30, 
-        "Oignons rouges (g)": 15, 
-        "Sauce Hot BBQ (g)": 20, 
-        "Scalarella (g)": 80
-    },
-    "Pepperoni": {
-        "Disque tomaté": 1, 
-        "Pepperoni (tranches)": 12, 
-        "Scalarella + Cheddar (g)": 120, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Margarita": {
-        "Disque tomaté": 1, 
-        "Scalarella + Emmental (g)": 90
-    },
-    "Andalouse": {
-        "Disque tomaté": 1, 
-        "Chorizo (tranches)": 6, 
-        "Merguez (unités)": 20, 
-        "Poivrons grillés (g)": 30, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Cheesy Hot": {
-        "Disque tomaté": 1, 
-        "Bœuf chili (g)": 70, 
-        "Sauce hot BBQ (g)": 20, 
-        "Sauce algérienne (g)": 20, 
-        "Scalarella + Cheddar (g)": 100, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "TNT": {
-        "Disque tomaté": 1, 
-        "Chorizo (tranches)": 9, 
-        "Merguez (unités)": 20, 
-        "Sauce samouraï (g)": 25, 
-        "Scalarella + Cheddar (g)": 90, 
-        "Origan (g)": 0.5
-    },
-    "Dallas": {
-        "Disque tomaté": 1, 
-        "Oignons rouges (g)": 20, 
-        "Allumettes fumées (g)": 40, 
-        "Égrené au bœuf (g)": 50, 
-        "Sauce samouraï (g)": 20, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Texan BBQ": {
-        "Disque tomaté": 1, 
-        "Jambon blanc (g)": 40, 
-        "Oignons rouges (g)": 15, 
-        "Allumettes fumées (g)": 30, 
-        "Égrené au bœuf (g)": 40, 
-        "Sauce hot BBQ (g)": 25, 
-        "Scalarella (g)": 90, 
-        "Origan (g)": 0.5
-    },
-    "Chicken BBQ": {
-        "Disque tomaté": 1, 
-        "Epice BBQ (pincées)": 3, 
-        "Poulet rôti halal (g)": 70, 
-        "Sauce hot BBQ (g)": 15, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Cordon Bleu": {
-        "Disque tomaté": 1, 
-        "Jambon blanc (g)": 30, 
-        "Goujon de poulet (g)": 80, 
-        "Scalarella (g)": 100, 
-        "Sauce fromagère (g)": 30, 
-        "Origan (g)": 0.5
-    },
-    "Tenders": {
-        "Disque tomaté": 1, 
-        "Pommes de terre (g)": 60, 
-        "Goujon de poulet (g)": 80, 
-        "Sauce cheddar (g)": 30, 
-        "Scalarella (g)": 90, 
-        "Origan (g)": 0.5
-    },
-    "Flambée": {
-        "Disque tomaté": 1, 
-        "Oignons rouges (g)": 25, 
-        "Allumettes fumées (g)": 50, 
-        "Emmental râpé (g)": 40, 
-        "Scalarella (g)": 50
-    },
-    "Basquaise": {
-        "Disque tomaté": 1, 
-        "Sauce salsa (g)": 60, 
-        "Poulet rôti halal (g)": 70, 
-        "Poivrons grillés (g)": 20, 
-        "Scalarella (g)": 90, 
-        "Piment d'Espelette (g)": 0.5, 
-        "Origan (g)": 0.5
-    },
-    "Dolce Vita Rouge": {
-        "Disque tomaté": 1, 
-        "Jambon blanc (g)": 45, 
-        "Scalarella (g)": 90, 
-        "Miel (g)": 15, 
-        "Chèvre (tranches)": 6, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Sinaloa Poulet": {
-        "Disque tomaté": 1, 
-        "Epice mexicaine": 1, 
-        "Guacamole (g)": 30, 
-        "Oignons rouges (g)": 20, 
-        "Poulet rôti halal (g)": 50, 
-        "Scalarella + Cheddar (g)": 100, 
-        "Poivrons grillés (g)": 20, 
-        "Tabasco rouge (g)": 2, 
-        "Olives noires (unités)": 3
-    },
-    "Sinaloa Bœuf": {
-        "Disque tomaté": 1, 
-        "Epice mexicaine": 1, 
-        "Guacamole (g)": 30, 
-        "Oignons rouges (g)": 20, 
-        "Égrené au bœuf (g)": 50, 
-        "Scalarella + Cheddar (g)": 100, 
-        "Poivrons grillés (g)": 20, 
-        "Tabasco rouge (g)": 2, 
-        "Olives noires (unités)": 3
-    },
-    "Furiosa": {
-        "Disque tomaté": 1, 
-        "Chorizo (g)": 60, 
-        "Crispy bacon (g)": 35, 
-        "Sauce hot BBQ (g)": 15, 
-        "Sauce samouraï (g)": 20, 
-        "Scalarella + Cheddar (g)": 90, 
-        "Origan (g)": 0.5
-    },
-
-    // --- LES BLANCHES ---
-    "Chèvre Miel": {
-        "Disque crémé": 1, 
-        "Scalarella (g)": 100, 
-        "Miel (g)": 20, 
-        "Chèvre (tranches)": 8, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Savoyarde": {
-        "Disque crémé": 1, 
-        "Pommes de terre (g)": 60, 
-        "Oignons pré-frits (g)": 20, 
-        "Allumettes fumées (g)": 50, 
-        "Scalarella (g)": 90, 
-        "Reblochon (demi-tranches)": 5, 
-        "Origan (g)": 0.5
-    },
-    "Indiana": {
-        "Disque crémé": 1, 
-        "Epices curry (g)": 3, 
-        "Poulet rôti (g)": 80, 
-        "Sauce curry (g)": 15, 
-        "Poivrons grillés (g)": 30, 
-        "Scalarella (g)": 110, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Spicy Kebab": {
-        "Disque crémé": 1, 
-        "Epice orientale (g)": 2, 
-        "Viande kebab (g)": 80, 
-        "Sauce blanche (g)": 20, 
-        "Scalarella (g)": 100, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Maxi Kebab": {
-        "Disque crémé": 1, 
-        "Epice orientale (g)": 2, 
-        "Viande kebab (g)": 120, 
-        "Sauce blanche (g)": 25, 
-        "Scalarella (g)": 120, 
-        "Tomates confites (demi-tomates)": 5, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Reine Blanche": {
-        "Disque crémé": 1, 
-        "Jambon blanc (g)": 60, 
-        "Scalarella + Emmental (g)": 110, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Boursin": {
-        "Disque crémé": 1, 
-        "Boursin (g)": 40, 
-        "Poulet rôti halal (g)": 80, 
-        "Scalarella + Emmental (g)": 120, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "B&B": {
-        "Disque crémé": 1, 
-        "Boursin (g)": 40, 
-        "Oignons pré-frits (g)": 30, 
-        "Égrené de bœuf (g)": 70, 
-        "Scalarella (g)": 100, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "BBQ": {
-        "Disque crémé": 1, 
-        "Merguez halal (g)": 30, 
-        "Allumettes fumées (g)": 40, 
-        "Poulet rôti halal (g)": 40, 
-        "Sauce hot BBQ (g)": 15, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Dolce Vita": {
-        "Disque crémé": 1, 
-        "Jambon blanc (g)": 45, 
-        "Scalarella (g)": 90, 
-        "Miel (g)": 15, 
-        "Chèvre (tranches)": 6, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Loki": {
-        "Disque crémé": 1, 
-        "Saumon fumé (g)": 70, 
-        "Scalarella (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Viking": {
-        "Disque crémé": 1, 
-        "Boursin (g)": 40, 
-        "Saumon fumé (g)": 70, 
-        "Scalarella (g)": 110, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Mexicaine": {
-        "Disque crémé": 1, 
-        "Guacamole (g)": 70, 
-        "Poulet rôti halal (g)": 80, 
-        "Poivrons grillés (g)": 30, 
-        "Scalarella (g)": 70, 
-        "Doritos nature (unités)": 4, 
-        "Epice mexicaine (g)": 0.5
-    },
-    "Flamm": {
-        "Disque crémé": 1, 
-        "Jambon blanc (g)": 45, 
-        "Oignons rouges (g)": 25, 
-        "Allumettes fumées (g)": 30, 
-        "Scalarella (g)": 70
-    },
-    "Mercenaire": {
-        "Disque crémé": 1, 
-        "Oignons pré-frits (g)": 20, 
-        "Allumettes fumées (g)": 40, 
-        "Poulet rôti halal (g)": 50, 
-        "Sauce hot BBQ (g)": 25, 
-        "Scalarella (g)": 100, 
-        "Origan (g)": 0.5
-    },
-    "Suprême Maroilles": {
-        "Disque crémé": 1, 
-        "Scalarella (g)": 90, 
-        "Chorizo (g)": 30, 
-        "Maroilles (g)": 65, 
-        "Tomates confites (demi-tomates)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Sweet Raclette": {
-        "Disque crémé": 1, 
-        "Oignons pré-frits (g)": 20, 
-        "Égrené au bœuf (g)": 60, 
-        "Sauce miel moutarde (g)": 20, 
-        "Scalarella (g)": 90, 
-        "Raclette (tranches)": 4
-    },
-    "Munster": {
-        "Disque crémé": 1, 
-        "Oignons pré-frits (g)": 30, 
-        "Allumettes fumées (g)": 70, 
-        "Emmental râpé (g)": 60, 
-        "Munster (tranches)": 5
-    },
-    "Croq'": {
-        "Disque crémé": 1, 
-        "Jambon blanc (g)": 60, 
-        "Sauce fromagère (g)": 25, 
-        "Scalarella (g)": 60, 
-        "Emmental râpé (g)": 30
-    },
-    "Camembert Rôti": {
-        "Disque crémé": 1, 
-        "Camembert (demi)": 1, 
-        "Allumettes fumées (g)": 40, 
-        "Scalarella (g)": 60, 
-        "Herbes de Provence (g)": 0.5
-    },
-    "Alsacienne": {
-        "Disque crémé": 1, 
-        "Allumettes fumées (g)": 70, 
-        "Oignons pré-frits (g)": 30, 
-        "Emmental râpé (g)": 50, 
-        "Scalarella (g)": 40
-    },
-    "Auvergnate": {
-        "Disque crémé": 1, 
-        "Poulet rôti halal (g)": 70, 
-        "Bleu d'Auvergne (g)": 40, 
-        "Scalarella + Emmental (g)": 120, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Fondue Originale": {
-        "Disque crémé": 1, 
-        "Allumettes fumées (g)": 50, 
-        "Scalarella + Mix fondue (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Boisée": {
-        "Disque crémé": 1, 
-        "Poulet rôti (g)": 80, 
-        "Poivrons grillés (g)": 30, 
-        "Sauce fromagère (g)": 25, 
-        "Scalarella + Emmental (g)": 110, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Franc Comtoise": {
-        "Disque crémé": 1, 
-        "Pommes de terre (g)": 60, 
-        "Saucisses fumées (g)": 50, 
-        "Allumettes fumées (g)": 20, 
-        "Oignons pré-frits (g)": 15, 
-        "Comté râpé (g)": 30, 
-        "Scalarella (g)": 90, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Colonel": {
-        "Disque crémé": 1, 
-        "Moutarde forte (g)": 20, 
-        "Moutarde ancienne (g)": 20, 
-        "Pommes de terre (g)": 70, 
-        "Poulet rôti halal (g)": 40, 
-        "Allumettes fumées (g)": 30, 
-        "Scalarella + Emmental (g)": 100
-    },
-    "Don Pesto": {
-        "Disque crémé": 1, 
-        "Poulet rôti halal (g)": 80, 
-        "Pesto (g)": 10, 
-        "Scalarella (g)": 90, 
-        "Tomates confites (demi-tomates)": 3
-    },
-    "Ultimatum": {
-        "Disque crémé": 1, 
-        "Pommes de terre (g)": 70, 
-        "Roquefort (g)": 15, 
-        "Égrené au bœuf (g)": 50, 
-        "Scalarella (g)": 90
-    },
-    "Street K.": {
-        "Disque crémé": 1, 
-        "Epice orientale (g)": 2, 
-        "Effiloché de poulet (g)": 65, 
-        "Sauce blanche (g)": 20, 
-        "Scalarella (g)": 100, 
-        "Tomates confites (demi-tomates)": 5, 
-        "Origan (g)": 0.5
-    },
-    "4 Fromages Blanche": {
-        "Disque crémé": 1, 
-        "Roquefort (g)": 15, 
-        "Scalarella + Emmental (g)": 110, 
-        "Chèvre (tranches)": 6, 
-        "Olives noires (unités)": 3, 
-        "Origan (g)": 0.5
-    },
-    "Frite Cheddar Bacon": {
-        "Disque crémé": 1, 
-        "Allumettes fumées (g)": 25, 
-        "Oignons rouges (g)": 15, 
-        "Scalarella + Cheddar (g)": 110, 
-        "Frites au four (g)": 80, 
-        "Sauce cheddar (g)": 30, 
-        "Crispy bacon (g)": 25
-    },
-    "Burger Pepper": {
-        "Disque crémé": 1, 
-        "Pastrami de bœuf (g)": 30, 
-        "Oignons pré-frits (g)": 20, 
-        "Égrené au bœuf (g)": 50, 
-        "Sauce au poivre (g)": 20, 
-        "Scalarella + Emmental (g)": 110, 
-        "Origan (g)": 0.5
-    },
-    "Crousty": {
-        "Disque crémé": 1, 
-        "Oignons crispy (g)": 10, 
-        "Sauce aigre douce (g)": 40, 
-        "Scalarella (g)": 90, 
-        "Aiguillettes de poulet (g)": 80, 
-        "Origan (g)": 0.5
-    },
-    "Chick'n Raclette": {
-        "Disque crémé": 1, 
-        "Poulet rôti halal (g)": 50, 
-        "Crispy bacon (g)": 30, 
-        "Scalarella (g)": 90, 
-        "Raclette (tranches)": 4, 
-        "Origan (g)": 0.5
-    },
-    "Cordon Bleu Crème": {
-        "Disque crémé": 1, 
-        "Jambon blanc (g)": 30, 
-        "Goujon de poulet (g)": 80, 
-        "Sauce fromagère (g)": 30, 
-        "Scalarella (g)": 100, 
-        "Origan (g)": 0.5
-    },
-    "Extrême Nutella": {
-        "Disque crémé": 1, 
-        "Nutella (g)": 90, 
-        "M&M's (g)": 20
-    }
-};
+        "Reine": { "Disque tomaté": 1, "Jambon blanc (g)": 60, "Scalarella (g)": 110, "Emmental râpé (g)": 30, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Tradi'Reine": { "Disque tomaté": 1, "Jambon blanc (g)": 60, "Scalarella (g)": 110, "Emmental râpé (g)": 30, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Cannibale": { "Disque tomaté": 1, "Merguez (unités)": 15, "Poulet rôti (g)": 30, "Égrené au bœuf (g)": 40, "Sauce hot BBQ (g)": 18, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "4 Fromages Rouge": { "Disque tomaté": 1, "Roquefort (g)": 15, "Scalarella (g)": 110, "Emmental râpé (g)": 30, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Burger": { "Disque tomaté": 1, "Oignons rouges (g)": 20, "Égrené au bœuf (g)": 70, "Sauce burger (g)": 25, "Cornichons (unités)": 7, "Scalarella + Cheddar (g)": 110, "Origan (g)": 0.5 },
+        "Maxi Burger": { "Disque tomaté": 1, "Oignons rouges (g)": 30, "Égrené au bœuf (g)": 100, "Sauce burger (g)": 30, "Cornichons (unités)": 12, "Scalarella + Cheddar (g)": 130, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "Orientale": { "Disque tomaté": 1, "Merguez Halal (g)": 30, "Poulet rôti halal (g)": 40, "Poivrons grillés (g)": 30, "Sauce marocaine (g)": 20, "Scalarella (g)": 90, "Origan (g)": 0.5 },
+        "Raclette": { "Disque tomaté": 1, "Jambon blanc (g)": 40, "Pommes de terre (g)": 55, "Allumettes fumées (g)": 40, "Scalarella (g)": 90, "Raclette (tranches)": 4, "Origan (g)": 0.5 },
+        "Arizona": { "Disque tomaté": 1, "Effiloché de porc (g)": 80, "Poivrons grillés (g)": 30, "Oignons rouges (g)": 15, "Sauce Hot BBQ (g)": 20, "Scalarella (g)": 80 },
+        "Pepperoni": { "Disque tomaté": 1, "Pepperoni (tranches)": 12, "Scalarella + Cheddar (g)": 120, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "Margarita": { "Disque tomaté": 1, "Scalarella + Emmental (g)": 90 },
+        "Andalouse": { "Disque tomaté": 1, "Chorizo (tranches)": 6, "Merguez (unités)": 20, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "Cheesy Hot": { "Disque tomaté": 1, "Bœuf chili (g)": 70, "Sauce hot BBQ (g)": 20, "Sauce algérienne (g)": 20, "Scalarella + Cheddar (g)": 100, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "TNT": { "Disque tomaté": 1, "Chorizo (tranches)": 9, "Merguez (unités)": 20, "Sauce samouraï (g)": 25, "Scalarella + Cheddar (g)": 90, "Origan (g)": 0.5 },
+        "Dallas": { "Disque tomaté": 1, "Oignons rouges (g)": 20, "Allumettes fumées (g)": 40, "Égrené au bœuf (g)": 50, "Sauce samouraï (g)": 20, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "Texan BBQ": { "Disque tomaté": 1, "Jambon blanc (g)": 40, "Oignons rouges (g)": 15, "Allumettes fumées (g)": 30, "Égrené au bœuf (g)": 40, "Sauce hot BBQ (g)": 25, "Scalarella (g)": 90, "Origan (g)": 0.5 },
+        "Chicken BBQ": { "Disque tomaté": 1, "Epice BBQ (pincées)": 3, "Poulet rôti halal (g)": 70, "Sauce hot BBQ (g)": 15, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "Cordon Bleu": { "Disque tomaté": 1, "Jambon blanc (g)": 30, "Goujon de poulet (g)": 80, "Scalarella (g)": 100, "Sauce fromagère (g)": 30, "Origan (g)": 0.5 },
+        "Tenders": { "Disque tomaté": 1, "Pommes de terre (g)": 60, "Goujon de poulet (g)": 80, "Sauce cheddar (g)": 30, "Scalarella (g)": 90, "Origan (g)": 0.5 },
+        "Flambée": { "Disque tomaté": 1, "Oignons rouges (g)": 25, "Allumettes fumées (g)": 50, "Emmental râpé (g)": 40, "Scalarella (g)": 50 },
+        "Basquaise": { "Disque tomaté": 1, "Sauce salsa (g)": 60, "Poulet rôti halal (g)": 70, "Poivrons grillés (g)": 20, "Scalarella (g)": 90, "Piment d'Espelette (g)": 0.5, "Origan (g)": 0.5 },
+        "Dolce Vita Rouge": { "Disque tomaté": 1, "Jambon blanc (g)": 45, "Scalarella (g)": 90, "Miel (g)": 15, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Sinaloa Poulet": { "Disque tomaté": 1, "Epice mexicaine": 1, "Guacamole (g)": 30, "Oignons rouges (g)": 20, "Poulet rôti halal (g)": 50, "Scalarella + Cheddar (g)": 100, "Poivrons grillés (g)": 20, "Tabasco rouge (g)": 2, "Olives noires (unités)": 3 },
+        "Sinaloa Bœuf": { "Disque tomaté": 1, "Epice mexicaine": 1, "Guacamole (g)": 30, "Oignons rouges (g)": 20, "Égrené au bœuf (g)": 50, "Scalarella + Cheddar (g)": 100, "Poivrons grillés (g)": 20, "Tabasco rouge (g)": 2, "Olives noires (unités)": 3 },
+        "Furiosa": { "Disque tomaté": 1, "Chorizo (g)": 60, "Crispy bacon (g)": 35, "Sauce hot BBQ (g)": 15, "Sauce samouraï (g)": 20, "Scalarella + Cheddar (g)": 90, "Origan (g)": 0.5 },
+        "Chèvre Miel": { "Disque crémé": 1, "Scalarella (g)": 100, "Miel (g)": 20, "Chèvre (tranches)": 8, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Savoyarde": { "Disque crémé": 1, "Pommes de terre (g)": 60, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 50, "Scalarella (g)": 90, "Reblochon (demi-tranches)": 5, "Origan (g)": 0.5 },
+        "Indiana": { "Disque crémé": 1, "Epices curry (g)": 3, "Poulet rôti (g)": 80, "Sauce curry (g)": 15, "Poivrons grillés (g)": 30, "Scalarella (g)": 110, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Spicy Kebab": { "Disque crémé": 1, "Epice orientale (g)": 2, "Viande kebab (g)": 80, "Sauce blanche (g)": 20, "Scalarella (g)": 100, "Tomates confites (demi-tomates)": 3, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Maxi Kebab": { "Disque crémé": 1, "Epice orientale (g)": 2, "Viande kebab (g)": 120, "Sauce blanche (g)": 25, "Scalarella (g)": 120, "Tomates confites (demi-tomates)": 5, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Reine Blanche": { "Disque crémé": 1, "Jambon blanc (g)": 60, "Scalarella + Emmental (g)": 110, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Boursin": { "Disque crémé": 1, "Boursin (g)": 40, "Poulet rôti halal (g)": 80, "Scalarella + Emmental (g)": 120, "Tomates confites (demi-tomates)": 3, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "B&B": { "Disque crémé": 1, "Boursin (g)": 40, "Oignons pré-frits (g)": 30, "Égrené de bœuf (g)": 70, "Scalarella (g)": 100, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "BBQ": { "Disque crémé": 1, "Merguez halal (g)": 30, "Allumettes fumées (g)": 40, "Poulet rôti halal (g)": 40, "Sauce hot BBQ (g)": 15, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "Dolce Vita": { "Disque crémé": 1, "Jambon blanc (g)": 45, "Scalarella (g)": 90, "Miel (g)": 15, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Loki": { "Disque crémé": 1, "Saumon fumé (g)": 70, "Scalarella (g)": 110, "Origan (g)": 0.5 },
+        "Viking": { "Disque crémé": 1, "Boursin (g)": 40, "Saumon fumé (g)": 70, "Scalarella (g)": 110, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "Mexicaine": { "Disque crémé": 1, "Guacamole (g)": 70, "Poulet rôti halal (g)": 80, "Poivrons grillés (g)": 30, "Scalarella (g)": 70, "Doritos nature (unités)": 4, "Epice mexicaine (g)": 0.5 },
+        "Flamm": { "Disque crémé": 1, "Jambon blanc (g)": 45, "Oignons rouges (g)": 25, "Allumettes fumées (g)": 30, "Scalarella (g)": 70 },
+        "Mercenaire": { "Disque crémé": 1, "Oignons pré-frits (g)": 20, "Allumettes fumées (g)": 40, "Poulet rôti halal (g)": 50, "Sauce hot BBQ (g)": 25, "Scalarella (g)": 100, "Origan (g)": 0.5 },
+        "Suprême Maroilles": { "Disque crémé": 1, "Scalarella (g)": 90, "Chorizo (g)": 30, "Maroilles (g)": 65, "Tomates confites (demi-tomates)": 3, "Origan (g)": 0.5 },
+        "Sweet Raclette": { "Disque crémé": 1, "Oignons pré-frits (g)": 20, "Égrené au bœuf (g)": 60, "Sauce miel moutarde (g)": 20, "Scalarella (g)": 90, "Raclette (tranches)": 4 },
+        "Munster": { "Disque crémé": 1, "Oignons pré-frits (g)": 30, "Allumettes fumées (g)": 70, "Emmental râpé (g)": 60, "Munster (tranches)": 5 },
+        "Croq'": { "Disque crémé": 1, "Jambon blanc (g)": 60, "Sauce fromagère (g)": 25, "Scalarella (g)": 60, "Emmental râpé (g)": 30 },
+        "Camembert Rôti": { "Disque crémé": 1, "Camembert (demi)": 1, "Allumettes fumées (g)": 40, "Scalarella (g)": 60, "Herbes de Provence (g)": 0.5 },
+        "Alsacienne": { "Disque crémé": 1, "Allumettes fumées (g)": 70, "Oignons pré-frits (g)": 30, "Emmental râpé (g)": 50, "Scalarella (g)": 40 },
+        "Auvergnate": { "Disque crémé": 1, "Poulet rôti halal (g)": 70, "Bleu d'Auvergne (g)": 40, "Scalarella + Emmental (g)": 120, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Fondue Originale": { "Disque crémé": 1, "Allumettes fumées (g)": 50, "Scalarella + Mix fondue (g)": 110, "Origan (g)": 0.5 },
+        "Boisée": { "Disque crémé": 1, "Poulet rôti (g)": 80, "Poivrons grillés (g)": 30, "Sauce fromagère (g)": 25, "Scalarella + Emmental (g)": 110, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Franc Comtoise": { "Disque crémé": 1, "Pommes de terre (g)": 60, "Saucisses fumées (g)": 50, "Allumettes fumées (g)": 20, "Oignons pré-frits (g)": 15, "Comté râpé (g)": 30, "Scalarella (g)": 90, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Colonel": { "Disque crémé": 1, "Moutarde forte (g)": 20, "Moutarde ancienne (g)": 20, "Pommes de terre (g)": 70, "Poulet rôti halal (g)": 40, "Allumettes fumées (g)": 30, "Scalarella + Emmental (g)": 100 },
+        "Don Pesto": { "Disque crémé": 1, "Poulet rôti halal (g)": 80, "Pesto (g)": 10, "Scalarella (g)": 90, "Tomates confites (demi-tomates)": 3 },
+        "Ultimatum": { "Disque crémé": 1, "Pommes de terre (g)": 70, "Roquefort (g)": 15, "Égrené au bœuf (g)": 50, "Scalarella (g)": 90 },
+        "Street K.": { "Disque crémé": 1, "Epice orientale (g)": 2, "Effiloché de poulet (g)": 65, "Sauce blanche (g)": 20, "Scalarella (g)": 100, "Tomates confites (demi-tomates)": 5, "Origan (g)": 0.5 },
+        "4 Fromages Blanche": { "Disque crémé": 1, "Roquefort (g)": 15, "Scalarella + Emmental (g)": 110, "Chèvre (tranches)": 6, "Olives noires (unités)": 3, "Origan (g)": 0.5 },
+        "Frite Cheddar Bacon": { "Disque crémé": 1, "Allumettes fumées (g)": 25, "Oignons rouges (g)": 15, "Scalarella + Cheddar (g)": 110, "Frites au four (g)": 80, "Sauce cheddar (g)": 30, "Crispy bacon (g)": 25 },
+        "Burger Pepper": { "Disque crémé": 1, "Pastrami de bœuf (g)": 30, "Oignons pré-frits (g)": 20, "Égrené au bœuf (g)": 50, "Sauce au poivre (g)": 20, "Scalarella + Emmental (g)": 110, "Origan (g)": 0.5 },
+        "Crousty": { "Disque crémé": 1, "Oignons crispy (g)": 10, "Sauce aigre douce (g)": 40, "Scalarella (g)": 90, "Aiguillettes de poulet (g)": 80, "Origan (g)": 0.5 },
+        "Chick'n Raclette": { "Disque crémé": 1, "Poulet rôti halal (g)": 50, "Crispy bacon (g)": 30, "Scalarella (g)": 90, "Raclette (tranches)": 4, "Origan (g)": 0.5 },
+        "Cordon Bleu Crème": { "Disque crémé": 1, "Jambon blanc (g)": 30, "Goujon de poulet (g)": 80, "Sauce fromagère (g)": 30, "Scalarella (g)": 100, "Origan (g)": 0.5 },
+        "Extrême Nutella": { "Disque crémé": 1, "Nutella (g)": 90, "M&M's (g)": 20 }
+    };
 
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -811,25 +368,21 @@
             if (profil.preferences_production) {
                 cloudPrefs = profil.preferences_production;
                 if(!cloudPrefs.carte) cloudPrefs.carte = [];
-                // Si ancienne structure détectée, on réinitialise pour éviter les bugs
                 if(!cloudPrefs.matrice) cloudPrefs.matrice = {};
             }
         }
 
-        // --- BLOCAGE PLAN BASIC ---
         if (abonnementClient === "Basic") {
-            // Masquer l'onglet Stocks
             document.querySelectorAll('.nav-menu a').forEach(link => {
                 if (link.innerText.includes('Stocks')) link.style.display = 'none';
             });
-            // Changer le texte du bouton de validation
             const btnVal = document.getElementById('btn-validation-prod');
             if(btnVal) btnVal.innerText = "✅ Valider la production";
         }
 
         renderModalCarte();
         renderProduction(cloudPrefs.carte);
-        loadMachineStocks(); // Charge les stocks réels d'Adial !
+        loadMachineStocks();
     }
 
     // --- CHARGEMENT DES MACHINES ADIAL ---
@@ -864,12 +417,10 @@
                 if (stocksMachine && stocksMachine.length > 0) {
                     let etatActuelMachine = [];
 
-                    // Détecte automatiquement si ta table possède une colonne identifiant le casier/emplacement
                     const sample = stocksMachine[0];
                     const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id'].find(col => col in sample);
 
                     if (colCasier) {
-                        // MÉTHODE 1 : On garde uniquement la ligne la plus récente pour chaque casier (1 à 70)
                         const casiersVus = new Set();
                         for (const row of stocksMachine) {
                             const numCasier = row[colCasier];
@@ -881,13 +432,9 @@
                             }
                         }
                     } else {
-                        // MÉTHODE 2 (Fallback si pas de colonne casier) : 
-                        // On prend les 70 derniers enregistrements de l'état de la machine
-                        // sans le filtre strict des 2 minutes qui écrasait Le Teil et BSA
                         etatActuelMachine = stocksMachine.slice(0, 70);
                     }
 
-                    // Comptage strict en ignorant les périmées
                     etatActuelMachine.forEach(row => {
                         if (row.est_occupe) {
                             const nom = (row.nom_pizza || "Inconnue").trim();
@@ -903,9 +450,7 @@
                 }
             }
 
-            // ---------------------------------------------------------
             // AFFICHAGE DES CARTES DES DISTRIBUTEURS
-            // ---------------------------------------------------------
             container.innerHTML = '';
             const idsTries = Object.keys(NOMS_MACHINES); 
 
@@ -943,16 +488,14 @@
                 `;
             }
 
-            // ---------------------------------------------------------
-            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION (Insensible à la casse)
-            // ---------------------------------------------------------
-            const normalizeStr = (str) => str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
+            const normalizeStr = (str) => (str || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             listeDistributeurs.forEach(dist => {
                 if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
                 cloudPrefs.carte.forEach(nomPizza => {
                     if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
-                    cloudPrefs.matrice[dist.id][nomPizza].stock = 0; // Met 0 par défaut si rien en machine
+                    cloudPrefs.matrice[dist.id][nomPizza].stock = 0; 
                     const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
                     if (inputUi) inputUi.value = 0;
                 });
@@ -965,7 +508,6 @@
                 const distApp = listeDistributeurs.find(d => normalizeStr(d.nom) === normalizeStr(nomVilleAdial));
                 if (distApp) {
                     for (const [nomPizzaAdial, qte] of Object.entries(stats.pizzas)) {
-                        // On cherche la correspondance dans la carte sans se soucier des majuscules/accents (ex: "Camembert rôti" == "Camembert Rôti")
                         const nomCarteMatch = cloudPrefs.carte.find(pCarte => normalizeStr(pCarte) === normalizeStr(nomPizzaAdial));
                         
                         if (nomCarteMatch) {
@@ -1081,7 +623,7 @@
         const input = document.querySelector(`input[data-dist="${distId}"][data-pizza="${nomPizza}"][data-type="${type}"]`);
         if(input) {
             let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta); // Empêche de descendre sous 0
+            val = Math.max(0, val + delta);
             input.value = val;
             majMatriceCloud(distId, nomPizza);
         }
@@ -1130,8 +672,8 @@
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
             
             listeDistributeurs.forEach(dist => {
-                const stockVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.stock || "";
-                const objVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.obj || "";
+                const stockVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.stock ?? "";
+                const objVal = cloudPrefs.matrice[dist.id]?.[nomPizza]?.obj ?? "";
                 
                 html += `
                 <td>
@@ -1139,16 +681,16 @@
                         
                         <div class="stepper-group">
                             <span class="stepper-label">Stock</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'stock', 1)">+</button>
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'stock', -1)">-</button>
+                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', ${JSON.stringify(nomPizza)})" onclick="this.select()">
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'stock', 1)">+</button>
                         </div>
                         
                         <div class="stepper-group obj-group">
                             <span class="stepper-label" style="color: #3498db;">Obj.</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', '${nomPizza}')" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${nomPizza}', 'obj', 1)">+</button>
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'obj', -1)">-</button>
+                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', ${JSON.stringify(nomPizza)})" onclick="this.select()">
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'obj', 1)">+</button>
                         </div>
 
                         <div class="badge-diff" id="res-${dist.id}-${safeId}">+0</div>
@@ -1192,9 +734,11 @@
                     distCapacities[dist.id] += stock + aProduire;
                     
                     const badge = document.getElementById(`res-${dist.id}-${safeId}`);
-                    badge.innerText = '+' + aProduire;
-                    if(aProduire > 0) badge.classList.add('positive');
-                    else badge.classList.remove('positive');
+                    if (badge) {
+                        badge.innerText = '+' + aProduire;
+                        if(aProduire > 0) badge.classList.add('positive');
+                        else badge.classList.remove('positive');
+                    }
 
                     totauxAProduire[nomPizza] = (totauxAProduire[nomPizza] || 0) + aProduire;
 
