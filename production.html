@@ -823,63 +823,94 @@
         let catUi = { "🍕 Disques": [], "🥩 Viandes": [], "🧀 Fromages": [], "🧅 Autres": [] };
         let catPrint = { "Disques": [], "Viandes": [], "Fromages": [], "Autres": [] };
 
-        // Outil pour formatter proprement les unités (Kg, g, tranches, etc)
-        const formatQty = (nomIng, qte) => {
-            const match = nomIng.match(/(.*)\s*\((.*?)\)\$/);
-            if (match) {
-                const unit = match[2].trim();
-                if (unit === "g") return qte >= 1000 ? (qte / 1000).toFixed(2) + " Kg" : qte + " g";
-                return qte + " " + unit;
-            }
-            return qte;
-        };
-
-        for (let [n, data] of Object.entries(ing)) {
-            if (data.total <= 0) continue;
+        for (let [n, dataObj] of Object.entries(ing)) {
+            let q = dataObj.total;
+            if (q <= 0) continue;
             
             let cleanName = n;
-            const match = n.match(/(.*)\s*\((.*?)\)\$/);
-            if (match) cleanName = match[1].trim();
+            let displayQ = q;
+            let baseUnit = "";
             
-            let displayQ = formatQty(n, data.total);
+            const match = n.match(/(.*)\s*\((.*?)\)\$/);
+            
+            if (match) {
+                cleanName = match[1].trim();
+                baseUnit = match[2].trim();
+                
+                if (baseUnit === "g") {
+                    if (q >= 1000) displayQ = (q / 1000).toFixed(2) + " Kg";
+                    else displayQ = q + " g";
+                } else {
+                    displayQ = q + " " + baseUnit;
+                }
+            } else {
+                displayQ = q;
+            }
 
-            // Construction de la liste des détails par pizza
-            let detailsHtml = Object.entries(data.details).map(([pizza, qte]) => {
-                return `<div class="detail-row"><span>${pizza}</span> <strong>${formatQty(n, qte)}</strong></div>`;
-            }).join('');
-
-            // ID unique pour le fonctionnement du menu déroulant
-            const safeId = "detail-" + n.replace(/[^a-zA-Z0-9]/g, '');
+            // --- 1. GÉNÉRATION POUR L'ÉCRAN (Tiroir cliquable) ---
+            let htmlDetailsEcran = `<div style="display: none; margin-top: 10px; padding-left: 40px; font-size: 0.95rem; color: #888;">`;
+            for(let [nomPizza, qtePartielle] of Object.entries(dataObj.details)) {
+                let displayQtePartielle = qtePartielle;
+                if (baseUnit === "g") {
+                    displayQtePartielle = qtePartielle >= 1000 ? (qtePartielle / 1000).toFixed(2) + " Kg" : qtePartielle + " g";
+                } else if (baseUnit) {
+                    displayQtePartielle = qtePartielle + " " + baseUnit;
+                }
+                htmlDetailsEcran += `<div style="margin-bottom: 6px; border-left: 3px solid rgba(231, 76, 60, 0.3); padding-left: 10px;">🍕 <strong>${nomPizza}</strong> <span style="color: var(--text);">➔ ${displayQtePartielle}</span></div>`;
+            }
+            htmlDetailsEcran += `</div>`;
 
             let htmlEcran = `
-                <div class="ingredient-wrapper">
-                    <div class="ingredient-header" onclick="const d = document.getElementById('${safeId}'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; this.querySelector('.toggle-icon').textContent = d.style.display === 'block' ? '▲' : '▼';">
-                        <input type="checkbox" onclick="event.stopPropagation();"> 
-                        <span style="flex-grow: 1;">${cleanName} : <span class="highlight">${displayQ}</span></span>
-                        <span class="toggle-icon" style="color: #888; font-size: 0.8rem; margin-left: 10px;">▼</span>
-                    </div>
-                    <div id="${safeId}" class="ingredient-details">
-                        ${detailsHtml}
-                    </div>
+            <div style="padding: 10px 0; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; cursor: pointer; font-size: 1.1rem; user-select: none;" onclick="const d = this.nextElementSibling; d.style.display = d.style.display === 'none' ? 'block' : 'none';">
+                    <input type="checkbox" onclick="event.stopPropagation()" style="margin-right: 15px; width: 25px; height: 25px; accent-color: var(--primary); cursor: pointer;">
+                    <span style="flex-grow: 1;">${cleanName} : <span class="highlight">${displayQ}</span></span>
+                    <span style="font-size: 0.75rem; color: var(--primary); background: rgba(231,76,60,0.1); padding: 4px 10px; border-radius: 12px; font-weight: bold; border: 1px solid rgba(231,76,60,0.3);">Détails ▼</span>
                 </div>
-            `;
+                ${htmlDetailsEcran}
+            </div>`;
+
+            // --- 2. GÉNÉRATION POUR L'IMPRESSION (Détails visibles et structurés) ---
+            let printDetails = '';
+            for(let [nomPizza, qtePartielle] of Object.entries(dataObj.details)) {
+                let displayQtePartielle = qtePartielle;
+                if (baseUnit === "g") {
+                    displayQtePartielle = qtePartielle >= 1000 ? (qtePartielle / 1000).toFixed(2) + " Kg" : qtePartielle + " g";
+                } else if (baseUnit) {
+                    displayQtePartielle = qtePartielle + " " + baseUnit;
+                }
+                printDetails += `
+                <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #444; padding-left: 15px; margin-top: 3px;">
+                    <span>↳ ${nomPizza}</span>
+                    <span>${displayQtePartielle}</span>
+                </div>`;
+            }
+
+            let htmlPrint = `
+            <li style="display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid #ddd;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span class="print-bold" style="text-transform: uppercase;">${cleanName}</span> 
+                    <span class="print-bold" style="background: #eee; padding: 3px 8px; border-radius: 4px; border: 1px solid #ccc;">${displayQ}</span>
+                </div>
+                ${printDetails}
+            </li>`;
             
-            // Pour l'impression, on garde une ligne simple avec le total pour économiser le papier
-            let htmlPrint = `<li><span>${cleanName}</span> <span class="print-bold">${displayQ}</span></li>`;
-            
+            // Rangement dans les catégories
             if (n.includes("Disque")) { catUi["🍕 Disques"].push(htmlEcran); catPrint["Disques"].push(htmlPrint); }
             else if (n.toLowerCase().match(/boeuf|bœuf|poulet|jambon|merguez|kebab|saucisses|allumettes|saumon|chorizo|bacon|égrené|effiloché|pastrami|viande/)) { catUi["🥩 Viandes"].push(htmlEcran); catPrint["Viandes"].push(htmlPrint); }
             else if (n.toLowerCase().match(/mozzarella|chèvre|emmental|scalarella|roquefort|boursin|camembert|reblochon|comté/)) { catUi["🧀 Fromages"].push(htmlEcran); catPrint["Fromages"].push(htmlPrint); }
             else { catUi["🧅 Autres"].push(htmlEcran); catPrint["Autres"].push(htmlPrint); }
         }
 
+        // Rendu Écran
         for (let [title, items] of Object.entries(catUi)) {
             if (items.length) container.innerHTML += `<div class="ing-category"><h4>${title}</h4>${items.join("")}</div>`;
         }
 
+        // Rendu Impression
         let htmlPrintIng = '';
         for (let [title, items] of Object.entries(catPrint)) {
-            if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list">${items.join("")}</ul></div>`;
+            if (items.length) htmlPrintIng += `<div class="print-box"><h4>${title}</h4><ul class="print-list" style="border:none;">${items.join("")}</ul></div>`;
         }
 
         const dateDuJour = new Date().toLocaleDateString('fr-FR');
@@ -891,20 +922,22 @@
                 <p>Éditée le ${dateDuJour} à ${heure}</p>
             </div>
             
-            <div class="print-section-title">1. RÉSUMÉ DE LA PRODUCTION</div>
+            <div class="print-section-title">1. RÉSUMÉ DES PIZZAS À PRODUIRE</div>
             <div class="print-grid">
-                <div class="print-box">
-                    <h4>Total : ${totalPizzas} pizzas à produire</h4>
-                    <ul class="print-list">${htmlPrintPizzas || '<li>Aucune pizza</li>'}</ul>
+                <div class="print-box" style="grid-column: 1 / -1;">
+                    <h4 style="font-size: 14pt; background: #eee; padding: 5px; text-align: center; border-radius: 4px;">TOTAL À PRODUIRE : ${totalPizzas} pizzas</h4>
+                    <ul class="print-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; margin-top: 10px;">
+                        ${htmlPrintPizzas || '<li>Aucune pizza</li>'}
+                    </ul>
                 </div>
             </div>
 
-            <div class="print-section-title">2. RÉPARTITION POUR REMPLISSAGE</div>
+            <div class="print-section-title">2. RÉPARTITION POUR REMPLISSAGE (Par distributeur)</div>
             <div class="print-grid">
                 ${htmlPrintRepartition || '<p>Aucune répartition.</p>'}
             </div>
 
-            <div class="print-section-title">3. INGRÉDIENTS À PRÉPARER</div>
+            <div class="print-section-title">3. INGRÉDIENTS (Totaux & Répartition par pizza)</div>
             <div class="print-grid">
                 ${htmlPrintIng || '<p>Aucun ingrédient.</p>'}
             </div>
