@@ -165,7 +165,10 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-top: 2px solid var(--border); padding-top: 20px;">
         <h2 style="margin: 0; color: var(--primary);">Gère ta prod comme un(e) chef(fe)</h2>
-        <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #e74c3c; color: white; font-size: 1.1rem;">⚙️ Gérer la Carte</button>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="ouvrirModalObjectifs()" class="btn-action" style="background: #3498db; color: white; font-size: 1.1rem;">🎯 Objectifs Rapides</button>
+            <button onclick="ouvrirModalCarte()" class="btn-action" style="background: #e74c3c; color: white; font-size: 1.1rem;">⚙️ Gérer la Carte</button>
+        </div>
     </div>
 
     <div id="entree-production"><p style="color: #888;">Chargement de vos données...</p></div>
@@ -209,6 +212,25 @@
         
         <input type="hidden" id="copy-source-id">
         <button onclick="validerCopy()" class="btn-action" style="background: #3498db; color: white; width: 100%; font-size: 1.2rem;">Coller les objectifs</button>
+    </div>
+
+</div>
+
+<div id="modal-objectifs" class="modal no-print">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <span class="close" onclick="fermerModalObjectifs()">&times;</span>
+        <h2 style="color: var(--primary); margin-top: 0;">🎯 Objectifs Rapides</h2>
+        <p style="color: #888; margin-bottom: 20px;">Appliquer un objectif à toutes les pizzas de <b>tous</b> les distributeurs :</p>
+        
+        <button onclick="appliquerObjectifGlobal(2)" class="btn-action" style="background: #3498db; color: white; width: 100%; margin-bottom: 10px; font-size: 1.1rem;">Semaine (2 de chaque)</button>
+        <button onclick="appliquerObjectifGlobal(3)" class="btn-action" style="background: #9b59b6; color: white; width: 100%; margin-bottom: 10px; font-size: 1.1rem;">Week-end (3 de chaque)</button>
+        <button onclick="appliquerObjectifGlobal(0)" class="btn-action" style="background: #555; color: white; width: 100%; margin-bottom: 20px; font-size: 1.1rem;">Tout remettre à zéro (0)</button>
+        
+        <div style="display: flex; gap: 10px; align-items: center; justify-content: center; border-top: 1px solid var(--border); padding-top: 15px;">
+            <span style="font-weight: bold;">Sur Mesure :</span>
+            <input type="number" id="input-obj-perso" style="width: 60px; padding: 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 1.1rem; text-align: center;" value="4">
+            <button onclick="appliquerObjectifGlobal(document.getElementById('input-obj-perso').value)" class="btn-action" style="background: var(--primary); color: white;">Appliquer</button>
+        </div>
     </div>
 </div>
 
@@ -654,7 +676,7 @@
         triggerSave(); 
     }
 
-    // --- RENDU DU GRAND TABLEAU ---
+    // --- RENDU DU GRAND TABLEAU (Boutons +/- réparés) ---
     function renderProduction(selection) {
         const container = document.getElementById('entree-production');
         if (listeDistributeurs.length === 0) {
@@ -682,6 +704,7 @@
 
         selection.forEach(nomPizza => {
             const safeId = nomPizza.replace(/\s+/g, '_');
+            const safeNom = nomPizza.replace(/'/g, "\\'"); // La protection qui répare les boutons !
             html += `<tr><td class="col-fixe">${nomPizza}</td>`;
             
             listeDistributeurs.forEach(dist => {
@@ -694,16 +717,16 @@
                         
                         <div class="stepper-group">
                             <span class="stepper-label">Stock</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'stock', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', ${JSON.stringify(nomPizza)})" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'stock', 1)">+</button>
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${safeNom}', 'stock', -1)">-</button>
+                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="stock" value="${stockVal}" oninput="majMatriceCloud('${dist.id}', '${safeNom}')" onclick="this.select()">
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${safeNom}', 'stock', 1)">+</button>
                         </div>
                         
                         <div class="stepper-group obj-group">
                             <span class="stepper-label" style="color: #3498db;">Obj.</span>
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'obj', -1)">-</button>
-                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', ${JSON.stringify(nomPizza)})" onclick="this.select()">
-                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', ${JSON.stringify(nomPizza)}, 'obj', 1)">+</button>
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${safeNom}', 'obj', -1)">-</button>
+                            <input type="number" class="stepper-input calc-val" data-dist="${dist.id}" data-pizza="${nomPizza}" data-type="obj" value="${objVal}" oninput="majMatriceCloud('${dist.id}', '${safeNom}')" onclick="this.select()">
+                            <button class="stepper-btn" onclick="changerQuantite('${dist.id}', '${safeNom}', 'obj', 1)">+</button>
                         </div>
 
                         <div class="badge-diff" id="res-${dist.id}-${safeId}">+0</div>
@@ -716,6 +739,33 @@
         html += `</tbody></table></div>`;
         container.innerHTML = html;
         calculerBesoins();
+    }
+
+    // --- LOGIQUE DES OBJECTIFS RAPIDES ---
+    function ouvrirModalObjectifs() { document.getElementById('modal-objectifs').style.display = "block"; }
+    function fermerModalObjectifs() { document.getElementById('modal-objectifs').style.display = "none"; }
+    
+    function appliquerObjectifGlobal(valeur) {
+        const val = parseInt(valeur) || 0;
+        if (val < 0) return; // Sécurité : pas de nombres négatifs
+        
+        // Applique l'objectif à toute la carte sélectionnée pour tous les distributeurs
+        listeDistributeurs.forEach(dist => {
+            if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
+            cloudPrefs.carte.forEach(nomPizza => {
+                if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: 0, obj: 0 };
+                
+                cloudPrefs.matrice[dist.id][nomPizza].obj = val;
+                
+                // Mise à jour visuelle du champ de saisie
+                const inputUI = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="obj"]`);
+                if (inputUI) inputUI.value = val;
+            });
+        });
+
+        calculerBesoins();
+        triggerSave();
+        fermerModalObjectifs();
     }
 
     // --- LE CŒUR DU CALCUL ET DES JAUGES DE CAPACITÉ ---
