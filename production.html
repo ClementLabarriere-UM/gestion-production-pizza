@@ -420,7 +420,7 @@
         loadMachineStocks();
     }
 
-        // --- CHARGEMENT DES MACHINES ADIAL ---
+    // --- CHARGEMENT DES MACHINES ADIAL (VERSION DÉFINITIVE & DIRECTE) ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
@@ -437,12 +437,13 @@
             const now = new Date();
 
             for (const mId of Object.keys(NOMS_MACHINES)) {
+                // On récupère les 150 dernières lignes de la machine (largement suffisant pour couvrir les 70 casiers)
                 const { data: stocksMachine, error } = await supabaseClient
                     .from('machine_stocks')
                     .select('*')
                     .eq('machine_id', mId)
                     .order('derniere_mise_a_jour', { ascending: false })
-                    .limit(500); 
+                    .limit(150); 
 
                 if (error) throw new Error(`Impossible de charger ${NOMS_MACHINES[mId]} : ${error.message}`);
 
@@ -450,12 +451,14 @@
                 const m = machinesPropres[mId];
                 
                 if (stocksMachine && stocksMachine.length > 0) {
+                    // Détection automatique du numéro de casier/slot
+                    const sample = stocksMachine[0];
+                    const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id', 'numero_case', 'case'].find(col => col in sample);
+
                     let etatActuelMachine = [];
 
-                    const sample = stocksMachine[0];
-                    const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id'].find(col => col in sample);
-
                     if (colCasier) {
+                        // Si on a un casier, on prend STRICTEMENT la dernière position connue de chaque casier unique
                         const casiersVus = new Set();
                         for (const row of stocksMachine) {
                             const numCasier = row[colCasier];
@@ -467,16 +470,26 @@
                             }
                         }
                     } else {
+                        // Secours : on prend les 70 lignes les plus récentes
                         etatActuelMachine = stocksMachine.slice(0, 70);
                     }
 
+                    // Comptage des pizzas vendables (occupées et non périmées)
                     etatActuelMachine.forEach(row => {
-                        if (row.est_occupe) {
-                            const nom = (row.nom_pizza || "Inconnue").trim();
-                            const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
-                            const estPerimee = datePeremption && datePeremption < now;
+                        const estEnRayon = (row.est_occupe === true || row.est_occupe === 1) && (row.est_perimee !== true);
+                        if (estEnRayon && row.nom_pizza) {
+                            const nom = String(row.nom_pizza).trim();
+                            
+                            // Vérification de la date de péremption si elle existe
+                            let estPerimeeDate = false;
+                            if (row.date_peremption) {
+                                let datePeremp = new Date(String(row.date_peremption).replace(' ', 'T'));
+                                if (!isNaN(datePeremp.getTime()) && datePeremp < now) {
+                                    estPerimeeDate = true;
+                                }
+                            }
 
-                            if (!estPerimee) {
+                            if (!estPerimeeDate) {
                                 m.valides++;
                                 m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
                             }
