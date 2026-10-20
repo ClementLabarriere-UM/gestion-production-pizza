@@ -89,13 +89,11 @@
     async function chargerHistorique() {
         const container = document.getElementById('liste-historique');
         
-        // On utilise la bonne colonne par défaut de Supabase : created_at
         const { data: historique, error } = await supabaseClient
             .from('historique')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('date_production', { ascending: false });
         
-        // S'il y a une vraie erreur de la base, on l'affiche en rouge pour la voir !
         if (error) {
             container.innerHTML = `<p style="color: #e74c3c; font-weight: bold;">Erreur : ${error.message}</p>`;
             console.error(error);
@@ -108,8 +106,7 @@
         }
 
         container.innerHTML = historique.map(h => {
-            // On utilise h.created_at ici aussi
-            const date = new Date(h.created_at).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+            const date = new Date(h.date_production).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
             return `
                 <div class="history-item">
                     <div class="history-date">📅 Enregistré le ${date}</div>
