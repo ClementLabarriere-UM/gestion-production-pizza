@@ -82,20 +82,24 @@
     async function verifierConnexion() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = "/connexion"; return; }
+        
         document.getElementById('user-email').innerText = session.user.email;
-        chargerHistorique();
+        // On passe l'identifiant unique de l'utilisateur à la fonction
+        chargerHistorique(session.user.id);
     }
 
-    async function chargerHistorique() {
+    async function chargerHistorique(userId) {
         const container = document.getElementById('liste-historique');
         
+        // On filtre spécifiquement pour récupérer l'historique de l'utilisateur connecté
         const { data: historique, error } = await supabaseClient
             .from('historique')
             .select('*')
+            .eq('user_id', userId)
             .order('date_production', { ascending: false });
         
         if (error) {
-            container.innerHTML = `<p style="color: #e74c3c; font-weight: bold;">Erreur : ${error.message}</p>`;
+            container.innerHTML = `<p style="color: #e74c3c; font-weight: bold;">Erreur Supabase : ${error.message}</p>`;
             console.error(error);
             return;
         }
@@ -106,10 +110,14 @@
         }
 
         container.innerHTML = historique.map(h => {
-            const date = new Date(h.date_production).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+            // Sécurité : si une vieille production n'a pas de date, on évite que l'affichage plante
+            const dateAffichee = h.date_production 
+                ? new Date(h.date_production).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })
+                : "Date inconnue";
+                
             return `
                 <div class="history-item">
-                    <div class="history-date">📅 Enregistré le ${date}</div>
+                    <div class="history-date">📅 Enregistré le ${dateAffichee}</div>
                     <div class="history-details">${h.resume_pizzas}</div>
                 </div>
             `;
