@@ -283,6 +283,8 @@
     { id: 'tnt', nom: 'TNT' },
     { id: 'ultimatum', nom: 'Ultimatum' },
     { id: 'viking', nom: 'Viking' }
+    { id: 'kit_de_survie', nom: 'Kit de survie' },
+    { id: 'tradi_reine', nom: "Tradi'Reine" },
 ];
 
     const recettes = {  
@@ -846,12 +848,6 @@
             const machinesPropres = {};
             const now = new Date();
 
-            const parseSafeTime = (dateStr) => {
-                if (!dateStr) return 0;
-                return new Date(dateStr.replace(' ', 'T')).getTime();
-            };
-
-            // 1. REQUÊTE INDIVIDUELLE : on garantit la récupération de chaque machine
             for (const mId of Object.keys(NOMS_MACHINES)) {
                 const { data: stocksMachine, error } = await supabaseClient
                     .from('machine_stocks')
@@ -866,29 +862,35 @@
                 const m = machinesPropres[mId];
                 
                 if (stocksMachine && stocksMachine.length > 0) {
-                    // Les lignes vides envoyées par le heartbeat peuvent être plus récentes
-                    // que le dernier inventaire réel. On ancre donc le lot sur la dernière
-                    // ligne occupée au lieu de prendre aveuglément la première ligne.
-                    const derniereLigneOccupee = stocksMachine.find(row => row.est_occupe);
-                    const ancreTemps = derniereLigneOccupee
-                        ? parseSafeTime(derniereLigneOccupee.derniere_mise_a_jour)
-                        : parseSafeTime(stocksMachine[0].derniere_mise_a_jour);
+                    let etatActuelMachine = [];
 
-                    // 2. On récupère le lot de synchronisation autour de cette ancre.
-                    let batchRecent = stocksMachine.filter(row => {
-                        const rowTime = parseSafeTime(row.derniere_mise_a_jour);
-                        return rowTime <= ancreTemps && (ancreTemps - rowTime) <= 120000;
-                    });
+                    // Détecte automatiquement si ta table possède une colonne identifiant le casier/emplacement
+                    const sample = stocksMachine[0];
+                    const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id'].find(col => col in sample);
 
-                    // 3. Sécurité anti-doublon (la machine physique fait max 70)
-                    if (batchRecent.length > 70) {
-                        batchRecent = batchRecent.slice(0, 70);
+                    if (colCasier) {
+                        // MÉTHODE 1 : On garde uniquement la ligne la plus récente pour chaque casier (1 à 70)
+                        const casiersVus = new Set();
+                        for (const row of stocksMachine) {
+                            const numCasier = row[colCasier];
+                            if (numCasier !== null && numCasier !== undefined) {
+                                if (!casiersVus.has(numCasier)) {
+                                    casiersVus.add(numCasier);
+                                    etatActuelMachine.push(row);
+                                }
+                            }
+                        }
+                    } else {
+                        // MÉTHODE 2 (Fallback si pas de colonne casier) : 
+                        // On prend les 70 derniers enregistrements de l'état de la machine
+                        // sans le filtre strict des 2 minutes qui écrasait Le Teil et BSA
+                        etatActuelMachine = stocksMachine.slice(0, 70);
                     }
 
-                    // 4. Comptage strict en ignorant les périmées
-                    batchRecent.forEach(row => {
+                    // Comptage strict en ignorant les périmées
+                    etatActuelMachine.forEach(row => {
                         if (row.est_occupe) {
-                            const nom = row.nom_pizza || "Inconnue";
+                            const nom = (row.nom_pizza || "Inconnue").trim();
                             const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
                             const estPerimee = datePeremption && datePeremption < now;
 
@@ -942,15 +944,17 @@
             }
 
             // ---------------------------------------------------------
-            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION
+            // AUTO-REMPLISSAGE DU TABLEAU DE PRODUCTION (Insensible à la casse)
             // ---------------------------------------------------------
+            const normalizeStr = (str) => str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
             listeDistributeurs.forEach(dist => {
                 if (!cloudPrefs.matrice[dist.id]) cloudPrefs.matrice[dist.id] = {};
                 cloudPrefs.carte.forEach(nomPizza => {
                     if (!cloudPrefs.matrice[dist.id][nomPizza]) cloudPrefs.matrice[dist.id][nomPizza] = { stock: "", obj: "" };
-                    cloudPrefs.matrice[dist.id][nomPizza].stock = ""; 
+                    cloudPrefs.matrice[dist.id][nomPizza].stock = 0; // Met 0 par défaut si rien en machine
                     const inputUi = document.querySelector(`input[data-dist="${dist.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
-                    if (inputUi) inputUi.value = "";
+                    if (inputUi) inputUi.value = 0;
                 });
             });
 
@@ -958,12 +962,15 @@
                 const stats = machinesPropres[mId];
                 const nomVilleAdial = NOMS_MACHINES[mId];
                 
-                const distApp = listeDistributeurs.find(d => d.nom.trim().toLowerCase() === nomVilleAdial.toLowerCase());
+                const distApp = listeDistributeurs.find(d => normalizeStr(d.nom) === normalizeStr(nomVilleAdial));
                 if (distApp) {
-                    for (const [nomPizza, qte] of Object.entries(stats.pizzas)) {
-                        if (cloudPrefs.carte.includes(nomPizza)) {
-                            cloudPrefs.matrice[distApp.id][nomPizza].stock = qte;
-                            const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomPizza}"][data-type="stock"]`);
+                    for (const [nomPizzaAdial, qte] of Object.entries(stats.pizzas)) {
+                        // On cherche la correspondance dans la carte sans se soucier des majuscules/accents (ex: "Camembert rôti" == "Camembert Rôti")
+                        const nomCarteMatch = cloudPrefs.carte.find(pCarte => normalizeStr(pCarte) === normalizeStr(nomPizzaAdial));
+                        
+                        if (nomCarteMatch) {
+                            cloudPrefs.matrice[distApp.id][nomCarteMatch].stock = qte;
+                            const inputUi = document.querySelector(`input[data-dist="${distApp.id}"][data-pizza="${nomCarteMatch}"][data-type="stock"]`);
                             if (inputUi) inputUi.value = qte;
                         }
                     }
