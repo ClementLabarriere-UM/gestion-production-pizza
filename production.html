@@ -420,7 +420,7 @@
         loadMachineStocks();
     }
 
-    // --- CHARGEMENT DES MACHINES ADIAL (VERSION STABLE 15 MINUTES) ---
+        // --- CHARGEMENT DES MACHINES ADIAL ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
@@ -436,28 +436,13 @@
             const machinesPropres = {};
             const now = new Date();
 
-            const parseSafeTime = (dateStr) => {
-                if (!dateStr) return 0;
-                let clean = String(dateStr).trim().replace(' ', 'T');
-                let d = new Date(clean);
-                if (isNaN(d.getTime())) {
-                    let parts = clean.split(/[-T:.Z+]/);
-                    if (parts.length >= 6) {
-                        d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2], parts[3], parts[4], parts[5]));
-                    } else {
-                        return 0;
-                    }
-                }
-                return d.getTime();
-            };
-
             for (const mId of Object.keys(NOMS_MACHINES)) {
                 const { data: stocksMachine, error } = await supabaseClient
                     .from('machine_stocks')
                     .select('*')
                     .eq('machine_id', mId)
                     .order('derniere_mise_a_jour', { ascending: false })
-                    .limit(300); 
+                    .limit(500); 
 
                 if (error) throw new Error(`Impossible de charger ${NOMS_MACHINES[mId]} : ${error.message}`);
 
@@ -465,53 +450,33 @@
                 const m = machinesPropres[mId];
                 
                 if (stocksMachine && stocksMachine.length > 0) {
-                    stocksMachine.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
-
-                    // FENÊTRE ÉLARGIE À 15 MINUTES (900 000 ms) pour attraper tout le dernier scan sans le couper
-                    let batchRecent = [];
-                    let lastAcceptedTime = parseSafeTime(stocksMachine[0].derniere_mise_a_jour);
-
-                    for (let i = 0; i < stocksMachine.length; i++) {
-                        const row = stocksMachine[i];
-                        const currentTime = parseSafeTime(row.derniere_mise_a_jour);
-                        
-                        // Si l'écart dépasse 15 minutes par rapport au dernier scan, on s'arrête
-                        if ((lastAcceptedTime - currentTime) > 15 * 60 * 1000) break;
-                        
-                        batchRecent.push(row);
-                    }
-
-                    // Déduplication par casier
                     let etatActuelMachine = [];
-                    const sample = batchRecent[0];
-                    const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id', 'numero_case', 'case'].find(col => col in sample);
+
+                    const sample = stocksMachine[0];
+                    const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id'].find(col => col in sample);
 
                     if (colCasier) {
                         const casiersVus = new Set();
-                        for (const row of batchRecent) {
+                        for (const row of stocksMachine) {
                             const numCasier = row[colCasier];
                             if (numCasier !== null && numCasier !== undefined) {
                                 if (!casiersVus.has(numCasier)) {
                                     casiersVus.add(numCasier);
                                     etatActuelMachine.push(row);
                                 }
-                            } else {
-                                etatActuelMachine.push(row);
                             }
                         }
                     } else {
-                        etatActuelMachine = batchRecent.slice(0, 70);
+                        etatActuelMachine = stocksMachine.slice(0, 70);
                     }
 
-                    // Comptage des vendables
                     etatActuelMachine.forEach(row => {
-                        const estEnRayon = (row.est_occupe !== false) && (row.est_perimee !== true);
-                        if (estEnRayon && row.nom_pizza) {
-                            const nom = String(row.nom_pizza).trim();
-                            const timePeremption = row.date_peremption ? parseSafeTime(row.date_peremption) : null;
-                            const estPerimeeDate = timePeremption && timePeremption < now.getTime();
+                        if (row.est_occupe) {
+                            const nom = (row.nom_pizza || "Inconnue").trim();
+                            const datePeremption = row.date_peremption ? new Date(row.date_peremption.replace(' ', 'T')) : null;
+                            const estPerimee = datePeremption && datePeremption < now;
 
-                            if (!estPerimeeDate) {
+                            if (!estPerimee) {
                                 m.valides++;
                                 m.pizzas[nom] = (m.pizzas[nom] || 0) + 1;
                             }
