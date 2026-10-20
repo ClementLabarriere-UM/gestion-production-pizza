@@ -102,6 +102,19 @@
             .print-list li { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #ddd; }
             .print-bold { font-weight: bold; font-size: 12pt; }
         }
+
+        /* NOUVEAU : CHECKLIST ACCORDÉON DÉTAILLÉE */
+        .ingredient-wrapper { border-bottom: 1px solid var(--border); }
+        .ingredient-header { display: flex; align-items: center; padding: 10px 0; font-size: 1.1rem; cursor: pointer; user-select: none; transition: background 0.2s; }
+        .ingredient-header:hover { background: var(--hover-row); }
+        .ingredient-header input[type="checkbox"] { margin-right: 15px; width: 25px; height: 25px; accent-color: var(--primary); cursor: pointer; }
+        .ingredient-details { display: none; padding: 10px 15px 15px 40px; background: rgba(0,0,0,0.03); font-size: 0.95rem; }
+        body.light-mode .ingredient-details { background: rgba(0,0,0,0.03); }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed rgba(136, 136, 136, 0.2); padding-bottom: 4px; }
+        .detail-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .detail-row span { color: #888; font-style: italic; }
+        .detail-row strong { color: var(--text); font-size: 1rem; }
+
     </style>
 </head>
 <body>
@@ -730,7 +743,6 @@
                     const obj = parseInt(objInput.value) || 0;
                     
                     let aProduire = Math.max(0, obj - stock);
-                    
                     distCapacities[dist.id] += stock + aProduire;
                     
                     const badge = document.getElementById(`res-${dist.id}-${safeId}`);
@@ -784,13 +796,19 @@
             }
         });
 
+        // ⚠️ NOUVELLE LOGIQUE DE STOCKAGE (Global + Détails)
         for (let [nomPizza, quantite] of Object.entries(totauxAProduire)) {
             if (quantite > 0 && recettes[nomPizza]) {
                 for (let [ing, q] of Object.entries(recettes[nomPizza])) {
                     let finalIng = ing; let finalQ = q * quantite;
                     if(ing === "Camembert (demi)") { finalIng = "Camembert (entier)"; finalQ = finalQ / 2; }
                     if(ing === "Reblochon (demi)") { finalIng = "Reblochon (entier)"; finalQ = finalQ / 2; }
-                    besoinsIngredients[finalIng] = (besoinsIngredients[finalIng] || 0) + finalQ;
+                    
+                    if (!besoinsIngredients[finalIng]) {
+                        besoinsIngredients[finalIng] = { total: 0, details: {} };
+                    }
+                    besoinsIngredients[finalIng].total += finalQ;
+                    besoinsIngredients[finalIng].details[nomPizza] = finalQ;
                 }
             }
         }
@@ -805,32 +823,48 @@
         let catUi = { "🍕 Disques": [], "🥩 Viandes": [], "🧀 Fromages": [], "🧅 Autres": [] };
         let catPrint = { "Disques": [], "Viandes": [], "Fromages": [], "Autres": [] };
 
-        for (let [n, q] of Object.entries(ing)) {
-            if (q <= 0) continue;
+        // Outil pour formatter proprement les unités (Kg, g, tranches, etc)
+        const formatQty = (nomIng, qte) => {
+            const match = nomIng.match(/(.*)\s*\((.*?)\)\$/);
+            if (match) {
+                const unit = match[2].trim();
+                if (unit === "g") return qte >= 1000 ? (qte / 1000).toFixed(2) + " Kg" : qte + " g";
+                return qte + " " + unit;
+            }
+            return qte;
+        };
+
+        for (let [n, data] of Object.entries(ing)) {
+            if (data.total <= 0) continue;
             
             let cleanName = n;
-            let displayQ = q;
+            const match = n.match(/(.*)\s*\((.*?)\)\$/);
+            if (match) cleanName = match[1].trim();
             
-            const match = n.match(/(.*)\s*\((.*?)\)$/);
-            
-            if (match) {
-                cleanName = match[1].trim();
-                const baseUnit = match[2].trim();
-                
-                if (baseUnit === "g") {
-                    if (q >= 1000) {
-                        displayQ = (q / 1000).toFixed(2) + " Kg";
-                    } else {
-                        displayQ = q + " g";
-                    }
-                } else {
-                    displayQ = q + " " + baseUnit;
-                }
-            } else {
-                displayQ = q;
-            }
+            let displayQ = formatQty(n, data.total);
 
-            let htmlEcran = `<div class="checklist-item"><input type="checkbox"> <span>${cleanName} : <span class="highlight">${displayQ}</span></span></div>`;
+            // Construction de la liste des détails par pizza
+            let detailsHtml = Object.entries(data.details).map(([pizza, qte]) => {
+                return `<div class="detail-row"><span>${pizza}</span> <strong>${formatQty(n, qte)}</strong></div>`;
+            }).join('');
+
+            // ID unique pour le fonctionnement du menu déroulant
+            const safeId = "detail-" + n.replace(/[^a-zA-Z0-9]/g, '');
+
+            let htmlEcran = `
+                <div class="ingredient-wrapper">
+                    <div class="ingredient-header" onclick="const d = document.getElementById('${safeId}'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; this.querySelector('.toggle-icon').textContent = d.style.display === 'block' ? '▲' : '▼';">
+                        <input type="checkbox" onclick="event.stopPropagation();"> 
+                        <span style="flex-grow: 1;">${cleanName} : <span class="highlight">${displayQ}</span></span>
+                        <span class="toggle-icon" style="color: #888; font-size: 0.8rem; margin-left: 10px;">▼</span>
+                    </div>
+                    <div id="${safeId}" class="ingredient-details">
+                        ${detailsHtml}
+                    </div>
+                </div>
+            `;
+            
+            // Pour l'impression, on garde une ligne simple avec le total pour économiser le papier
             let htmlPrint = `<li><span>${cleanName}</span> <span class="print-bold">${displayQ}</span></li>`;
             
             if (n.includes("Disque")) { catUi["🍕 Disques"].push(htmlEcran); catPrint["Disques"].push(htmlPrint); }
