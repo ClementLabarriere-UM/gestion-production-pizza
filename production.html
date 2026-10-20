@@ -420,7 +420,7 @@
         loadMachineStocks();
     }
 
-    // --- CHARGEMENT DES MACHINES ADIAL (CORRIGÉ & SYNCHRONISÉ) ---
+    // --- CHARGEMENT DES MACHINES ADIAL (VERSION STABLE 15 MINUTES) ---
     async function loadMachineStocks() {
         const container = document.getElementById('machines-container');
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 20px;">Chargement des données en cours...</div>';
@@ -436,7 +436,6 @@
             const machinesPropres = {};
             const now = new Date();
 
-            // Parseur de date 100% compatible iPad / Safari
             const parseSafeTime = (dateStr) => {
                 if (!dateStr) return 0;
                 let clean = String(dateStr).trim().replace(' ', 'T');
@@ -458,7 +457,7 @@
                     .select('*')
                     .eq('machine_id', mId)
                     .order('derniere_mise_a_jour', { ascending: false })
-                    .limit(250); 
+                    .limit(300); 
 
                 if (error) throw new Error(`Impossible de charger ${NOMS_MACHINES[mId]} : ${error.message}`);
 
@@ -466,11 +465,9 @@
                 const m = machinesPropres[mId];
                 
                 if (stocksMachine && stocksMachine.length > 0) {
-                    // 1. Tri strict du plus récent au plus ancien
                     stocksMachine.sort((a, b) => parseSafeTime(b.derniere_mise_a_jour) - parseSafeTime(a.derniere_mise_a_jour));
 
-                    // 2. ISOLATION STRICTE DU DERNIER LOT DE SYNCHRO
-                    // On prend la ligne la plus récente et on coupe dès qu'il y a un trou de plus de 60s
+                    // FENÊTRE ÉLARGIE À 15 MINUTES (900 000 ms) pour attraper tout le dernier scan sans le couper
                     let batchRecent = [];
                     let lastAcceptedTime = parseSafeTime(stocksMachine[0].derniere_mise_a_jour);
 
@@ -478,14 +475,13 @@
                         const row = stocksMachine[i];
                         const currentTime = parseSafeTime(row.derniere_mise_a_jour);
                         
-                        // Si plus de 60 secondes d'écart, c'est une ancienne synchro -> ON COUPE NET !
-                        if ((lastAcceptedTime - currentTime) > 60000) break;
+                        // Si l'écart dépasse 15 minutes par rapport au dernier scan, on s'arrête
+                        if ((lastAcceptedTime - currentTime) > 15 * 60 * 1000) break;
                         
                         batchRecent.push(row);
-                        lastAcceptedTime = currentTime;
                     }
 
-                    // 3. Déduplication par casier UNIQUEMENT sur ce lot récent
+                    // Déduplication par casier
                     let etatActuelMachine = [];
                     const sample = batchRecent[0];
                     const colCasier = ['slot_number', 'casier', 'emplacement', 'slot', 'numero_casier', 'position', 'alveole', 'box_id', 'numero_case', 'case'].find(col => col in sample);
@@ -507,7 +503,7 @@
                         etatActuelMachine = batchRecent.slice(0, 70);
                     }
 
-                    // 4. Comptage des pizzas vendables (hors périmées)
+                    // Comptage des vendables
                     etatActuelMachine.forEach(row => {
                         const estEnRayon = (row.est_occupe !== false) && (row.est_perimee !== true);
                         if (estEnRayon && row.nom_pizza) {
